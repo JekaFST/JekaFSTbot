@@ -8,3 +8,4 @@ ngrok.exe
 Новая папка_IP/webhook_pkey.pem
 Новая папка_local/webhook_cert.pem
 Новая папка_local/webhook_pkey.pem
+.idea/vcs.xml
