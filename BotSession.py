@@ -13,14 +13,14 @@ class BotSession(object):
                     'Login': 'jekafst_bot',
                     'Password': 'jekabot_1412',
                     'code_request': {},
-                    'en_domain': 'http://deadline.en.cx',
-                    'game_id': '59833'
+                    'en_domain': 'http://demo.en.cx',
+                    'game_id': '26991'
                    }
         self.current_level = None
         self.urls = dict()
         self.updater = None
         self.number_of_levels = None
-        self.channel_name = '@r4channel'
+        self.channel_name = '@fst_channel'
         self.use_channel = False
         self.game_answered_bonus_ids = list()
         self.active = False
