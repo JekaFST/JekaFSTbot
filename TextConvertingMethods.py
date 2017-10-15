@@ -68,14 +68,23 @@ def cut_images(text):
     images = list()
 
     soup = BeautifulSoup(text)
+    links = re.findall(r'<a[^>]+>', text)
     for i, img in enumerate(soup.find_all('img')):
         for k, v in img.attrs.items():
             attr = ' %s=%s' % (k, v)
             attr = attr.encode('utf-8')
             attr2 = ' %s="%s"' % (k, v)
             attr2 = attr2.encode('utf-8')
-            text = text.replace(attr, '')
-            text = text.replace(attr2, '')
+            for j, link in enumerate(links):
+                if v in link:
+                    replacement = '(link%s)' % j
+                    text = text.replace(link, replacement)
+                    text = text.replace(attr, '')
+                    text = text.replace(attr2, '')
+                    text = text.replace(replacement, link)
+                else:
+                    text = text.replace(attr2, '')
+                    text = text.replace(attr, '')
         image = '(img%s)' % i
         images.append(img.get('src').encode('utf-8'))
         img_rests = ['<img>', '<img >', '<img/>', '<img />', '<img"">', '<img  />', '<img"" />']
@@ -97,8 +106,17 @@ def handle_coords(text):
         if coord_links:
             str_ahref = str(ahref)
             str_ahref = str_ahref.replace('&amp;', '&')
-            ahref.text.encode('utf-8')
             text = text.replace(str_ahref, ahref.text.encode('utf-8'))
+
+    links = re.findall(r'<a[^>]+>', text)
+    for i, link in enumerate(links):
+        coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', link)
+        if coords:
+            replacement = '(link%s)' % i
+            text = text.replace(link, replacement)
 
     coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
                         r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
@@ -107,6 +125,10 @@ def handle_coords(text):
     for i, coord in enumerate(coords):
         coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(i+1) + '</b>'
         text = text.replace(coord, coord_Y_G)
+
+    for rep in re.findall(r'\(link\d+\)', text):
+        j = re.findall(r'\d+', rep)
+        text = text.replace(rep, links[int(j[0])])
 
     return text, coords
 
