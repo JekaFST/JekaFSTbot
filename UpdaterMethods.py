@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
     send_bonus_award_answer
 

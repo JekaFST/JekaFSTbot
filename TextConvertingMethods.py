@@ -75,6 +75,8 @@ def cut_images(text):
             attr = attr.encode('utf-8')
             attr2 = ' %s="%s"' % (k, v)
             attr2 = attr2.encode('utf-8')
+            # attr3 = ' %s="%s"' % (k, v)
+            # attr3 = attr2.encode('utf-8')
             for j, link in enumerate(links):
                 if v in link:
                     replacement = '(link%s)' % j
