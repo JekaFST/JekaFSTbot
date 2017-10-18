@@ -111,6 +111,25 @@ def stop_updater(session):
         session.stop_updater = True
 
 
+def set_channel_name(chat_id, bot, session, new_channel_name):
+    if session.active:
+        session.channel_name = new_channel_name
+        reply = 'Канал успешно задан' if session.channel_name else 'Канал не задан, повторите'
+        bot.send_message(chat_id, reply)
+
+
+def start_channel(chat_id, bot, session):
+    if session.active:
+        session.use_channel = True
+        bot.send_message(chat_id, 'Постинг в канал запущен')
+
+
+def stop_channel(chat_id, bot, session):
+    if session.active:
+        session.use_channel = False
+        bot.send_message(chat_id, 'Постинг в канал остановлен')
+
+
 def send_code_main(chat_id, bot, session, message_id, code):
     if session.active:
         send_code_to_level(code, bot, chat_id, message_id, session)

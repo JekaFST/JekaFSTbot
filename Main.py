@@ -2,7 +2,8 @@
 import threading
 from BotService import run_app
 from MainMethods import start, stop, login, send_task, start_updater, stop_updater, config, set_domain, \
-    set_game_id, send_code_main, send_code_bonus, send_coords, set_login, set_password
+    set_game_id, send_code_main, send_code_bonus, send_coords, set_login, set_password, set_channel_name, start_channel, \
+    stop_channel
 from MainThreadVars import MainVars
 from Updater import updater
 
@@ -23,8 +24,11 @@ while True:
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду start')
         if task['task_type'] == 'stop':
-            stop(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
-            main_vars.task_queue.remove(task)
+            try:
+                stop(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду stop')
         if task['task_type'] == 'config':
             try:
                 config(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
@@ -59,20 +63,57 @@ while True:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду set_game_id')
         if task['task_type'] == 'login':
-            login(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
-            main_vars.task_queue.remove(task)
+            try:
+                login(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду login')
         if task['task_type'] == 'send_task':
-            send_task(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
-            main_vars.task_queue.remove(task)
+            try:
+                send_task(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду send_task')
         if task['task_type'] == 'start_updater':
-            start_updater(task['chat_id'], main_vars.bot, main_vars)
-            main_vars.task_queue.remove(task)
+            try:
+                start_updater(task['chat_id'], main_vars.bot, main_vars)
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду start_updater')
         if task['task_type'] == 'updater':
-            updater(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
-            main_vars.task_queue.remove(task)
+            try:
+                updater(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду updater')
         if task['task_type'] == 'stop_updater':
-            stop_updater(main_vars.sessions_dict[task['chat_id']])
-            main_vars.task_queue.remove(task)
+            try:
+                stop_updater(main_vars.sessions_dict[task['chat_id']])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду stop_updater')
+        if task['task_type'] == 'channel_name':
+            try:
+                set_channel_name(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
+                                 task['new_channel_name'])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду set_channel_name')
+        if task['task_type'] == 'start_channel':
+            try:
+                start_channel(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду start_channel')
+        if task['task_type'] == 'stop_channel':
+            try:
+                stop_channel(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду stop_channel')
         if task['task_type'] == 'send_code_main':
             try:
                 send_code_main(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],

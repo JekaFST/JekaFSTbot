@@ -223,31 +223,45 @@ def run_app(bot, main_vars):
         main_vars.task_queue.append(stop_updater_task)
         main_vars.id += 1
 
-    # @bot.message_handler(commands=['set_channel_name'])
-    # def set_channel_name(message):
-    #     if message.chat.id not in allowed_chat_ids:
-    #         bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
-    #         return
-    #     if session.active:
-    #         session.channel_name = str(message.text[18:])
-    #
-    # @bot.message_handler(commands=['start_channel'])
-    # def use_channel_true(message):
-    #     if message.chat.id not in allowed_chat_ids:
-    #         bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
-    #         return
-    #     if session.active:
-    #         session.use_channel = True
-    #         bot.send_message(message.chat.id, 'Постинг в канал запущен')
-    #
-    # @bot.message_handler(commands=['stop_channel'])
-    # def use_channel_false(message):
-    #     if message.chat.id not in allowed_chat_ids:
-    #         bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
-    #         return
-    #     if session.active:
-    #         session.use_channel = False
-    #         bot.send_message(message.chat.id, 'Постинг в канал остановлен')
+    @bot.message_handler(commands=['set_channel_name'])
+    def set_channel_name(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        set_channel_name_task = {
+            'task_id': main_vars.id,
+            'task_type': 'channel_name',
+            'chat_id': message.chat.id,
+            'new_channel_name': str(message.text[18:])
+        }
+        main_vars.task_queue.append(set_channel_name_task)
+        main_vars.id += 1
+
+    @bot.message_handler(commands=['start_channel'])
+    def start_channel(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        start_channel_task = {
+            'task_id': main_vars.id,
+            'task_type': 'start_channel',
+            'chat_id': message.chat.id
+        }
+        main_vars.task_queue.append(start_channel_task)
+        main_vars.id += 1
+
+    @bot.message_handler(commands=['stop_channel'])
+    def stop_channel(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        stop_channel_task = {
+            'task_id': main_vars.id,
+            'task_type': 'stop_channel',
+            'chat_id': message.chat.id
+        }
+        main_vars.task_queue.append(stop_channel_task)
+        main_vars.id += 1
 
     @bot.message_handler(content_types=['text'])
     def text_processor(message):
