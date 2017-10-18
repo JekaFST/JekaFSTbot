@@ -98,7 +98,7 @@ def send_all_bonuses(chat_id, bot, session):
 
 def start_updater(chat_id, bot, main_vars):
     session = main_vars.sessions_dict[chat_id]
-    if session.active:
+    if session.active and chat_id not in main_vars.updater_schedulers_dict.keys():
         session.stop_updater = False
         bot.send_message(chat_id, 'Слежение запущено')
         name = 'updater_%s' % chat_id
@@ -125,6 +125,8 @@ def updater_scheduler(chat_id, bot, main_vars):
             main_vars.id += 1
     else:
         bot.send_message(chat_id, 'Слежение остановлено')
+        if chat_id in main_vars.updater_schedulers_dict.keys():
+            del main_vars.updater_schedulers_dict[chat_id]
         return
 
 
