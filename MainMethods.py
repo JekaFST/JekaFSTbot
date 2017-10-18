@@ -4,7 +4,7 @@ import time
 import re
 from BotSession import BotSession
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
-    send_all_helps_to_chat, send_last_help_to_chat
+    send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat
 
 
 def start(chat_id, bot, sessions_dict):
@@ -88,7 +88,12 @@ def send_all_helps(chat_id, bot, session):
 
 def send_last_help(chat_id, bot, session):
     if session.active:
-        send_last_help_to_chat(bot, chat_id)
+        send_last_help_to_chat(bot, chat_id, session)
+
+
+def send_all_bonuses(chat_id, bot, session):
+    if session.active:
+        send_all_bonuses_to_chat(bot, chat_id, session)
 
 
 def start_updater(chat_id, bot, main_vars):

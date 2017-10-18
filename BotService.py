@@ -202,10 +202,18 @@ def run_app(bot, main_vars):
         main_vars.task_queue.append(send_last_help_task)
         main_vars.id += 1
 
-    # @bot.message_handler(commands=['bonuses'])
-    # def send_all_bonuses(message):
-    #     if session.active:
-    #         session.send_all_bonuses(bot, message.chat.id)
+    @bot.message_handler(commands=['bonuses'])
+    def send_all_bonuses(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        send_all_bonuses_task = {
+            'task_id': main_vars.id,
+            'task_type': 'send_bonuses',
+            'chat_id': message.chat.id
+        }
+        main_vars.task_queue.append(send_all_bonuses_task)
+        main_vars.id += 1
 
     @bot.message_handler(commands=['start_updater'])
     def start_updater(message):
