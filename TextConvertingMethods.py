@@ -86,6 +86,10 @@ def cut_images(text):
                         text = text.replace(attr2, '')
                         text = text.replace(attr3, '')
                         text = text.replace(replacement, link)
+                    else:
+                        text = text.replace(attr2, '')
+                        text = text.replace(attr, '')
+                        text = text.replace(attr3, '')
             else:
                 text = text.replace(attr2, '')
                 text = text.replace(attr, '')
@@ -239,7 +243,7 @@ def cut_tags(text, tags_list):
 
             tag_rests = ['<%s>' % tag, '<%s >' % tag, '<%s/>' % tag, '<%s />' % tag, '<%s"">' % tag, '</%s>' % tag, '<%s  />' % tag, '<%s"" />' % tag]
             for tag_rest in tag_rests:
-                for value in re.findall(tag_rest, text, re.DEBUG):
+                for value in re.findall(tag_rest, text):
                     text = text.replace(value, '')
 
     return text
