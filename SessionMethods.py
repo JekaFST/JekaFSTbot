@@ -70,29 +70,32 @@ def send_task_to_chat(bot, chat_id, session):
     send_task(level, bot, chat_id)
 
 
-# def send_all_sectors(self, bot, chat_id):
-#     level = self.get_current_level(bot, chat_id)
-#     if not level:
-#         return
-#     send_sectors(level, bot, chat_id)
-#
-# def send_all_helps(self, bot, chat_id):
-#     level = self.get_current_level(bot, chat_id)
-#     if not level:
-#         return
-#     send_helps(level, bot, chat_id)
-#
-# def send_last_help(self, bot, chat_id):
-#     level = self.get_current_level(bot, chat_id)
-#     if not level:
-#         return
-#     send_last_help(level, bot, chat_id)
-#
-# def send_all_bonuses(self, bot, chat_id):
-#     level = self.get_current_level(bot, chat_id)
-#     if not level:
-#         return
-#     send_bonuses(level, bot, chat_id)
+def send_all_sectors_to_chat(bot, chat_id, session):
+    level = get_current_level(session, bot, chat_id)
+    if not level:
+        return
+    send_sectors(level, bot, chat_id)
+
+
+def send_all_helps_to_chat(bot, chat_id, session):
+    level = get_current_level(session, bot, chat_id)
+    if not level:
+        return
+    send_helps(level, bot, chat_id)
+
+
+def send_last_help_to_chat(bot, chat_id, session):
+    level = get_current_level(session, bot, chat_id)
+    if not level:
+        return
+    send_last_help(level, bot, chat_id)
+
+
+def send_all_bonuses_to_chat(bot, chat_id, session):
+    level = get_current_level(session, bot, chat_id)
+    if not level:
+        return
+    send_bonuses(level, bot, chat_id)
 
 
 def get_current_game_model(session, bot, chat_id, from_updater):

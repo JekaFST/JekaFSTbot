@@ -142,12 +142,12 @@ def run_app(bot, main_vars):
         if message.chat.id not in main_vars.allowed_chat_ids:
             bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
             return
-        login_task = {
+        login_to_en_task = {
             'task_id': main_vars.id,
-            'task_type': 'login',
+            'task_type': 'login_to_en',
             'chat_id': message.chat.id
         }
-        main_vars.task_queue.append(login_task)
+        main_vars.task_queue.append(login_to_en_task)
         main_vars.id += 1
 
     @bot.message_handler(commands=['task'])
@@ -163,27 +163,45 @@ def run_app(bot, main_vars):
         main_vars.task_queue.append(send_task_task)
         main_vars.id += 1
 
-    # @bot.message_handler(commands=['sectors'])
-    # def send_all_sectors(message):
-    #     if message.chat.id not in allowed_chat_ids:
-    #         bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
-    #         return
-    #     if session.active:
-    #         session.send_all_sectors(bot, message.chat.id)
+    @bot.message_handler(commands=['sectors'])
+    def send_all_sectors(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        send_all_sectors_task = {
+            'task_id': main_vars.id,
+            'task_type': 'send_sectors',
+            'chat_id': message.chat.id
+        }
+        main_vars.task_queue.append(send_all_sectors_task)
+        main_vars.id += 1
 
-    # @bot.message_handler(commands=['helps'])
-    # def send_all_helps(message):
-    #     if message.chat.id not in allowed_chat_ids:
-    #         bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
-    #         return
-    #     if session.active:
-    #         session.send_all_helps(bot, message.chat.id)
-    #
-    # @bot.message_handler(commands=['last_help'])
-    # def send_last_help(message):
-    #     if session.active:
-    #         session.send_last_help(bot, message.chat.id)
-    #
+    @bot.message_handler(commands=['helps'])
+    def send_all_helps(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        send_all_helps_task = {
+            'task_id': main_vars.id,
+            'task_type': 'send_helps',
+            'chat_id': message.chat.id
+        }
+        main_vars.task_queue.append(send_all_helps_task)
+        main_vars.id += 1
+
+    @bot.message_handler(commands=['last_help'])
+    def send_last_help(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        send_last_help_task = {
+            'task_id': main_vars.id,
+            'task_type': 'send_last_help',
+            'chat_id': message.chat.id
+        }
+        main_vars.task_queue.append(send_last_help_task)
+        main_vars.id += 1
+
     # @bot.message_handler(commands=['bonuses'])
     # def send_all_bonuses(message):
     #     if session.active:
@@ -211,7 +229,7 @@ def run_app(bot, main_vars):
             'task_id': main_vars.id,
             'task_type': 'delay',
             'chat_id': message.chat.id,
-            'delay': int(message.text[7:])
+            'new_delay': int(message.text[7:])
         }
         main_vars.task_queue.append(set_delay_task)
         main_vars.id += 1

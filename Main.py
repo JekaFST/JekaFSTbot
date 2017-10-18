@@ -3,7 +3,7 @@ import threading
 from BotService import run_app
 from MainMethods import start, stop, login, send_task, start_updater, stop_updater, config, set_domain, \
     set_game_id, send_code_main, send_code_bonus, send_coords, set_login, set_password, set_channel_name, start_channel, \
-    stop_channel
+    stop_channel, set_updater_delay, send_all_sectors, send_all_helps, send_last_help
 from MainThreadVars import MainVars
 from Updater import updater
 
@@ -62,7 +62,7 @@ while True:
             except Exception:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду set_game_id')
-        if task['task_type'] == 'login':
+        if task['task_type'] == 'login_to_en':
             try:
                 login(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
                 main_vars.task_queue.remove(task)
@@ -74,6 +74,27 @@ while True:
                 main_vars.task_queue.remove(task)
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду send_task')
+        if task['task_type'] == 'send_sectors':
+            try:
+                send_all_sectors(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду send_all_sectors')
+        if task['task_type'] == 'send_helps':
+            try:
+                send_all_helps(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду send_all_helps')
+        if task['task_type'] == 'send_last_help':
+            try:
+                send_last_help(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду send_last_helps')
         if task['task_type'] == 'start_updater':
             try:
                 start_updater(task['chat_id'], main_vars.bot, main_vars)
@@ -86,6 +107,14 @@ while True:
                 main_vars.task_queue.remove(task)
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду updater')
+        if task['task_type'] == 'delay':
+            try:
+                set_updater_delay(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
+                                  task['new_delay'])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду set_updater_delay')
         if task['task_type'] == 'stop_updater':
             try:
                 stop_updater(main_vars.sessions_dict[task['chat_id']])
