@@ -193,7 +193,7 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
 
     send_code_result = str(game_model['EngineAction']['LevelAction']['IsCorrectAnswer']) if not bonus_only else \
         str(game_model['EngineAction']['BonusAction']['IsCorrectAnswer'])
-    reply = __get_send_code_reply(code, send_code_result, level, game_model)
+    reply = get_send_code_reply(code, send_code_result, level, game_model)
     bot.send_message(chat_id, reply, reply_to_message_id=message_id, parse_mode='HTML')
 
 
@@ -207,7 +207,7 @@ def generate_code_request(code_request, level, code, bonus_only):
     return code_request
 
 
-def __get_send_code_reply(code, send_code_result, level, game_model):
+def get_send_code_reply(code, send_code_result, level, game_model):
     if send_code_result == 'True' and level['LevelId'] == game_model['Level']['LevelId']:
         reply = '\xE2\x9C\x85\r\nКод "%s" <b>принят</b>' % code
     elif send_code_result == 'True' and level['LevelId'] != game_model['Level']['LevelId']:

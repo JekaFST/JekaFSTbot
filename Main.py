@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import threading
 from BotService import run_app
-from MainMethods import start, stop, login, send_task, start_updater, stop_updater, config, change_domain, \
-    change_game_id, send_code_main, send_code_bonus, send_coords
+from MainMethods import start, stop, login, send_task, start_updater, stop_updater, config, set_domain, \
+    set_game_id, send_code_main, send_code_bonus, send_coords, set_login, set_password
 from MainThreadVars import MainVars
 from Updater import updater
 
@@ -31,22 +31,33 @@ while True:
                 main_vars.task_queue.remove(task)
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду config')
+        if task['task_type'] == 'login':
+            try:
+                set_login(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']], task['new_login'])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду set_login')
+        if task['task_type'] == 'password':
+            try:
+                set_password(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
+                             task['new_password'])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду set_password')
         if task['task_type'] == 'domain':
             try:
-                change_domain(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
-                              task['new_domain'])
+                set_domain(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']], task['new_domain'])
                 main_vars.task_queue.remove(task)
             except Exception:
-                main_vars.bot.send_message(task['chat_id'],
-                                           'Exception в main - не удалось обработать команду change_domain')
+                main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду set_domain')
         if task['task_type'] == 'game_id':
             try:
-                change_game_id(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
-                               task['new_game_id'])
+                set_game_id(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']], task['new_game_id'])
                 main_vars.task_queue.remove(task)
             except Exception:
                 main_vars.bot.send_message(task['chat_id'],
-                                           'Exception в main - не удалось обработать команду change_game_id')
+                                           'Exception в main - не удалось обработать команду set_game_id')
         if task['task_type'] == 'login':
             login(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
             main_vars.task_queue.remove(task)

@@ -81,35 +81,46 @@ def run_app(bot, main_vars):
         main_vars.task_queue.append(config_task)
         main_vars.id += 1
 
-    # @bot.message_handler(commands=['login'])
-    # def save_login(message):
-    #     if message.chat.id not in allowed_chat_ids:
-    #         bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
-    #         return
-    #     if session.active:
-    #         session.config['Login'] = str(message.text[7:])
-    #
-    #
-    # @bot.message_handler(commands=['password'])
-    # def save_password(message):
-    #     if message.chat.id not in allowed_chat_ids:
-    #         bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
-    #         return
-    #     if session.active:
-    #         session.config['Password'] = str(message.text[10:])
+    @bot.message_handler(commands=['login'])
+    def save_login(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        set_login_task = {
+            'task_id': main_vars.id,
+            'task_type': 'login',
+            'chat_id': message.chat.id,
+            'new_login': str(message.text[7:])
+        }
+        main_vars.task_queue.append(set_login_task)
+        main_vars.id += 1
+
+    @bot.message_handler(commands=['password'])
+    def save_password(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        set_password_task = {
+            'task_id': main_vars.id,
+            'task_type': 'password',
+            'chat_id': message.chat.id,
+            'new_password': str(message.text[10:])
+        }
+        main_vars.task_queue.append(set_password_task)
+        main_vars.id += 1
 
     @bot.message_handler(commands=['domain'])
     def save_en_domain(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
             bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
             return
-        change_domain_task = {
+        set_domain_task = {
             'task_id': main_vars.id,
             'task_type': 'domain',
             'chat_id': message.chat.id,
             'new_domain': str(message.text[8:])
         }
-        main_vars.task_queue.append(change_domain_task)
+        main_vars.task_queue.append(set_domain_task)
         main_vars.id += 1
 
     @bot.message_handler(commands=['gameid'])
@@ -117,13 +128,13 @@ def run_app(bot, main_vars):
         if message.chat.id not in main_vars.allowed_chat_ids:
             bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
             return
-        change_game_id_task = {
+        set_game_id_task = {
             'task_id': main_vars.id,
             'task_type': 'game_id',
             'chat_id': message.chat.id,
             'new_game_id': str(message.text[8:])
         }
-        main_vars.task_queue.append(change_game_id_task)
+        main_vars.task_queue.append(set_game_id_task)
         main_vars.id += 1
 
     @bot.message_handler(commands=['login'])
@@ -283,7 +294,7 @@ def run_app(bot, main_vars):
     bot.remove_webhook()
 
     # Set webhook
-    bot.set_webhook(url='https://5d1aa3e2.ngrok.io/webhook')
+    bot.set_webhook(url='https://f3e1ff8e.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():
