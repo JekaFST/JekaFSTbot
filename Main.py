@@ -2,7 +2,7 @@
 import threading
 from BotService import run_app
 from MainMethods import start, stop, login, send_task, start_updater, stop_updater, config, change_domain, \
-    change_game_id
+    change_game_id, send_code_main, send_code_bonus, send_coords
 from MainThreadVars import MainVars
 from Updater import updater
 
@@ -62,3 +62,26 @@ while True:
         if task['task_type'] == 'stop_updater':
             stop_updater(main_vars.sessions_dict[task['chat_id']])
             main_vars.task_queue.remove(task)
+        if task['task_type'] == 'send_code_main':
+            try:
+                send_code_main(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
+                               task['message_id'], task['code'])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду send_code_main')
+        if task['task_type'] == 'send_code_bonus':
+            try:
+                send_code_bonus(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
+                                task['message_id'], task['code'])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду send_code_bonus')
+        if task['task_type'] == 'send_coords':
+            try:
+                send_coords(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']], task['coords'])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду send_coords')

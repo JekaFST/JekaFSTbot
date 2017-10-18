@@ -27,3 +27,4 @@ class BotSession(object):
         self.sectors_message_id = None
         self.game_model_status = None
         self.delay = 1
+        self.send_coords_active = True

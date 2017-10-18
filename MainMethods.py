@@ -3,6 +3,8 @@ import threading
 
 import time
 
+import re
+
 from BotSession import BotSession
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat
 
@@ -95,3 +97,21 @@ def updater_scheduler(chat_id, bot, main_vars):
 def stop_updater(session):
     if session.active:
         session.stop_updater = True
+
+
+def send_code_main(chat_id, bot, session, message_id, code):
+    if session.active:
+        send_code_to_level(code, bot, chat_id, message_id)
+
+
+def send_code_bonus(chat_id, bot, session, message_id, code):
+    if session.active:
+        send_code_to_level(code, bot, chat_id, message_id, bonus_only=True)
+
+
+def send_coords(chat_id, bot, session, coords):
+    if session.active and session.send_coords_active:
+        for coord in coords:
+            latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
+            longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
+            bot.send_location(chat_id, latitude, longitude)

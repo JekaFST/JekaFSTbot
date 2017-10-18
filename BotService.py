@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import flask
+import re
 import telebot
 from flask import Flask
 
@@ -237,30 +238,46 @@ def run_app(bot, main_vars):
     #         session.use_channel = False
     #         bot.send_message(message.chat.id, 'Постинг в канал остановлен')
 
-    # @bot.message_handler(content_types=['text'])
-    # def text_processor(message):
-    #     if message.chat.id not in allowed_chat_ids:
-    #         bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
-    #         return
-    #     if session.active:
-    #         coords = re.findall(
-    #             r'\d\d\.\d{4,7},\s\d\d\.\d{4,7}|\d\d\.\d{4,7}\s\d\d\.\d{4,7}|\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}',
-    #             message.text)
-    #         if message.text[0] == '!':
-    #             code = (message.text[1:]).lower().encode('utf-8') if message.text[1] != ' ' \
-    #                 else (message.text[2:]).lower().encode('utf-8')
-    #             session.send_code_to_level(code, bot, message.chat.id, message.message_id)
-    #         elif message.text[0] == '?':
-    #             code = (message.text[1:]).lower().encode('utf-8') if message.text[1] != ' ' \
-    #                 else (message.text[2:]).lower().encode('utf-8')
-    #             session.send_code_to_level(code, bot, message.chat.id, message.message_id, bonus_only=True)
-    #         elif coords:
-    #             for coord in coords:
-    #                 latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
-    #                 longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-    #                 bot.send_location(message.chat.id, latitude, longitude)
-    #         else:
-    #             return
+    @bot.message_handler(content_types=['text'])
+    def text_processor(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        coords = re.findall(r'\d\d\.\d{4,7},\s\d\d\.\d{4,7}|\d\d\.\d{4,7}\s\d\d\.\d{4,7}|\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}',
+                            message.text)
+        if message.text[0] == '!':
+            code = (message.text[1:]).lower().encode('utf-8') if message.text[1] != ' ' \
+                else (message.text[2:]).lower().encode('utf-8')
+            send_code_main_task = {
+                'task_id': main_vars.id,
+                'task_type': 'send_code_main',
+                'chat_id': message.chat.id,
+                'message_id': message.message_id,
+                'code': code
+            }
+            main_vars.task_queue.append(send_code_main_task)
+            main_vars.id += 1
+        if message.text[0] == '?':
+            code = (message.text[1:]).lower().encode('utf-8') if message.text[1] != ' ' \
+                else (message.text[2:]).lower().encode('utf-8')
+            send_code_bonus_task = {
+                'task_id': main_vars.id,
+                'task_type': 'send_code_bonus',
+                'chat_id': message.chat.id,
+                'message_id': message.message_id,
+                'code': code
+            }
+            main_vars.task_queue.append(send_code_bonus_task)
+            main_vars.id += 1
+        if coords:
+            send_coords_task = {
+                'task_id': main_vars.id,
+                'task_type': 'send_coords',
+                'chat_id': message.chat.id,
+                'coords': coords
+            }
+            main_vars.task_queue.append(send_coords_task)
+            main_vars.id += 1
 
     # Remove webhook, it fails sometimes the set if there is a previous webhook
     bot.remove_webhook()
