@@ -67,15 +67,18 @@ def run_app(bot, main_vars):
         main_vars.task_queue.append(stop_task)
         main_vars.id += 1
 
-    # @bot.message_handler(commands=['config'])
-    # def config(message):
-    #     if message.chat.id not in allowed_chat_ids:
-    #         bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
-    #         return
-    #     session_condition = 'Сессия активна' if session.active else 'Сессия не активна'
-    #     reply = '\r\nДомен: ' + session.config['en_domain'] + '\r\nID игры: ' + session.config['game_id'] + \
-    #             '\r\nЛогин: ' + session.config['Login']
-    #     bot.send_message(message.chat.id, session_condition + reply, disable_web_page_preview=True)
+    @bot.message_handler(commands=['config'])
+    def config(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        config_task = {
+            'task_id': main_vars.id,
+            'task_type': 'config',
+            'chat_id': message.chat.id
+        }
+        main_vars.task_queue.append(config_task)
+        main_vars.id += 1
 
     # @bot.message_handler(commands=['login'])
     # def save_login(message):
