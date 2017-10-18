@@ -6,7 +6,7 @@ import time
 import re
 
 from BotSession import BotSession
-from SessionMethods import compile_urls, login_to_en, send_task_to_chat
+from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level
 
 
 def start(chat_id, bot, sessions_dict):
@@ -101,12 +101,12 @@ def stop_updater(session):
 
 def send_code_main(chat_id, bot, session, message_id, code):
     if session.active:
-        send_code_to_level(code, bot, chat_id, message_id)
+        send_code_to_level(code, bot, chat_id, message_id, session)
 
 
 def send_code_bonus(chat_id, bot, session, message_id, code):
     if session.active:
-        send_code_to_level(code, bot, chat_id, message_id, bonus_only=True)
+        send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=True)
 
 
 def send_coords(chat_id, bot, session, coords):

@@ -53,14 +53,14 @@ def get_current_level(session, bot, chat_id, from_updater=False):
         return current_level_info
     else:
         return None
-#
-# def send_code_to_level(self, code, bot, chat_id, message_id, bonus_only=False):
-#     level = self.get_current_level(bot, chat_id)
-#     if not level:
-#         return
-#     is_repeat_code = check_repeat_code(level, code)
-#     send_code(self.config, level, code, self.urls, self.updater, bot, chat_id, message_id, is_repeat_code,
-#               bonus_only)
+
+
+def send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=False):
+    level = get_current_level(session, bot, chat_id)
+    if not level:
+        return
+    is_repeat_code = check_repeat_code(level, code)
+    send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bonus_only)
 
 
 def send_task_to_chat(bot, chat_id, session):
@@ -169,22 +169,22 @@ def get_answered_objects_for_code(code, answered_sectors, opened_bonuses):
     return answered_objects
 
 
-def send_code(config, level, code, urls, updater, bot, chat_id, message_id, is_repeat_code, bonus_only):
+def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bonus_only):
     has_answer_block_rule = level['HasAnswerBlockRule']
     if has_answer_block_rule and not bonus_only:
         bot.send_message(chat_id, '\xE2\x9B\x94\r\nСдача в основное окно выкл <b>(БЛОКИРОВКА)</b>'
                                   '\r\nБонусы сдавать в виде ?код', reply_to_message_id=message_id, parse_mode='HTML')
         return
 
-    code_request = generate_code_request(config['code_request'], level, code, bonus_only)
+    code_request = generate_code_request(session.config['code_request'], level, code, bonus_only)
 
-    response = requests.post(urls['game_url_js'], data=code_request, headers={'Cookie': config['cookie']})
+    response = requests.post(session.urls['game_url_js'], data=code_request, headers={'Cookie': session.config['cookie']})
     try:
         response_json = json.loads(response.text)
     except Exception:
         bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
         return
-    game_model = check_game_model(response_json, updater, bot, chat_id)
+    game_model = check_game_model(response_json, session, bot, chat_id)
     if not game_model:
         return
     if is_repeat_code:
