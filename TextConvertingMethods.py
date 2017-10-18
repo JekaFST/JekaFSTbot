@@ -75,18 +75,21 @@ def cut_images(text):
             attr = attr.encode('utf-8')
             attr2 = ' %s="%s"' % (k, v)
             attr2 = attr2.encode('utf-8')
-            # attr3 = ' %s="%s"' % (k, v)
-            # attr3 = attr2.encode('utf-8')
-            for j, link in enumerate(links):
-                if v in link:
-                    replacement = '(link%s)' % j
-                    text = text.replace(link, replacement)
-                    text = text.replace(attr, '')
-                    text = text.replace(attr2, '')
-                    text = text.replace(replacement, link)
-                else:
-                    text = text.replace(attr2, '')
-                    text = text.replace(attr, '')
+            attr3 = " %s='%s'" % (k, v)
+            attr3 = attr3.encode('utf-8')
+            if links:
+                for j, link in enumerate(links):
+                    if v in link:
+                        replacement = '(link%s)' % j
+                        text = text.replace(link, replacement)
+                        text = text.replace(attr, '')
+                        text = text.replace(attr2, '')
+                        text = text.replace(attr3, '')
+                        text = text.replace(replacement, link)
+            else:
+                text = text.replace(attr2, '')
+                text = text.replace(attr, '')
+                text = text.replace(attr3, '')
         image = '(img%s)' % i
         images.append(img.get('src').encode('utf-8'))
         img_rests = ['<img>', '<img >', '<img/>', '<img />', '<img"">', '<img  />', '<img"" />']
@@ -225,11 +228,14 @@ def cut_tags(text, tags_list):
                 if isinstance(v, list):
                     attr = ' %s=%s' % (k, v[0])
                     attr2 = ' %s="%s"' % (k, v[0])
+                    attr3 = " %s='%s'" % (k, v[0])
                 else:
                     attr = ' %s=%s' % (k, v)
                     attr2 = ' %s="%s"' % (k, v)
+                    attr3 = " %s='%s'" % (k, v)
                 text = text.replace(str(attr), '')
                 text = text.replace(str(attr2), '')
+                text = text.replace(str(attr3), '')
 
             tag_rests = ['<%s>' % tag, '<%s >' % tag, '<%s/>' % tag, '<%s />' % tag, '<%s"">' % tag, '</%s>' % tag, '<%s  />' % tag, '<%s"" />' % tag]
             for tag_rest in tag_rests:
