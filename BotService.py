@@ -97,25 +97,33 @@ def run_app(bot, main_vars):
     #     if session.active:
     #         session.config['Password'] = str(message.text[10:])
 
-    # @bot.message_handler(commands=['domain'])
-    # def save_en_domain(message):
-    #     if message.chat.id not in allowed_chat_ids:
-    #         bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
-    #         return
-    #     if session.active:
-    #         session.config['en_domain'] = str(message.text[8:])
-    #         reply = 'Домен успешно задан' if session.config else 'Домен не задан, повторите (/domain http://demo.en.cx)'
-    #         bot.send_message(message.chat.id, reply)
+    @bot.message_handler(commands=['domain'])
+    def save_en_domain(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        change_domain_task = {
+            'task_id': main_vars.id,
+            'task_type': 'domain',
+            'chat_id': message.chat.id,
+            'new_domain': str(message.text[8:])
+        }
+        main_vars.task_queue.append(change_domain_task)
+        main_vars.id += 1
 
-    # @bot.message_handler(commands=['gameid'])
-    # def save_game_id(message):
-    #     if message.chat.id not in allowed_chat_ids:
-    #         bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
-    #         return
-    #     if session.active:
-    #         session.config['game_id'] = str(message.text[8:])
-    #         reply = 'Игра успешно задана' if session.config else 'Игра не задана, повторите (/gameid 26991)'
-    #         bot.send_message(message.chat.id, reply)
+    @bot.message_handler(commands=['gameid'])
+    def save_game_id(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        change_game_id_task = {
+            'task_id': main_vars.id,
+            'task_type': 'game_id',
+            'chat_id': message.chat.id,
+            'new_game_id': str(message.text[8:])
+        }
+        main_vars.task_queue.append(change_game_id_task)
+        main_vars.id += 1
 
     @bot.message_handler(commands=['login'])
     def login(message):

@@ -34,6 +34,20 @@ def config(chat_id, bot, session):
     bot.send_message(chat_id, session_condition + reply, disable_web_page_preview=True)
 
 
+def change_domain(chat_id, bot, session, new_domain):
+    if session.active:
+        session.config['en_domain'] = new_domain
+        reply = 'Домен успешно задан' if session.config else 'Домен не задан, повторите (/domain http://demo.en.cx)'
+        bot.send_message(chat_id, reply)
+
+
+def change_game_id(chat_id, bot, session, new_game_id):
+    if session.active:
+        session.config['game_id'] = new_game_id
+        reply = 'Игра успешно задана' if session.config else 'Игра не задана, повторите (/gameid 26991)'
+        bot.send_message(chat_id, reply)
+
+
 def login(chat_id, bot, session):
     if session.active:
         session.urls = compile_urls(session.urls, session.config)

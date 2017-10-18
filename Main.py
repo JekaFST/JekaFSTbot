@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import threading
 from BotService import run_app
-from MainMethods import start, stop, login, send_task, start_updater, stop_updater, config
+from MainMethods import start, stop, login, send_task, start_updater, stop_updater, config, change_domain, \
+    change_game_id
 from MainThreadVars import MainVars
 from Updater import updater
 
@@ -30,6 +31,22 @@ while True:
                 main_vars.task_queue.remove(task)
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду config')
+        if task['task_type'] == 'domain':
+            try:
+                change_domain(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
+                              task['new_domain'])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду change_domain')
+        if task['task_type'] == 'game_id':
+            try:
+                change_game_id(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
+                               task['new_game_id'])
+                main_vars.task_queue.remove(task)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду change_game_id')
         if task['task_type'] == 'login':
             login(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
             main_vars.task_queue.remove(task)
