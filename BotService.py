@@ -202,13 +202,19 @@ def run_app(bot, main_vars):
         main_vars.task_queue.append(start_updater_task)
         main_vars.id += 1
 
-    # @bot.message_handler(commands=['delay'])
-    # def updater_delay(message):
-    #     if message.chat.id not in allowed_chat_ids:
-    #         bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
-    #         return
-    #     if session.active:
-    #         session.updater.delay = int(message.text[7:])
+    @bot.message_handler(commands=['delay'])
+    def set_updater_delay(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            return
+        set_delay_task = {
+            'task_id': main_vars.id,
+            'task_type': 'delay',
+            'chat_id': message.chat.id,
+            'delay': int(message.text[7:])
+        }
+        main_vars.task_queue.append(set_delay_task)
+        main_vars.id += 1
 
     @bot.message_handler(commands=['stop_updater'])
     def stop_updater(message):

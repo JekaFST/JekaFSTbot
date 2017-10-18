@@ -36,21 +36,21 @@ def config(chat_id, bot, session):
 def set_login(chat_id, bot, session, new_login):
     if session.active:
         session.config['Login'] = new_login
-        reply = 'Логин успешно задан' if session.config['Login'] else 'Логин не задан, повторите'
+        reply = 'Логин успешно задан' if session.config['Login'] == new_login else 'Логин не задан, повторите'
         bot.send_message(chat_id, reply)
 
 
 def set_password(chat_id, bot, session, new_password):
     if session.active:
         session.config['Password'] = new_password
-        reply = 'Пароль успешно задан' if session.config['Password'] else 'Пароль не задана, повторите'
+        reply = 'Пароль успешно задан' if session.config['Password'] == new_password else 'Пароль не задана, повторите'
         bot.send_message(chat_id, reply)
 
 
 def set_domain(chat_id, bot, session, new_domain):
     if session.active:
         session.config['en_domain'] = new_domain
-        reply = 'Домен успешно задан' if session.config['en_domain'] \
+        reply = 'Домен успешно задан' if session.config['en_domain'] == new_domain \
             else 'Домен не задан, повторите (/domain http://demo.en.cx)'
         bot.send_message(chat_id, reply)
 
@@ -58,7 +58,8 @@ def set_domain(chat_id, bot, session, new_domain):
 def set_game_id(chat_id, bot, session, new_game_id):
     if session.active:
         session.config['game_id'] = new_game_id
-        reply = 'Игра успешно задана' if session.config['game_id'] else 'Игра не задана, повторите (/gameid 26991)'
+        reply = 'Игра успешно задана' if session.config['game_id'] == new_game_id \
+            else 'Игра не задана, повторите (/gameid 26991)'
         bot.send_message(chat_id, reply)
 
 
@@ -106,6 +107,13 @@ def updater_scheduler(chat_id, bot, main_vars):
         return
 
 
+def set_updater_delay(chat_id, bot, session, new_delay):
+    if session.active:
+        session.updater.delay = new_delay
+        reply = 'Задержка успешно выставлена' if session.delay == new_delay else 'Задержка не обновлена, повторите'
+        bot.send_message(chat_id, reply)
+
+
 def stop_updater(session):
     if session.active:
         session.stop_updater = True
@@ -114,7 +122,7 @@ def stop_updater(session):
 def set_channel_name(chat_id, bot, session, new_channel_name):
     if session.active:
         session.channel_name = new_channel_name
-        reply = 'Канал успешно задан' if session.channel_name else 'Канал не задан, повторите'
+        reply = 'Канал успешно задан' if session.channel_name == new_channel_name else 'Канал не задан, повторите'
         bot.send_message(chat_id, reply)
 
 
