@@ -137,8 +137,8 @@ def run_app(bot, main_vars):
         main_vars.task_queue.append(set_game_id_task)
         main_vars.id += 1
 
-    @bot.message_handler(commands=['login'])
-    def login(message):
+    @bot.message_handler(commands=['login_to_en'])
+    def login_to_en(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
             bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
             return
