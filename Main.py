@@ -17,12 +17,12 @@ except Exception:
 
 while True:
     for task in main_vars.task_queue:
-        if task['task_type'] == 'get_permission':
-            try:
-                get_permission(task['chat_id'], main_vars.bot, main_vars.allowed_chat_ids)
-            except Exception:
-                main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду permission')
-            main_vars.task_queue.remove(task)
+        # if task['task_type'] == 'get_permission':
+        #     try:
+        #         get_permission(task['chat_id'], main_vars.bot, main_vars.allowed_chat_ids)
+        #     except Exception:
+        #         main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду permission')
+        #     main_vars.task_queue.remove(task)
         if task['task_type'] == 'start':
             try:
                 start(task['chat_id'], main_vars.bot, main_vars.sessions_dict)

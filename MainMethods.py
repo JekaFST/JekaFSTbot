@@ -10,14 +10,14 @@ from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_co
     send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat
 
 
-def get_permission(chat_id, bot, allowed_chat_ids):
-    callback_button = types.InlineKeyboardButton(text="Нажми меня", callback_data="test")
-    keyboard = types.ReplyKeyboardMarkup()
-    # markup = types.ReplyKeyboardMarkup()
-    # markup.row('a', 'v')
-    # markup.row('c', 'd', 'e')
-    keyboard.add(callback_button)
-    bot.send_message(45839899, "Тут будет сообщение с запросом пермишена", reply_markup=keyboard)
+# def get_permission(chat_id, bot, allowed_chat_ids):
+#     callback_button = types.InlineKeyboardButton(text="Принять запрос", callback_data="add_chat")
+#     keyboard = types.ReplyKeyboardMarkup()
+#     # markup = types.ReplyKeyboardMarkup()
+#     # markup.row('a', 'v')
+#     # markup.row('c', 'd', 'e')
+#     keyboard.add(callback_button)
+#     bot.send_message(45839899, "Тут будет сообщение с запросом пермишена", reply_markup=keyboard)
 
 
 def start(chat_id, bot, sessions_dict):
