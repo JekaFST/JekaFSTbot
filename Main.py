@@ -3,7 +3,7 @@ import threading
 from BotService import run_app
 from MainMethods import start, stop, login, send_task, start_updater, stop_updater, config, set_domain, \
     set_game_id, send_code_main, send_code_bonus, send_coords, set_login, set_password, set_channel_name, start_channel, \
-    stop_channel, set_updater_delay, send_all_sectors, send_all_helps, send_last_help, send_all_bonuses
+    stop_channel, set_updater_delay, send_all_sectors, send_all_helps, send_last_help, send_all_bonuses, get_permission
 from MainThreadVars import MainVars
 from UpdaterMethods import updater
 
@@ -17,6 +17,12 @@ except Exception:
 
 while True:
     for task in main_vars.task_queue:
+        if task['task_type'] == 'get_permission':
+            try:
+                get_permission(task['chat_id'], main_vars.bot, main_vars.allowed_chat_ids)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду permission')
+            main_vars.task_queue.remove(task)
         if task['task_type'] == 'start':
             try:
                 start(task['chat_id'], main_vars.bot, main_vars.sessions_dict)

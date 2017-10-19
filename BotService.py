@@ -19,6 +19,19 @@ def run_app(bot, main_vars):
         else:
             flask.abort(403)
 
+    @bot.message_handler(commands=['ask_for_permission'])
+    def ask_for_permission(message):
+        if message.chat.id in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат уже разрешен для работы с ботом')
+            return
+        get_permission_task = {
+            'task_id': main_vars.id,
+            'task_type': 'get_permission',
+            'chat_id': message.chat.id
+        }
+        main_vars.task_queue.append(get_permission_task)
+        main_vars.id += 1
+
     @bot.message_handler(commands=['start'])
     def start(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
