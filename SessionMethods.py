@@ -104,10 +104,11 @@ def get_current_game_model(session, bot, chat_id, from_updater):
         response_json = json.loads(response.text)
     except Exception:
         bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом')
-        if 'запросы классифицированы как запросы робота' in response.text:
+        if "Your requests have been classified as robot's requests." in response.text:
+            session.stop_updater = True
             bot.send_message(chat_id,
                              'Сработала защита движка от повторяющихся запросов. Необходимо перелогиниться и перезапустить апдейтер.\r\n' \
-                             '/login\r\n/start_updater')
+                             '/login_to_en\r\n/start_updater')
         return False
     game_model = check_game_model(response_json, session, bot, chat_id, from_updater)
     return game_model

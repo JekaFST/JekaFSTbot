@@ -31,7 +31,7 @@ def config(chat_id, bot, session):
     channel_condition = '\r\nИмя канала задано' if session.channel_name else '\r\nИмя канала не задано'
     reply = session_condition + '\r\nДомен: ' + session.config['en_domain'] +\
             '\r\nID игры: ' + session.config['game_id'] + '\r\nЛогин: ' + session.config['Login'] + channel_condition
-    bot.send_message(chat_id, session_condition + reply, disable_web_page_preview=True)
+    bot.send_message(chat_id, reply, disable_web_page_preview=True)
 
 
 def set_login(chat_id, bot, session, new_login):
