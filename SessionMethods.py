@@ -28,10 +28,13 @@ def login_to_en(session, bot, chat_id):
     session.config['cookie'] = response.request.headers['Cookie']
     if not 'stoken' in session.config['cookie']:
         soup = BeautifulSoup(response.content)
-        for title in soup.find_all('title'):
-            text = title.text.encode('utf-8')
-            reply = 'Бот не залогинился\r\nResponse title: %s' % text
-            return reply
+        for div in soup.find_all('div'):
+            if div.attrs['class'][0] == 'error':
+                error = div.text.encode('utf-8')
+                reply = 'Бот не залогинился\r\nResponse error: %s' % error
+                return reply
+        reply = 'Бот не залогинился, попробуйте еще раз'
+        return reply
 
     session.current_level = get_current_level(session, bot, chat_id)
     if not session.current_level:

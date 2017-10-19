@@ -14,6 +14,8 @@ def start(chat_id, bot, sessions_dict):
     bot.send_message(chat_id, 'Чтобы начать использовать бота, необходимо задать конфигурацию игры:\n'
                               'ввести домен игры (/domain http://demo.en.cx)\n'
                               'ввести game id игры (/gameid 26991)\n'
+                              'ввести логин игрока (/login abc)\n'
+                              'ввести пароль игрока (/password abc)\n'
                               'и залогиниться в движок (/login_to_en)\n'
                               'Краткое описание доступно по команде /help', disable_web_page_preview=True)
     sessions_dict[chat_id].active = True
