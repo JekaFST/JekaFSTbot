@@ -3,7 +3,7 @@ import threading
 from BotService import run_app
 from MainMethods import start, stop, login, send_task, start_updater, stop_updater, config, set_domain, \
     set_game_id, send_code_main, send_code_bonus, send_coords, set_login, set_password, set_channel_name, start_channel, \
-    stop_channel, set_updater_delay, send_all_sectors, send_all_helps, send_last_help, send_all_bonuses, get_permission
+    stop_channel, set_updater_delay, send_all_sectors, send_all_helps, send_last_help, send_all_bonuses
 from MainThreadVars import MainVars
 from UpdaterMethods import updater
 
