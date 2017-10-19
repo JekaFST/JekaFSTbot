@@ -82,8 +82,7 @@ def set_game_id(chat_id, bot, session, new_game_id):
 def login(chat_id, bot, session):
     if session.active:
         session.urls = compile_urls(session.urls, session.config)
-        reply = login_to_en(session, bot, chat_id)
-        bot.send_message(chat_id, reply)
+        login_to_en(session, bot, chat_id)
 
 
 def send_task(chat_id, bot, session):
