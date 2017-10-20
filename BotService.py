@@ -19,23 +19,34 @@ def run_app(bot, main_vars):
         else:
             flask.abort(403)
 
-    # @bot.message_handler(commands=['ask_for_permission'])
-    # def ask_for_permission(message):
-    #     if message.chat.id in main_vars.allowed_chat_ids:
-    #         bot.send_message(message.chat.id, 'Данный чат уже разрешен для работы с ботом')
-    #         return
-    #     get_permission_task = {
-    #         'task_id': main_vars.id,
-    #         'task_type': 'get_permission',
-    #         'chat_id': message.chat.id
-    #     }
-    #     main_vars.task_queue.append(get_permission_task)
-    #     main_vars.id += 1
+    @bot.message_handler(commands=['ask_for_permission'])
+    def ask_for_permission(message):
+        if message.chat.id in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат уже разрешен для работы с ботом')
+            return
+        text = '<b>%s</b> запрашивает разрешение на работу с ботом из чата %s, chat_id: %s\r\nРазрешить? Yes/No' % \
+               (str(message.from_user.username), str(message.chat.title), str(message.chat.id))
+        sent_text = bot.send_message(45839899, text, parse_mode='HTML')
+        main_vars.last_permission_request_chat_id = message.chat.id
+        bot.register_next_step_handler(sent_text, decision)
+
+    def decision(message):
+        if 'yes' in str(message.text).lower():
+            main_vars.allowed_chat_ids.append(main_vars.last_permission_request_chat_id)
+            bot.send_message(main_vars.last_permission_request_chat_id, 'Ваш запрос принят')
+            main_vars.last_permission_request_chat_id = None
+        elif 'no' in message.text.lower():
+            bot.send_message(main_vars.last_permission_request_chat_id, 'Ваш запрос не принят')
+            main_vars.last_permission_request_chat_id = None
+        else:
+            bot.send_message(main_vars.last_permission_request_chat_id, 'Что-то пошло не так - повторите ваш запрос')
+            main_vars.last_permission_request_chat_id = None
 
     @bot.message_handler(commands=['start'])
     def start(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            main_vars.bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         start_task = {
             'task_id': main_vars.id,
@@ -48,7 +59,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['help'])
     def help(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         bot.send_message(message.chat.id, 'Коды сдавать в виде !код или ! код\n'
                                           'Сдавать коды в бонусное окно в виде ?код или ? код\n'
@@ -71,7 +83,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['stop'])
     def stop(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         stop_task = {
             'task_id': main_vars.id,
@@ -84,7 +97,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['config'])
     def config(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         config_task = {
             'task_id': main_vars.id,
@@ -97,7 +111,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['login'])
     def save_login(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         set_login_task = {
             'task_id': main_vars.id,
@@ -111,7 +126,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['password'])
     def save_password(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         set_password_task = {
             'task_id': main_vars.id,
@@ -125,7 +141,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['domain'])
     def save_en_domain(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         set_domain_task = {
             'task_id': main_vars.id,
@@ -139,7 +156,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['gameid'])
     def save_game_id(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         set_game_id_task = {
             'task_id': main_vars.id,
@@ -153,7 +171,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['login_to_en'])
     def login_to_en(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         login_to_en_task = {
             'task_id': main_vars.id,
@@ -166,7 +185,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['task'])
     def send_task(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         send_task_task = {
             'task_id': main_vars.id,
@@ -179,7 +199,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['sectors'])
     def send_all_sectors(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         send_all_sectors_task = {
             'task_id': main_vars.id,
@@ -192,7 +213,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['helps'])
     def send_all_helps(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         send_all_helps_task = {
             'task_id': main_vars.id,
@@ -205,7 +227,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['last_help'])
     def send_last_help(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         send_last_help_task = {
             'task_id': main_vars.id,
@@ -218,7 +241,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['bonuses'])
     def send_all_bonuses(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         send_all_bonuses_task = {
             'task_id': main_vars.id,
@@ -231,7 +255,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['start_updater'])
     def start_updater(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         start_updater_task = {
             'task_id': main_vars.id,
@@ -244,7 +269,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['delay'])
     def set_updater_delay(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         set_delay_task = {
             'task_id': main_vars.id,
@@ -258,7 +284,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['stop_updater'])
     def stop_updater(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         stop_updater_task = {
             'task_id': main_vars.id,
@@ -271,7 +298,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['set_channel_name'])
     def set_channel_name(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         set_channel_name_task = {
             'task_id': main_vars.id,
@@ -285,7 +313,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['start_channel'])
     def start_channel(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         start_channel_task = {
             'task_id': main_vars.id,
@@ -298,7 +327,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['stop_channel'])
     def stop_channel(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         stop_channel_task = {
             'task_id': main_vars.id,
@@ -311,7 +341,8 @@ def run_app(bot, main_vars):
     @bot.message_handler(content_types=['text'])
     def text_processor(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом')
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         coords = re.findall(r'\d\d\.\d{4,7},\s\d\d\.\d{4,7}|\d\d\.\d{4,7}\s\d\d\.\d{4,7}|\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}',
                             message.text)
