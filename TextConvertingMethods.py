@@ -181,13 +181,15 @@ def send_text(text, header, bot, chat_id, parse, raw_text):
     try:
         bot.send_message(chat_id, header + '\r\n' + text, parse_mode=parse_mode, disable_web_page_preview=True)
         if not parse:
-            bot.send_message(45839899, text, disable_web_page_preview=True)
+            bot.send_message(45839899, 'Unparsed text in chat_id: %s\r\n\r\n' % str(chat_id) + text,
+                             disable_web_page_preview=True)
+            with open("Exceptions_%s.txt" % str(chat_id), "a+") as raw_text_file:
+                raw_text_file.write('Unparsed text:\r\n' + text + '\r\n\r\n')
     except Exception:
         bot.send_message(chat_id, '<b>Exception</b>\r\nТекст не отправлен', parse_mode='HTML')
         try:
-            file_name = "Exceptions_%s.txt" % str(chat_id)
-            with open(file_name, "a+") as raw_text_file:
-                raw_text_file.write(raw_text + '\r\n\r\n')
+            with open("Exceptions_%s.txt" % str(chat_id), "a+") as raw_text_file:
+                raw_text_file.write('Exception on send_object_text:\r\n' + raw_text + '\r\n\r\n')
         except Exception:
             return
 
