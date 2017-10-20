@@ -6,15 +6,16 @@ from bs4 import BeautifulSoup
 def send_object_text(text, header, bot, chat_id, parse=True):
     text_pieces = list()
 
-    if 'script' in text:
-        bot.send_message(chat_id, header + '\r\nТекст не отправлен - найден скрипт', parse_mode='HTML')
-        return
-
+    if 'table' in text or 'script' in text:
+        text = 'В тексте найдены и вырезаны скрипты и/или таблицы\r\n' \
+               '\xE2\x9D\x97<b>Информация в чате может отличаться от движка</b>\xE2\x9D\x97\r\n' + text
+    text = cut_script(text)
     text = cut_formatting(text)
     text, images = cut_images(text)
     text, embeds, audios = cut_rare_tags(text)
     text, links = cut_links(text, cut=False)
     text, coords = handle_coords(text)
+
     if len(text) > 7000:
         text_pieces = cut_long_text_on_pieces(text, text_pieces)
 
@@ -52,7 +53,7 @@ def cut_formatting(text):
     text = text.replace('</strong>', '</b>')
 
     text = cut_style(text)
-    tags_list = ['font', 'p', 'div', 'span']
+    tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table']
     text = cut_tags(text, tags_list)
 
     h_tags = re.findall(r'<h\d>', text)
@@ -259,5 +260,13 @@ def cut_style(text):
     for style_rest in style_rests:
         for st in re.findall(style_rest, text):
             text = text.replace(st, '')
+
+    return text
+
+
+def cut_script(text):
+    soup = BeautifulSoup(text)
+    for script in soup.find_all('script'):
+        text = text.replace(str(script), '')
 
     return text

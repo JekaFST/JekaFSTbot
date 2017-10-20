@@ -9,4 +9,3 @@ class MainVars(object):
         self.id = 0
         self.sessions_dict = dict()
         self.updater_schedulers_dict = dict()
-        self.last_permission_request_chat_id = None
