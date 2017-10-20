@@ -3,8 +3,10 @@ import re
 from bs4 import BeautifulSoup
 
 
+
 def send_object_text(text, header, bot, chat_id, parse=True):
     text_pieces = list()
+    raw_text = text
 
     if 'table' in text or 'script' in text:
         text = 'В тексте найдены и вырезаны скрипты и/или таблицы\r\n' \
@@ -21,9 +23,9 @@ def send_object_text(text, header, bot, chat_id, parse=True):
 
     if text_pieces:
         for text in text_pieces:
-            send_text(text, header, bot, chat_id, parse)
+            send_text(text, header, bot, chat_id, parse, raw_text)
     else:
-        send_text(text, header, bot, chat_id, parse)
+        send_text(text, header, bot, chat_id, parse, raw_text)
 
     if images:
         for i, image in enumerate(images):
@@ -163,7 +165,7 @@ def cut_long_text_on_pieces(text, text_pieces):
     return text_pieces
 
 
-def send_text(text, header, bot, chat_id, parse):
+def send_text(text, header, bot, chat_id, parse, raw_text):
     links = re.findall(r'<a[^>]+>', text)
     tags = re.findall(r'<..|..>|..>$|<$', text)
     # soup = BeautifulSoup(text)
@@ -178,8 +180,16 @@ def send_text(text, header, bot, chat_id, parse):
     parse_mode = 'HTML' if parse else None
     try:
         bot.send_message(chat_id, header + '\r\n' + text, parse_mode=parse_mode, disable_web_page_preview=True)
+        if not parse:
+            bot.send_message(45839899, text, disable_web_page_preview=True)
     except Exception:
         bot.send_message(chat_id, '<b>Exception</b>\r\nТекст не отправлен', parse_mode='HTML')
+        try:
+            file_name = "Exceptions_%s.txt" % str(chat_id)
+            with open(file_name, "a+") as raw_text_file:
+                raw_text_file.write(raw_text + '\r\n\r\n')
+        except Exception:
+            return
 
 
 def cut_links(text, cut=True):
