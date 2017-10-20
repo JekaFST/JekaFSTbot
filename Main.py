@@ -16,8 +16,6 @@ except Exception:
     main_vars.bot.send_message(45839899, 'Exception в main - не удалось запустить Flask')
 
 while True:
-    if main_vars.id >= 2147480000:
-        main_vars.id = 1
     for task in main_vars.task_queue:
 
         # Tasks to start & stop bot, get session config

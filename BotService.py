@@ -48,12 +48,10 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         start_task = {
-            'task_id': main_vars.id,
             'task_type': 'start',
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(start_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['help'])
     def help(message):
@@ -86,12 +84,10 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         stop_task = {
-            'task_id': main_vars.id,
             'task_type': 'stop',
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(stop_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['config'])
     def config(message):
@@ -100,12 +96,10 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         config_task = {
-            'task_id': main_vars.id,
             'task_type': 'config',
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(config_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['login'])
     def save_login(message):
@@ -114,13 +108,11 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         set_login_task = {
-            'task_id': main_vars.id,
             'task_type': 'login',
             'chat_id': message.chat.id,
             'new_login': str(message.text[7:])
         }
         main_vars.task_queue.append(set_login_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['password'])
     def save_password(message):
@@ -129,13 +121,11 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         set_password_task = {
-            'task_id': main_vars.id,
             'task_type': 'password',
             'chat_id': message.chat.id,
             'new_password': str(message.text[10:])
         }
         main_vars.task_queue.append(set_password_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['domain'])
     def save_en_domain(message):
@@ -144,13 +134,11 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         set_domain_task = {
-            'task_id': main_vars.id,
             'task_type': 'domain',
             'chat_id': message.chat.id,
             'new_domain': str(message.text[8:])
         }
         main_vars.task_queue.append(set_domain_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['gameid'])
     def save_game_id(message):
@@ -159,13 +147,11 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         set_game_id_task = {
-            'task_id': main_vars.id,
             'task_type': 'game_id',
             'chat_id': message.chat.id,
             'new_game_id': str(message.text[8:])
         }
         main_vars.task_queue.append(set_game_id_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['login_to_en'])
     def login_to_en(message):
@@ -174,12 +160,10 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         login_to_en_task = {
-            'task_id': main_vars.id,
             'task_type': 'login_to_en',
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(login_to_en_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['task'])
     def send_task(message):
@@ -188,12 +172,10 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         send_task_task = {
-            'task_id': main_vars.id,
             'task_type': 'send_task',
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(send_task_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['sectors'])
     def send_all_sectors(message):
@@ -202,12 +184,10 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         send_all_sectors_task = {
-            'task_id': main_vars.id,
             'task_type': 'send_sectors',
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(send_all_sectors_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['helps'])
     def send_all_helps(message):
@@ -216,12 +196,10 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         send_all_helps_task = {
-            'task_id': main_vars.id,
             'task_type': 'send_helps',
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(send_all_helps_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['last_help'])
     def send_last_help(message):
@@ -230,12 +208,10 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         send_last_help_task = {
-            'task_id': main_vars.id,
             'task_type': 'send_last_help',
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(send_last_help_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['bonuses'])
     def send_all_bonuses(message):
@@ -244,12 +220,10 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         send_all_bonuses_task = {
-            'task_id': main_vars.id,
             'task_type': 'send_bonuses',
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(send_all_bonuses_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['start_updater'])
     def start_updater(message):
@@ -258,12 +232,10 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         start_updater_task = {
-            'task_id': main_vars.id,
             'task_type': 'start_updater',
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(start_updater_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['delay'])
     def set_updater_delay(message):
@@ -272,13 +244,11 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         set_delay_task = {
-            'task_id': main_vars.id,
             'task_type': 'delay',
             'chat_id': message.chat.id,
             'new_delay': int(message.text[7:])
         }
         main_vars.task_queue.append(set_delay_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['stop_updater'])
     def stop_updater(message):
@@ -287,12 +257,10 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         stop_updater_task = {
-            'task_id': main_vars.id,
             'task_type': 'stop_updater',
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(stop_updater_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['set_channel_name'])
     def set_channel_name(message):
@@ -316,12 +284,10 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         start_channel_task = {
-            'task_id': main_vars.id,
             'task_type': 'start_channel',
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(start_channel_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['stop_channel'])
     def stop_channel(message):
@@ -330,12 +296,10 @@ def run_app(bot, main_vars):
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         stop_channel_task = {
-            'task_id': main_vars.id,
             'task_type': 'stop_channel',
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(stop_channel_task)
-        main_vars.id += 1
 
     @bot.message_handler(content_types=['text'])
     def text_processor(message):
@@ -351,35 +315,29 @@ def run_app(bot, main_vars):
             code = (message.text[1:]).lower().encode('utf-8') if message.text[1] != ' ' \
                 else (message.text[2:]).lower().encode('utf-8')
             send_code_main_task = {
-                'task_id': main_vars.id,
                 'task_type': 'send_code_main',
                 'chat_id': message.chat.id,
                 'message_id': message.message_id,
                 'code': code
             }
             main_vars.task_queue.append(send_code_main_task)
-            main_vars.id += 1
         if message.text[0] == '?':
             code = (message.text[1:]).lower().encode('utf-8') if message.text[1] != ' ' \
                 else (message.text[2:]).lower().encode('utf-8')
             send_code_bonus_task = {
-                'task_id': main_vars.id,
                 'task_type': 'send_code_bonus',
                 'chat_id': message.chat.id,
                 'message_id': message.message_id,
                 'code': code
             }
             main_vars.task_queue.append(send_code_bonus_task)
-            main_vars.id += 1
         if coords:
             send_coords_task = {
-                'task_id': main_vars.id,
                 'task_type': 'send_coords',
                 'chat_id': message.chat.id,
                 'coords': coords
             }
             main_vars.task_queue.append(send_coords_task)
-            main_vars.id += 1
 
     # Remove webhook, it fails sometimes the set if there is a previous webhook
     bot.remove_webhook()

@@ -121,12 +121,10 @@ def updater_scheduler(chat_id, bot, main_vars):
         if chat_id not in chat_ids:
             time.sleep(session.delay)
             updater_task = {
-                'task_id': main_vars.id,
                 'task_type': 'updater',
                 'chat_id': chat_id
             }
             main_vars.task_queue.append(updater_task)
-            main_vars.id += 1
     else:
         bot.send_message(chat_id, 'Слежение остановлено')
         if chat_id in main_vars.updater_schedulers_dict.keys():
