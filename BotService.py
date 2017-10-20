@@ -343,8 +343,10 @@ def run_app(bot, main_vars):
             bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
-        coords = re.findall(r'\d\d\.\d{4,7},\s\d\d\.\d{4,7}|\d\d\.\d{4,7}\s\d\d\.\d{4,7}|\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}',
-                            message.text)
+        coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
         if message.text[0] == '!':
             code = (message.text[1:]).lower().encode('utf-8') if message.text[1] != ' ' \
                 else (message.text[2:]).lower().encode('utf-8')
