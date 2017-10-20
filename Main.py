@@ -23,6 +23,8 @@ while True:
         #     except Exception:
         #         main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду permission')
         #     main_vars.task_queue.remove(task)
+
+        # Tasks to start & stop bot, get session config
         if task['task_type'] == 'start':
             try:
                 start(task['chat_id'], main_vars.bot, main_vars.sessions_dict)
@@ -41,6 +43,8 @@ while True:
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду config')
             main_vars.task_queue.remove(task)
+
+        # Tasks to set session config
         if task['task_type'] == 'login':
             try:
                 set_login(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']], task['new_login'])
@@ -68,12 +72,16 @@ while True:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду set_game_id')
             main_vars.task_queue.remove(task)
+
+        # Task to login to encounter
         if task['task_type'] == 'login_to_en':
             try:
                 login(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду login')
             main_vars.task_queue.remove(task)
+
+        # Tasks to get some level info
         if task['task_type'] == 'send_task':
             try:
                 send_task(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
@@ -108,6 +116,8 @@ while True:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду send_all_bonuses')
             main_vars.task_queue.remove(task)
+
+        # Tasks to manage updater
         if task['task_type'] == 'start_updater':
             try:
                 start_updater(task['chat_id'], main_vars.bot, main_vars)
@@ -136,6 +146,8 @@ while True:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду stop_updater')
             main_vars.task_queue.remove(task)
+
+        # Tasks to manage re-posting to channel
         if task['task_type'] == 'channel_name':
             try:
                 set_channel_name(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
@@ -158,6 +170,8 @@ while True:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду stop_channel')
             main_vars.task_queue.remove(task)
+
+        # Tasks to send codes & coords
         if task['task_type'] == 'send_code_main':
             try:
                 send_code_main(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],

@@ -44,8 +44,8 @@ def stop(chat_id, bot, session):
 def config(chat_id, bot, session):
     session_condition = 'Сессия активна' if session.active else 'Сессия не активна'
     channel_condition = '\r\nИмя канала задано' if session.channel_name else '\r\nИмя канала не задано'
-    reply = session_condition + '\r\nДомен: ' + session.config['en_domain'] +\
-            '\r\nID игры: ' + session.config['game_id'] + '\r\nЛогин: ' + session.config['Login'] + channel_condition
+    reply = session_condition + '\r\nДомен: ' + session.config['en_domain'] + '\r\nID игры: ' + session.config['game_id'] + \
+            '\r\nЛогин: ' + session.config['Login'] + channel_condition + '\r\nИнтервал слежения: ' + str(session.delay)
     bot.send_message(chat_id, reply, disable_web_page_preview=True)
 
 
