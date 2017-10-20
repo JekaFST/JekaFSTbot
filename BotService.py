@@ -24,23 +24,22 @@ def run_app(bot, main_vars):
         if message.chat.id in main_vars.allowed_chat_ids:
             bot.send_message(message.chat.id, 'Данный чат уже разрешен для работы с ботом')
             return
-        text = '<b>%s</b> запрашивает разрешение на работу с ботом из чата %s, chat_id: %s\r\nРазрешить? Yes/No' % \
+        text = '<b>%s</b> запрашивает разрешение на работу с ботом из чата %s\r\nchat_id: %s' % \
                (str(message.from_user.username), str(message.chat.title), str(message.chat.id))
-        sent_text = bot.send_message(45839899, text, parse_mode='HTML')
-        main_vars.last_permission_request_chat_id = message.chat.id
-        bot.register_next_step_handler(sent_text, decision)
+        bot.send_message(45839899, text, parse_mode='HTML')
 
-    def decision(message):
-        if 'yes' in str(message.text).lower():
-            main_vars.allowed_chat_ids.append(main_vars.last_permission_request_chat_id)
-            bot.send_message(main_vars.last_permission_request_chat_id, 'Ваш запрос принят')
-            main_vars.last_permission_request_chat_id = None
-        elif 'no' in message.text.lower():
-            bot.send_message(main_vars.last_permission_request_chat_id, 'Ваш запрос не принят')
-            main_vars.last_permission_request_chat_id = None
+    @bot.message_handler(commands=['add'])
+    def add_chat_to_allowed(message):
+        if message.chat.id != 45839899:
+            bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
+            return
+        chat_id = int(re.search(r'[-1234567890]+', str(message.text)).group(0))
+        main_vars.allowed_chat_ids.append(chat_id)
+        if chat_id in main_vars.allowed_chat_ids:
+            bot.send_message(chat_id, 'Этот чат добавлен в список разрешенных для работы с ботом')
         else:
-            bot.send_message(main_vars.last_permission_request_chat_id, 'Что-то пошло не так - повторите ваш запрос')
-            main_vars.last_permission_request_chat_id = None
+            bot.send_message(chat_id, 'Этот чат не добавлен в список разрешенных для работы с ботом'
+                                      '\r\nДля повторного запроса введите /ask_for_permission')
 
     @bot.message_handler(commands=['start'])
     def start(message):
