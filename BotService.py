@@ -343,9 +343,10 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(content_types=['text'])
     def text_processor(message):
-        if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
-                                              'Для отправки запроса на разрешение введите /ask_for_permission')
+        if message.chat.id not in main_vars.allowed_chat_ids and message.chat.id not in main_vars.additional_ids.keys():
+            bot.send_message(message.chat.id,
+                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
+                             'Для отправки запроса на разрешение введите /ask_for_permission')
             return
         coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
                             r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
@@ -354,30 +355,57 @@ def run_app(bot, main_vars):
         if message.text[0] == '!':
             code = (message.text[1:]).lower().encode('utf-8') if message.text[1] != ' ' \
                 else (message.text[2:]).lower().encode('utf-8')
-            send_code_main_task = {
-                'task_type': 'send_code_main',
-                'chat_id': message.chat.id,
-                'message_id': message.message_id,
-                'code': code
-            }
-            main_vars.task_queue.append(send_code_main_task)
+            if message.chat.id in main_vars.allowed_chat_ids:
+                send_code_main_task = {
+                    'task_type': 'send_code_main',
+                    'chat_id': message.chat.id,
+                    'additional_chat_id': None,
+                    'message_id': message.message_id,
+                    'code': code
+                }
+                main_vars.task_queue.append(send_code_main_task)
+                return
+            elif message.chat.id in main_vars.additional_ids.keys():
+                send_code_main_task = {
+                    'task_type': 'send_code_main',
+                    'chat_id': None,
+                    'additional_chat_id': message.chat.id,
+                    'message_id': message.message_id,
+                    'code': code
+                }
+                main_vars.task_queue.append(send_code_main_task)
+                return
         if message.text[0] == '?':
             code = (message.text[1:]).lower().encode('utf-8') if message.text[1] != ' ' \
                 else (message.text[2:]).lower().encode('utf-8')
-            send_code_bonus_task = {
-                'task_type': 'send_code_bonus',
-                'chat_id': message.chat.id,
-                'message_id': message.message_id,
-                'code': code
-            }
-            main_vars.task_queue.append(send_code_bonus_task)
-        if coords:
+            if message.chat.id in main_vars.allowed_chat_ids:
+                send_code_bonus_task = {
+                    'task_type': 'send_code_bonus',
+                    'chat_id': message.chat.id,
+                    'additional_chat_id': None,
+                    'message_id': message.message_id,
+                    'code': code
+                }
+                main_vars.task_queue.append(send_code_bonus_task)
+                return
+            elif message.chat.id in main_vars.additional_ids.keys():
+                send_code_bonus_task = {
+                    'task_type': 'send_code_bonus',
+                    'chat_id': None,
+                    'additional_chat_id': message.chat.id,
+                    'message_id': message.message_id,
+                    'code': code
+                }
+                main_vars.task_queue.append(send_code_bonus_task)
+                return
+        if coords and message.chat.id in main_vars.allowed_chat_ids:
             send_coords_task = {
                 'task_type': 'send_coords',
                 'chat_id': message.chat.id,
                 'coords': coords
             }
             main_vars.task_queue.append(send_coords_task)
+            return
 
     # Remove webhook, it fails sometimes the set if there is a previous webhook
     bot.remove_webhook()
