@@ -166,6 +166,8 @@ def cut_long_text_on_pieces(text, text_pieces):
 
 
 def send_text(text, header, bot, chat_id, parse, raw_text):
+    text = text.replace('<b><b>', '<b>')
+    text = text.replace('</b></b>', '</b>')
     links = re.findall(r'<a[^>]+>', text)
     tags = re.findall(r'<..|..>|..>$|<$', text)
     # soup = BeautifulSoup(text)

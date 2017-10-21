@@ -14,7 +14,11 @@ def compile_urls(urls, config):
 
 
 def login_to_en(session, bot, chat_id):
-    upd_session_cookie(session, bot, chat_id)
+    got_cookies = upd_session_cookie(session, bot, chat_id)
+    if not got_cookies:
+        return
+
+    session.active = True
     session.current_level = get_current_level(session, bot, chat_id)
     if not session.current_level:
         reply = 'Бот залогинился. Чтобы начать им пользоваться, нужно чтобы игра была в нормальном состоянии'
@@ -35,11 +39,11 @@ def upd_session_cookie(session, bot, chat_id):
     except Exception:
         reply = '<b>Exception</b>\r\nПроверьте конфигурацию игры и попробуйте еще раз'
         bot.send_message(chat_id, reply, parse_mode='HTML')
-        return
+        return False
     if not response.status_code == 200:
         reply = 'Бот не залогинился\r\nResponse code is %s\r\nТекст: %s' % (str(response.status_code), response.text)
         bot.send_message(chat_id, reply)
-        return
+        return False
 
     session.config['cookie'] = response.request.headers['Cookie']
     if not 'stoken' in session.config['cookie']:
@@ -52,7 +56,8 @@ def upd_session_cookie(session, bot, chat_id):
                 return
         reply = 'Бот не залогинился, попробуйте еще раз'
         bot.send_message(chat_id, reply)
-        return
+        return False
+    return True
 
 
 def get_current_level(session, bot, chat_id, from_updater=False):
@@ -111,7 +116,7 @@ def send_all_bonuses_to_chat(bot, chat_id, session):
 def get_current_game_model(session, bot, chat_id, from_updater):
     for i in xrange(2):
         if not i == 0:
-            upd_session_cookie(session, bot, chat_id)
+            _ = upd_session_cookie(session, bot, chat_id)
         response = requests.get(session.urls['game_url_js'], headers={'Cookie': session.config['cookie']})
         try:
             response_json = json.loads(response.text)

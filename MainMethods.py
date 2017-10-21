@@ -15,17 +15,16 @@ def start(chat_id, bot, sessions_dict):
         sessions_dict[chat_id] = BotSession()
 
     bot.send_message(chat_id, 'Чтобы начать использовать бота, необходимо задать конфигурацию игры:\n'
-                              'ввести домен игры (/domain http://demo.en.cx)\n'
-                              'ввести game id игры (/gameid 26991)\n'
-                              'ввести логин игрока (/login abc)\n'
-                              'ввести пароль игрока (/password abc)\n'
+                              '- ввести домен игры (/domain http://demo.en.cx)\n'
+                              '- ввести game id игры (/gameid 26991)\n'
+                              '- ввести логин игрока (/login abc)\n'
+                              '- ввести пароль игрока (/password abc)\n'
                               'и залогиниться в движок (/login_to_en)\n'
                               'Краткое описание доступно по команде /help', disable_web_page_preview=True)
-    sessions_dict[chat_id].active = True
 
 
 def stop(chat_id, bot, session):
-    bot.send_message(chat_id, 'Бот выключен. Настройки сброшены')
+    bot.send_message(chat_id, 'Бот выключен')
     session.stop_updater = True
     session.use_channel = False
     session.active = False
@@ -40,44 +39,56 @@ def config(chat_id, bot, session):
 
 
 def set_login(chat_id, bot, session, new_login):
-    if session.active:
+    if not session.active:
         session.config['Login'] = new_login
         reply = 'Логин успешно задан' if session.config['Login'] == new_login else 'Логин не задан, повторите'
         bot.send_message(chat_id, reply)
+    else:
+        bot.send_message(chat_id, 'Нельзя менять логин при активной сессии')
 
 
 def set_password(chat_id, bot, session, new_password):
-    if session.active:
+    if not session.active:
         session.config['Password'] = new_password
         reply = 'Пароль успешно задан' if session.config['Password'] == new_password else 'Пароль не задана, повторите'
         bot.send_message(chat_id, reply)
+    else:
+        bot.send_message(chat_id, 'Нельзя менять пароль при активной сессии')
 
 
 def set_domain(chat_id, bot, session, new_domain):
-    if session.active:
+    if not session.active:
         session.config['en_domain'] = new_domain
         reply = 'Домен успешно задан' if session.config['en_domain'] == new_domain \
             else 'Домен не задан, повторите (/domain http://demo.en.cx)'
         bot.send_message(chat_id, reply)
+    else:
+        bot.send_message(chat_id, 'Нельзя менять домен при активной сессии')
 
 
 def set_game_id(chat_id, bot, session, new_game_id):
-    if session.active:
+    if not session.active:
         session.config['game_id'] = new_game_id
         reply = 'Игра успешно задана' if session.config['game_id'] == new_game_id \
             else 'Игра не задана, повторите (/gameid 26991)'
         bot.send_message(chat_id, reply)
+    else:
+        bot.send_message(chat_id, 'Нельзя менять игру при активной сессии')
 
 
 def login(chat_id, bot, session):
-    if session.active:
+    if session.config['en_domain'] and session.config['game_id'] and session.config['Login'] and session.config['Password']:
         session.urls = compile_urls(session.urls, session.config)
         login_to_en(session, bot, chat_id)
+    else:
+        bot.send_message(chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
 
 
 def send_task(chat_id, bot, session):
     if session.active:
         send_task_to_chat(bot, chat_id, session)
+    else:
+        bot.send_message(chat_id, 'Нельзя менять игру при активной сессии')
 
 
 def send_all_sectors(chat_id, bot, session):
