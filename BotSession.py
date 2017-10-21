@@ -12,8 +12,8 @@ class BotSession(object):
                     'Login': 'jekafst_bot',
                     'Password': 'jekabot_1412',
                     'code_request': {},
-                    'en_domain': 'http://demo.en.cx',
-                    'game_id': '26991'
+                    'en_domain': 'http://lpk.en.cx',
+                    'game_id': '59685'
                    }
         self.current_level = None
         self.urls = dict()
