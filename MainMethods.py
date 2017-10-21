@@ -88,27 +88,35 @@ def send_task(chat_id, bot, session):
     if session.active:
         send_task_to_chat(bot, chat_id, session)
     else:
-        bot.send_message(chat_id, 'Нельзя менять игру при активной сессии')
+        bot.send_message(chat_id, 'Нельзя запросить задание при неактивной сессии')
 
 
 def send_all_sectors(chat_id, bot, session):
     if session.active:
         send_all_sectors_to_chat(bot, chat_id, session)
+    else:
+        bot.send_message(chat_id, 'Нельзя запросить сектора при неактивной сессии')
 
 
 def send_all_helps(chat_id, bot, session):
     if session.active:
         send_all_helps_to_chat(bot, chat_id, session)
+    else:
+        bot.send_message(chat_id, 'Нельзя запросить подсказки при неактивной сессии')
 
 
 def send_last_help(chat_id, bot, session):
     if session.active:
         send_last_help_to_chat(bot, chat_id, session)
+    else:
+        bot.send_message(chat_id, 'Нельзя запросить подсказку при неактивной сессии')
 
 
 def send_all_bonuses(chat_id, bot, session):
     if session.active:
         send_all_bonuses_to_chat(bot, chat_id, session)
+    else:
+        bot.send_message(chat_id, 'Нельзя запросить бонусы при неактивной сессии')
 
 
 def start_updater(chat_id, bot, main_vars):
@@ -120,6 +128,8 @@ def start_updater(chat_id, bot, main_vars):
         main_vars.updater_schedulers_dict[chat_id] = threading.Thread(name=name, target=updater_scheduler,
                                                                       args=(chat_id, bot, main_vars))
         main_vars.updater_schedulers_dict[chat_id].start()
+    else:
+        bot.send_message(chat_id, 'Нельзя запустить слежение повторно или при неактивной сессии')
 
 
 def updater_scheduler(chat_id, bot, main_vars):
@@ -144,10 +154,9 @@ def updater_scheduler(chat_id, bot, main_vars):
 
 
 def set_updater_delay(chat_id, bot, session, new_delay):
-    if session.active:
-        session.updater.delay = new_delay
-        reply = 'Задержка успешно выставлена' if session.delay == new_delay else 'Задержка не обновлена, повторите'
-        bot.send_message(chat_id, reply)
+    session.updater.delay = new_delay
+    reply = 'Задержка успешно выставлена' if session.delay == new_delay else 'Задержка не обновлена, повторите'
+    bot.send_message(chat_id, reply)
 
 
 def stop_updater(session):
@@ -156,22 +165,19 @@ def stop_updater(session):
 
 
 def set_channel_name(chat_id, bot, session, new_channel_name):
-    if session.active:
-        session.channel_name = new_channel_name
-        reply = 'Канал успешно задан' if session.channel_name == new_channel_name else 'Канал не задан, повторите'
-        bot.send_message(chat_id, reply)
+    session.channel_name = new_channel_name
+    reply = 'Канал успешно задан' if session.channel_name == new_channel_name else 'Канал не задан, повторите'
+    bot.send_message(chat_id, reply)
 
 
 def start_channel(chat_id, bot, session):
-    if session.active:
-        session.use_channel = True
-        bot.send_message(chat_id, 'Постинг в канал запущен')
+    session.use_channel = True
+    bot.send_message(chat_id, 'Постинг в канал разрешен')
 
 
 def stop_channel(chat_id, bot, session):
-    if session.active:
-        session.use_channel = False
-        bot.send_message(chat_id, 'Постинг в канал остановлен')
+    session.use_channel = False
+    bot.send_message(chat_id, 'Постинг в канал запрещен')
 
 
 def send_code_main(chat_id, bot, session, message_id, code):
@@ -192,7 +198,6 @@ def send_coords(chat_id, bot, session, coords):
             bot.send_location(chat_id, latitude, longitude)
 
 
-def join(chat_id, bot, session, message_id, additional_chat_id, additional_chat_ids):
-    if session.active:
-        additional_chat_ids[additional_chat_id] = chat_id
-        bot.send_message(chat_id, 'Теперь вы можете работать с ботом через личный чат', reply_to_message_id=message_id)
+def join(chat_id, bot, message_id, additional_chat_id, additional_chat_ids):
+    additional_chat_ids[additional_chat_id] = chat_id
+    bot.send_message(chat_id, 'Теперь вы можете работать с ботом через личный чат', reply_to_message_id=message_id)

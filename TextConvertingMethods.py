@@ -51,11 +51,13 @@ def cut_formatting(text):
     text = text.replace('</i>', '')
     text = text.replace('<u>', '')
     text = text.replace('</u>', '')
-    text = text.replace('<strong>', '<b>')
-    text = text.replace('</strong>', '</b>')
+    text = text.replace('<strong>', '')
+    text = text.replace('</strong>', '')
+    text = text.replace('<b>', '')
+    text = text.replace('</b>', '')
 
     text = cut_style(text)
-    tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table']
+    tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr']
     text = cut_tags(text, tags_list)
 
     h_tags = re.findall(r'<h\d>', text)
@@ -166,8 +168,8 @@ def cut_long_text_on_pieces(text, text_pieces):
 
 
 def send_text(text, header, bot, chat_id, parse, raw_text):
-    text = text.replace('<b><b>', '<b>')
-    text = text.replace('</b></b>', '</b>')
+    # text = text.replace('<b><b>', '<b>')
+    # text = text.replace('</b></b>', '</b>')
     links = re.findall(r'<a[^>]+>', text)
     tags = re.findall(r'<..|..>|..>$|<$', text)
     # soup = BeautifulSoup(text)
