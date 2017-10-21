@@ -122,13 +122,23 @@ while True:
             continue
 
         if task['task_type'] == 'send_sectors':
-            if not task['chat_id'] in main_vars.sessions_dict.keys():
-                main_vars.bot.send_message(task['chat_id'],
-                                           'Для данного чата не создана сессия. Для создания введите команду /start')
-                main_vars.task_queue.remove(task)
-                continue
+            if task['chat_id']:
+                if not task['chat_id'] in main_vars.sessions_dict.keys():
+                    main_vars.bot.send_message(task['chat_id'],
+                                               'Для данного чата не создана сессия. Для создания введите команду /start')
+                    main_vars.task_queue.remove(task)
+                    continue
+                chat_id = task['chat_id']
+                session = main_vars.sessions_dict[task['chat_id']]
+            else:
+                if not main_vars.additional_ids[task['additional_chat_id']] in main_vars.sessions_dict.keys():
+                    main_vars.bot.send_message(task['chat_id'],
+                                               'Для данного дополнительного чата не создана (или удалена) сессия')
+                    continue
+                chat_id = task['additional_chat_id']
+                session = main_vars.sessions_dict[main_vars.additional_ids[task['additional_chat_id']]]
             try:
-                send_all_sectors(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
+                send_all_sectors(chat_id, main_vars.bot, session)
             except Exception:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду send_all_sectors')
