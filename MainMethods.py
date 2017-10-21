@@ -157,7 +157,7 @@ def updater_scheduler(chat_id, bot, main_vars):
 
 
 def set_updater_delay(chat_id, bot, session, new_delay):
-    session.updater.delay = new_delay
+    session.delay = new_delay
     reply = 'Задержка успешно выставлена' if session.delay == new_delay else 'Задержка не обновлена, повторите'
     bot.send_message(chat_id, reply)
 
