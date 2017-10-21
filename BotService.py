@@ -28,6 +28,20 @@ def run_app(bot, main_vars):
                (str(message.from_user.username), str(message.chat.title), str(message.chat.id))
         bot.send_message(45839899, text, parse_mode='HTML')
 
+    @bot.message_handler(commands=['join'])
+    def join_session(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
+            return
+        join_session_task = {
+            'task_type': 'join',
+            'chat_id': message.chat.id,
+            'additional_chat_id': message.from_user.id,
+            'message_id': message.message_id
+        }
+        main_vars.task_queue.append(join_session_task)
+
     @bot.message_handler(commands=['add'])
     def add_chat_to_allowed(message):
         if message.chat.id != 45839899:

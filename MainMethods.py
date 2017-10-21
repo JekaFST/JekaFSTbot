@@ -179,3 +179,9 @@ def send_coords(chat_id, bot, session, coords):
             latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
             longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
             bot.send_location(chat_id, latitude, longitude)
+
+
+def join(chat_id, bot, session, message_id, additional_chat_id, additional_chat_ids):
+    if session.active:
+        additional_chat_ids[additional_chat_id] = chat_id
+        bot.send_message(chat_id, 'Теперь вы можете работать с ботом через личный чат', reply_to_message_id=message_id)
