@@ -23,11 +23,14 @@ def start(chat_id, bot, sessions_dict):
                               'Краткое описание доступно по команде /help', disable_web_page_preview=True)
 
 
-def stop(chat_id, bot, session):
+def stop(chat_id, bot, session, additional_chat_ids):
     bot.send_message(chat_id, 'Бот выключен')
     session.stop_updater = True
     session.use_channel = False
     session.active = False
+    for k, v in additional_chat_ids.items():
+        if v == chat_id:
+            del additional_chat_ids.updater_schedulers_dict[k]
 
 
 def config(chat_id, bot, session):
@@ -201,3 +204,8 @@ def send_coords(chat_id, bot, session, coords):
 def join(chat_id, bot, message_id, additional_chat_id, additional_chat_ids):
     additional_chat_ids[additional_chat_id] = chat_id
     bot.send_message(chat_id, 'Теперь вы можете работать с ботом через личный чат', reply_to_message_id=message_id)
+
+
+def reset_join(chat_id, bot, message_id, additional_chat_id, additional_chat_ids):
+    del additional_chat_ids[additional_chat_id]
+    bot.send_message(chat_id, 'Взаимодействие с ботом через личный чат сброшено', reply_to_message_id=message_id)
