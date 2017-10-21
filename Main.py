@@ -32,51 +32,51 @@ while True:
             main_vars.task_queue.remove(task)
             continue
 
-            # Tasks to send codes & coords
-            if task['task_type'] == 'send_code_main':
-                if not task['chat_id'] in main_vars.sessions_dict.keys():
-                    main_vars.bot.send_message(task['chat_id'],
-                                               'Для данного чата не создана сессия. Для создания введите команду /start')
-                    main_vars.task_queue.remove(task)
-                    continue
-                try:
-                    send_code_main(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
-                                   task['message_id'], task['code'])
-                except Exception:
-                    main_vars.bot.send_message(task['chat_id'],
-                                               'Exception в main - не удалось обработать команду send_code_main')
+        # Tasks to send codes & coords
+        if task['task_type'] == 'send_code_main':
+            if not task['chat_id'] in main_vars.sessions_dict.keys():
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Для данного чата не создана сессия. Для создания введите команду /start')
                 main_vars.task_queue.remove(task)
                 continue
+            try:
+                send_code_main(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
+                               task['message_id'], task['code'])
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду send_code_main')
+            main_vars.task_queue.remove(task)
+            continue
 
-            if task['task_type'] == 'send_code_bonus':
-                if not task['chat_id'] in main_vars.sessions_dict.keys():
-                    main_vars.bot.send_message(task['chat_id'],
-                                               'Для данного чата не создана сессия. Для создания введите команду /start')
-                    main_vars.task_queue.remove(task)
-                    continue
-                try:
-                    send_code_bonus(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
-                                    task['message_id'], task['code'])
-                except Exception:
-                    main_vars.bot.send_message(task['chat_id'],
-                                               'Exception в main - не удалось обработать команду send_code_bonus')
+        if task['task_type'] == 'send_code_bonus':
+            if not task['chat_id'] in main_vars.sessions_dict.keys():
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Для данного чата не создана сессия. Для создания введите команду /start')
                 main_vars.task_queue.remove(task)
                 continue
+            try:
+                send_code_bonus(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
+                                task['message_id'], task['code'])
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду send_code_bonus')
+            main_vars.task_queue.remove(task)
+            continue
 
-            if task['task_type'] == 'send_coords':
-                if not task['chat_id'] in main_vars.sessions_dict.keys():
-                    main_vars.bot.send_message(task['chat_id'],
-                                               'Для данного чата не создана сессия. Для создания введите команду /start')
-                    main_vars.task_queue.remove(task)
-                    continue
-                try:
-                    send_coords(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
-                                task['coords'])
-                except Exception:
-                    main_vars.bot.send_message(task['chat_id'],
-                                               'Exception в main - не удалось обработать команду send_coords')
+        if task['task_type'] == 'send_coords':
+            if not task['chat_id'] in main_vars.sessions_dict.keys():
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Для данного чата не создана сессия. Для создания введите команду /start')
                 main_vars.task_queue.remove(task)
                 continue
+            try:
+                send_coords(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
+                            task['coords'])
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду send_coords')
+            main_vars.task_queue.remove(task)
+            continue
 
         # Tasks to get level info
         if task['task_type'] == 'send_task':
@@ -195,7 +195,7 @@ while True:
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду set_login')
             main_vars.task_queue.remove(task)
-        continue
+            continue
 
         if task['task_type'] == 'password':
             if not task['chat_id'] in main_vars.sessions_dict.keys():
