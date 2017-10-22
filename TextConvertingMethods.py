@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 from bs4 import BeautifulSoup
-
+from Config import tags_list
 
 
 def send_object_text(text, header, bot, chat_id, parse=True):
@@ -12,10 +12,10 @@ def send_object_text(text, header, bot, chat_id, parse=True):
         text = 'В тексте найдены и вырезаны скрипты и/или таблицы\r\n' \
                '\xE2\x9D\x97<b>Информация в чате может отличаться от движка</b>\xE2\x9D\x97\r\n' + text
     text = cut_script(text)
-    text = cut_formatting(text)
+    text = cut_formatting(text, tags_list)
     text, images = cut_images(text)
     text, embeds, audios = cut_rare_tags(text)
-    text, links = cut_links(text, cut=False)
+    text, links = cut_links(text)
     text, coords = handle_coords(text)
 
     if len(text) > 7000:
@@ -28,9 +28,14 @@ def send_object_text(text, header, bot, chat_id, parse=True):
         send_text(text, header, bot, chat_id, parse, raw_text)
 
     if images:
-        for i, image in enumerate(images):
-            message = '(img%s)' % i
-            bot.send_photo(chat_id, image, caption=message)
+        if len(images) <= 10:
+            for i, image in enumerate(images):
+                message = '(img%s)' % i
+                bot.send_photo(chat_id, image, caption=message)
+        else:
+            text = 'Найдено %s изображений. Их отправка заблокирована\r\n' \
+                   'Для отправки всех изображений из задания введите /send_task_images' % str(len(images))
+            bot.send_message(chat_id, text)
     if links:
         for i, link in enumerate(links):
             message = '(link%s)' % i
@@ -43,7 +48,7 @@ def send_object_text(text, header, bot, chat_id, parse=True):
             bot.send_location(chat_id, latitude, longitude)
 
 
-def cut_formatting(text):
+def cut_formatting(text, tags_list):
     text = text.replace('<br/>', '\r\n')
     text = text.replace('<br />', '\r\n')
     text = text.replace('<br>', '\r\n')
@@ -57,7 +62,6 @@ def cut_formatting(text):
     text = text.replace('</b>', '')
 
     text = cut_style(text)
-    tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr']
     text = cut_tags(text, tags_list)
 
     h_tags = re.findall(r'<h\d>', text)
@@ -168,8 +172,12 @@ def cut_long_text_on_pieces(text, text_pieces):
 
 
 def send_text(text, header, bot, chat_id, parse, raw_text):
-    # text = text.replace('<b><b>', '<b>')
-    # text = text.replace('</b></b>', '</b>')
+    tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr']
+    for tag in tags_list:
+        tag_ending = '</%s>' % tag
+        text = text.replace(tag_ending, '')
+    while '\r\n\r\n\r\n' in text:
+        text = text.replace('\r\n\r\n\r\n', '\r\n\r\n')
     links = re.findall(r'<a[^>]+>', text)
     tags = re.findall(r'<..|..>|..>$|<$', text)
     # soup = BeautifulSoup(text)
@@ -198,8 +206,16 @@ def send_text(text, header, bot, chat_id, parse, raw_text):
             return
 
 
-def cut_links(text, cut=True):
+def cut_links(text, cut=False):
     links = list()
+
+    links_to_check = re.findall(r'<a[^>]+>', text)
+    for link in links_to_check:
+        href = re.search(r'href=[^>\s]+', link).group(0)
+        if '"' not in href:
+            soup = BeautifulSoup(link)
+            for a in soup.find_all('a'):
+                text = text.replace(href, 'href="' + a.get('href').encode('utf-8') + '"')
 
     if cut:
         soup = BeautifulSoup(text)

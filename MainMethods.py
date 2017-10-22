@@ -2,12 +2,9 @@
 import threading
 import time
 import re
-
-from telebot import types
-
 from BotSession import BotSession
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
-    send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat
+    send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat
 
 
 def start(chat_id, bot, sessions_dict):
@@ -90,6 +87,13 @@ def login(chat_id, bot, session):
 def send_task(chat_id, bot, session):
     if session.active:
         send_task_to_chat(bot, chat_id, session)
+    else:
+        bot.send_message(chat_id, 'Нельзя запросить задание при неактивной сессии')
+
+
+def send_task_images(chat_id, bot, session):
+    if session.active:
+        send_task_images_to_chat(bot, chat_id, session)
     else:
         bot.send_message(chat_id, 'Нельзя запросить задание при неактивной сессии')
 

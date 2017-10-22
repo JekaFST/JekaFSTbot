@@ -85,6 +85,13 @@ def send_task_to_chat(bot, chat_id, session):
     send_task(level, bot, chat_id)
 
 
+def send_task_images_to_chat(bot, chat_id, session):
+    level = get_current_level(session, bot, chat_id)
+    if not level:
+        return
+    send_task_images(level, bot, chat_id)
+
+
 def send_all_sectors_to_chat(bot, chat_id, session):
     level = get_current_level(session, bot, chat_id)
     if not level:
@@ -307,3 +314,19 @@ def send_bonuses(level, bot, chat_id):
                                                                                                          chat_id)
     else:
         bot.send_message(chat_id, 'Бонусов нет')
+
+
+def send_task_images(level, bot, chat_id):
+    images = list()
+    tasks = level['Tasks']
+    if tasks:
+        text = tasks[0]['TaskText'].encode('utf-8')
+    else:
+        bot.send_message(chat_id, 'Задание не предусмотрено')
+
+    soup = BeautifulSoup(text)
+    for img in soup.find_all('img'):
+        images.append(img.get('src').encode('utf-8'))
+    if images:
+        for image in images:
+            bot.send_photo(chat_id, image)

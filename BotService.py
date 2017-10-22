@@ -4,6 +4,8 @@ import re
 import telebot
 from flask import Flask
 
+from Config import tags_list
+
 
 def run_app(bot, main_vars):
     app = Flask(__name__)
@@ -228,6 +230,18 @@ def run_app(bot, main_vars):
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
+
+    @bot.message_handler(commands=['send_task_images'])
+    def send_task_images(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
+            return
+        send_task_images_task = {
+            'task_type': 'task_images',
+            'chat_id': message.chat.id
+        }
+        main_vars.task_queue.append(send_task_images_task)
 
     @bot.message_handler(commands=['sectors'])
     def send_all_sectors(message):
@@ -466,6 +480,18 @@ def run_app(bot, main_vars):
             }
             main_vars.task_queue.append(send_coords_task)
             return
+
+        @bot.message_handler(commands=['add_tag'])
+        def add_tag(message):
+            if message.chat.id != 45839899:
+                bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
+                return
+            tag_to_add = str(message.text[9:])
+            tags_list.append(tag_to_add)
+            if tag_to_add in tags_list:
+                bot.send_message(message.chat.id, 'Тег успешно добавлен в обработчик')
+            else:
+                bot.send_message(message.chat.id, 'Тег не добавлен в обработчикб повторите попытку')
 
     # Remove webhook, it fails sometimes the set if there is a previous webhook
     bot.remove_webhook()

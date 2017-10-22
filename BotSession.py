@@ -9,8 +9,10 @@ class BotSession(object):
                     'game_url_ending': '/gameengines/encounter/play/',
                     'login_url_ending': '/Login.aspx',
                     'json': '?json=1',
-                    'Login': 'jekafst_bot',
-                    'Password': 'jekabot_1412',
+                    'Login': 'prinncessa',
+                    'Password': 'h323232z',
+                    # 'Login': 'jekafst_bot',
+                    # 'Password': 'jekabot_1412',
                     'code_request': {},
                     'en_domain': 'http://demo.en.cx',
                     'game_id': '26991'

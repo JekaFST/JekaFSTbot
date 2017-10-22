@@ -28,6 +28,8 @@ code_request = {
 #                                     }
 #                    }
 
+tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr']
+
 game_wrong_statuses = {
                 2: 'Игра с указанным ID не существует',
                 3: 'Запрошенная игра не соответствует запрошенному Engine',
