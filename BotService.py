@@ -231,7 +231,7 @@ def run_app(bot, main_vars):
                              'Для отправки запроса на разрешение введите /ask_for_permission')
             return
 
-    @bot.message_handler(commands=['send_task_images'])
+    @bot.message_handler(commands=['task_images'])
     def send_task_images(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
             bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
@@ -415,6 +415,18 @@ def run_app(bot, main_vars):
         }
         main_vars.task_queue.append(stop_channel_task)
 
+    @bot.message_handler(commands=['add_tag'])
+    def add_tag(message):
+        if message.chat.id != 45839899:
+            bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
+            return
+        tag_to_add = str(message.text[9:])
+        tags_list.append(tag_to_add)
+        if tag_to_add in tags_list:
+            bot.send_message(message.chat.id, 'Тег успешно добавлен в обработчик')
+        else:
+            bot.send_message(message.chat.id, 'Тег не добавлен в обработчикб повторите попытку')
+
     @bot.message_handler(content_types=['text'])
     def text_processor(message):
         if message.chat.id not in main_vars.allowed_chat_ids and message.chat.id not in main_vars.additional_ids.keys():
@@ -480,18 +492,6 @@ def run_app(bot, main_vars):
             }
             main_vars.task_queue.append(send_coords_task)
             return
-
-        @bot.message_handler(commands=['add_tag'])
-        def add_tag(message):
-            if message.chat.id != 45839899:
-                bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
-                return
-            tag_to_add = str(message.text[9:])
-            tags_list.append(tag_to_add)
-            if tag_to_add in tags_list:
-                bot.send_message(message.chat.id, 'Тег успешно добавлен в обработчик')
-            else:
-                bot.send_message(message.chat.id, 'Тег не добавлен в обработчикб повторите попытку')
 
     # Remove webhook, it fails sometimes the set if there is a previous webhook
     bot.remove_webhook()

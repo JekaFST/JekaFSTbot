@@ -34,7 +34,7 @@ def send_object_text(text, header, bot, chat_id, parse=True):
                 bot.send_photo(chat_id, image, caption=message)
         else:
             text = 'Найдено %s изображений. Их отправка заблокирована\r\n' \
-                   'Для отправки всех изображений из задания введите /send_task_images' % str(len(images))
+                   'Для отправки всех изображений из задания введите /task_images' % str(len(images))
             bot.send_message(chat_id, text)
     if links:
         for i, link in enumerate(links):
