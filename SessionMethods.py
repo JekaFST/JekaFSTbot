@@ -148,6 +148,7 @@ def get_current_game_model(session, bot, chat_id, from_updater):
 
 def check_game_model(game_model, session, bot, chat_id, from_updater=False):
     if game_model['Event'] == 0:
+        session.current_game_model = game_model
         return game_model
 
     loaded_game_wrong_status = None
