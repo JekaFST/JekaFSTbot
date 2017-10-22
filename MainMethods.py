@@ -19,7 +19,7 @@ def start(chat_id, bot, sessions_dict):
                               '- ввести game id игры (/gameid 26991)\n'
                               '- ввести логин игрока (/login abc)\n'
                               '- ввести пароль игрока (/password abc)\n'
-                              'и залогиниться в движок (/login_to_en)\n'
+                              'и залогиниться в движок (/login_and_start_session)\n'
                               'Краткое описание доступно по команде /help', disable_web_page_preview=True)
 
 
