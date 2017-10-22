@@ -44,17 +44,29 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(commands=['reset_join'])
     def reset_join(message):
-        if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
-                                              'Для отправки запроса на разрешение введите /ask_for_permission')
+        if message.chat.id in main_vars.allowed_chat_ids:
+            reset_join_task = {
+                'task_type': 'reset_join',
+                'chat_id': message.chat.id,
+                'additional_chat_id': message.from_user.id,
+                'message_id': message.message_id
+            }
+            main_vars.task_queue.append(reset_join_task)
             return
-        reset_join_task = {
-            'task_type': 'reset_join',
-            'chat_id': message.chat.id,
-            'additional_chat_id': message.from_user.id,
-            'message_id': message.message_id
-        }
-        main_vars.task_queue.append(reset_join_task)
+        elif message.chat.id in main_vars.additional_ids.keys():
+            reset_join_task = {
+                'task_type': 'reset_join',
+                'chat_id': None,
+                'additional_chat_id': message.chat.id,
+                'message_id': message.message_id
+            }
+            main_vars.task_queue.append(reset_join_task)
+            return
+        else:
+            bot.send_message(message.chat.id,
+                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
+                             'Для отправки запроса на разрешение введите /ask_for_permission')
+            return
 
     @bot.message_handler(commands=['add'])
     def add_chat_to_allowed(message):
@@ -181,7 +193,7 @@ def run_app(bot, main_vars):
         }
         main_vars.task_queue.append(set_game_id_task)
 
-    @bot.message_handler(commands=['login_to_en'])
+    @bot.message_handler(commands=['login_and_start_session'])
     def login_to_en(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
             bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'

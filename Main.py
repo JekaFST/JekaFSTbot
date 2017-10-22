@@ -432,15 +432,22 @@ while True:
             continue
 
         if task['task_type'] == 'reset_join':
-            if task['additional_chat_id'] not in main_vars.additional_ids.keys():
-                main_vars.bot.send_message(task['chat_id'], 'У вас нет сессии, в рамках которой взаимодействие с '
-                                                            'ботом настроено через личный чат',
-                                           reply_to_message_id=task['message_id'])
-                main_vars.task_queue.remove(task)
-                continue
+            if task['chat_id']:
+                if not task['chat_id'] in main_vars.sessions_dict.keys():
+                    main_vars.bot.send_message(task['chat_id'],
+                                               'Для данного чата не создана сессия. Для создания введите команду /start')
+                    main_vars.task_queue.remove(task)
+                    continue
+                chat_id = task['chat_id']
+            else:
+                if not main_vars.additional_ids[task['additional_chat_id']] in main_vars.sessions_dict.keys():
+                    main_vars.bot.send_message(task['chat_id'],
+                                               'Для данного дополнительного чата не создана (или удалена) сессия')
+                    continue
+                chat_id = task['additional_chat_id']
             try:
-                reset_join(task['chat_id'], main_vars.bot, task['message_id'],
-                     task['additional_chat_id'], main_vars.additional_ids)
+                reset_join(chat_id, main_vars.bot, task['message_id'],
+                           task['additional_chat_id'], main_vars.additional_ids)
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду reset_join')
             main_vars.task_queue.remove(task)

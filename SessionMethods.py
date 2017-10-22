@@ -147,6 +147,8 @@ def check_game_model(game_model, session, bot, chat_id, from_updater=False):
     if game_model['Event'] in game_wrong_statuses.keys():
         if game_model['Event'] == 17:
             session.stop_updater = True
+            session.use_channel = False
+            session.active = False
         for k, v in game_wrong_statuses.items():
             if game_model['Event'] == k:
                 loaded_game_wrong_status = v

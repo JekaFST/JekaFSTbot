@@ -12,8 +12,8 @@ class BotSession(object):
                     'Login': 'jekafst_bot',
                     'Password': 'jekabot_1412',
                     'code_request': {},
-                    'en_domain': 'http://lpk.en.cx',
-                    'game_id': '59685'
+                    'en_domain': 'http://demo.en.cx',
+                    'game_id': '26991'
                    }
         self.current_level = None
         self.urls = dict()
@@ -26,5 +26,5 @@ class BotSession(object):
         self.sectors_to_close = None
         self.sectors_message_id = None
         self.game_model_status = None
-        self.delay = 1
+        self.delay = 2
         self.send_coords_active = True
