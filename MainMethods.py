@@ -23,6 +23,7 @@ def start(chat_id, bot, sessions_dict):
 def stop(chat_id, bot, session, additional_chat_ids):
     bot.send_message(chat_id, 'Бот выключен')
     session.stop_updater = True
+    session.put_updater_task = False
     session.use_channel = False
     session.active = False
     for k, v in additional_chat_ids.items():
@@ -172,6 +173,7 @@ def set_updater_delay(chat_id, bot, session, new_delay):
 def stop_updater(session):
     if session.active:
         session.stop_updater = True
+        session.put_updater_task = False
 
 
 def set_channel_name(chat_id, bot, session, new_channel_name):
