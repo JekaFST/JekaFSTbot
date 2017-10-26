@@ -31,6 +31,7 @@ while True:
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду updater')
             main_vars.task_queue.remove(task)
+            main_vars.sessions_dict[task['chat_id']].put_updater_task = True
             continue
 
         # Tasks to send codes & coords

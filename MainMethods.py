@@ -130,6 +130,7 @@ def start_updater(chat_id, bot, main_vars):
     session = main_vars.sessions_dict[chat_id]
     if session.active and chat_id not in main_vars.updater_schedulers_dict.keys():
         session.stop_updater = False
+        session.put_updater_task = True
         bot.send_message(chat_id, 'Слежение запущено')
         name = 'updater_%s' % chat_id
         main_vars.updater_schedulers_dict[chat_id] = threading.Thread(name=name, target=updater_scheduler,
@@ -142,17 +143,19 @@ def start_updater(chat_id, bot, main_vars):
 def updater_scheduler(chat_id, bot, main_vars):
     session = main_vars.sessions_dict[chat_id]
     while not session.stop_updater:
-        chat_ids = list()
-        for task in main_vars.task_queue:
-            if task['task_type'] == 'updater':
-                chat_ids.append(task['chat_id'])
-        if chat_id not in chat_ids:
+        # chat_ids = list()
+        # for task in main_vars.task_queue:
+        #     if task['task_type'] == 'updater':
+        #         chat_ids.append(task['chat_id'])
+        # if chat_id not in chat_ids:
+        if session.put_updater_task:
             time.sleep(session.delay)
             updater_task = {
                 'task_type': 'updater',
                 'chat_id': chat_id
             }
             main_vars.task_queue.append(updater_task)
+            session.put_updater_task = False
     else:
         bot.send_message(chat_id, 'Слежение остановлено')
         if chat_id in main_vars.updater_schedulers_dict.keys():
