@@ -23,9 +23,9 @@ def send_object_text(text, header, bot, chat_id, parse=True):
 
     if text_pieces:
         for text in text_pieces:
-            send_text(text, header, bot, chat_id, parse, raw_text)
+            send_text(text, header, bot, chat_id, parse, raw_text, tags_list)
     else:
-        send_text(text, header, bot, chat_id, parse, raw_text)
+        send_text(text, header, bot, chat_id, parse, raw_text, tags_list)
 
     if images:
         if len(images) <= 10:
@@ -171,8 +171,8 @@ def cut_long_text_on_pieces(text, text_pieces):
     return text_pieces
 
 
-def send_text(text, header, bot, chat_id, parse, raw_text):
-    tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr']
+def send_text(text, header, bot, chat_id, parse, raw_text, tags_list):
+    tags_list = tags_list
     for tag in tags_list:
         tag_ending = '</%s>' % tag
         text = text.replace(tag_ending, '')
