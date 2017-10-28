@@ -14,7 +14,6 @@ def send_object_text(text, header, bot, chat_id, parse=True):
     text = cut_script(text)
     text = cut_formatting(text, tags_list)
     text, images = cut_images(text)
-    text, embeds, audios = cut_rare_tags(text)
     text, links = cut_links(text)
     text, coords = handle_coords(text)
 
@@ -49,6 +48,7 @@ def send_object_text(text, header, bot, chat_id, parse=True):
 
 
 def cut_formatting(text, tags_list):
+    text = text.replace('&amp;', '&')
     text = text.replace('<br/>', '\r\n')
     text = text.replace('<br />', '\r\n')
     text = text.replace('<br>', '\r\n')

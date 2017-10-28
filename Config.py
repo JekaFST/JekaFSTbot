@@ -28,7 +28,7 @@ code_request = {
 #                                     }
 #                    }
 
-tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr']
+tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr', 'object', 'param', 'audio', 'source', 'embed']
 
 game_wrong_statuses = {
                 2: 'Игра с указанным ID не существует',
