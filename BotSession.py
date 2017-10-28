@@ -3,19 +3,20 @@ class BotSession(object):
     def __init__(self):
         self.stop_updater = None
         self.use_channel = False
-        self.channel_name = '@fst_channel'
+        # self.channel_name = '@fst_channel'
+        self.channel_name = '@nnm_channel'
         self.active = False
         self.config = {
                     'game_url_ending': '/gameengines/encounter/play/',
                     'login_url_ending': '/Login.aspx',
                     'json': '?json=1',
-                    'Login': 'prinncessa',
-                    'Password': 'h323232z',
-                    # 'Login': 'jekafst_bot',
-                    # 'Password': 'jekabot_1412',
+                    # 'Login': 'prinncessa',
+                    # 'Password': 'h323232z',
+                    'Login': 'jekafst_bot',
+                    'Password': 'jekabot_1412',
                     'code_request': {},
-                    'en_domain': 'http://demo.en.cx',
-                    'game_id': '26991'
+                    'en_domain': 'http://deadline.en.cx',
+                    'game_id': '59970'
                    }
         self.current_level = None
         self.urls = dict()

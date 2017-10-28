@@ -103,9 +103,8 @@ def run_app(bot, main_vars):
             return
         bot.send_message(message.chat.id, 'Коды сдавать в виде !код или ! код\n'
                                           'Сдавать коды в бонусное окно в виде ?код или ? код\n'
-                                          'Если бот перестал присылать обновления - '
-                                          'попробуйте презапустить слежение: /start_updater\n'
                                           '/task - прислать задание\n'
+                                          '/task_images - прислать все картинки из задания\n'
                                           '/sectors - прислать список секторов\n'
                                           '/helps - прислать все подсказки\n'
                                           '/last_help - прислать последнюю пришедшую подсказку\n'
@@ -115,9 +114,12 @@ def run_app(bot, main_vars):
                                           '/set_channel_name - задать имя канала для репостинга (через пробел)\n'
                                           '/start_channel - запустить постинг в канал\n'
                                           '/stop_channel - остановить постинг в канал\n'
-                                          '/stop - выключить бота и сбросить настройки\n'
+                                          '/stop - остановить сессию\n'
                                           '/config - прислать конфигурацию,\n'
-                                          '/delay - выставить интервал слежения')
+                                          '/delay - выставить интервал слежения\n'
+                                          '/join - включить работу с ботом через личный чат\n'
+                                          '/reset_join - выключить работу с ботом через личный чат\n'
+                                          '/ask_for_permission - отправить запрос на разрешение использования бота\n')
 
     @bot.message_handler(commands=['stop'])
     def stop(message):
@@ -497,7 +499,7 @@ def run_app(bot, main_vars):
     bot.remove_webhook()
 
     # Set webhook
-    bot.set_webhook(url='https://f9880b13.ngrok.io/webhook')
+    bot.set_webhook(url='https://96fd1985.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():

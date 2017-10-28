@@ -27,7 +27,10 @@ def login_to_en(session, bot, chat_id):
         session.number_of_levels = session.current_level['number_of_levels']
         reply = 'Бот успешно залогинился, игра в нормальном состоянии\r\n' \
                 'для запуска слежения введите /start_updater\r\n' \
-                'для остановки слежения введите /stop_updater'
+                'для остановки слежения введите /stop_updater\r\n' \
+                'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
+                'и запустите репстинг в канал /start_channel\r\n' \
+                'для остановки репостинга в канал введите /stop_channel'
         bot.send_message(chat_id, reply)
 
 
