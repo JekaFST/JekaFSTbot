@@ -2,33 +2,7 @@
 import re
 from bs4 import BeautifulSoup
 
-text = 'Добрый вечер, уважаемые игроки. В проекте Dead-Line игра "Кто хочет стать миллионером?"<br><br>' \
-       '<audio controls="controls"><source src="http://cdn.endata.cx/data/games/59970/zastavka.mp3" />' \
-       '<object data="http://flv-mp3.com/i/pic/ump3player_500x70.swf" type="application/x-shockwave-flash" width="470" height="70">' \
-       '<param name="wmode" value="transparent" /><param name="allowFullScreen" value="true" />' \
-       '<param name="allowScriptAccess" value="always" />' \
-       '<param name="movie" value="http://flv-mp3.com/i/pic/ump3player_500x70.swf" />' \
-       '<param name="FlashVars" value="way=http://cdn.endata.cx/data/games/59970/zastavka.mp3&amp;swf=http://flv-mp3.com/i/pic/ump3player_500x70.swf&amp;w=470&amp;h=70&amp;time_seconds=0&amp;autoplay=0&amp;q=1&amp;skin=grey&amp;volume=70&amp;comment=" />' \
-       '</object></audio><br><br>' \
-       '<a href="http://cdn.endata.cx/data/games/59970/zastavka.mp3">Музычка</a><br><br>' \
-       '<object id="audioplayer363"><param name="allowScriptAccess" value="always" />' \
-       '<param name="wmode" value="transparent" />' \
-       '<param name="movie" value="http://d1.endata.cx/data/games/26984/uppod.swf" />' \
-       '<param name="flashvars" value="comment=Outro&amp;st=http://d1.endata.cx/data/games/26984/audio60-281.txt&amp;file=http://d1.endata.cx/data/games/59685/shlyapa_11jcftn.mp3" />' \
-       '<embed flashvars="comment=Outro&amp;st=http://d1.endata.cx/data/games/26984/audio60-281.txt&amp;file=http://d1.endata.cx/data/games/59685/shlyapa_11jcftn.mp3">' \
-       '</object>' \
-       # 'Структура игры: Логика-Доезд-Поиск. В уровнях Логика Вам будет предложено выбрать из четырёх вариантов ответа верный. ' \
-       # 'Выбор реализован через штрафные подсказки - три из них, соответствующие неверным ответам, пустые, а в верной содержится ' \
-       # 'код закрытия уровня.<br><br>Оригинальные игровые подсказки (50/50, звонок другу и помощь зала) реализованы в движке через ' \
-       # 'соответствующие штрафные подсказки (50/50 убирает два неверных ответа, звонок другу и помощь зала дают код, закрывающий уровень).' \
-       # ' <font color="red">Обратите внимание, что каждой из подсказок можно воспользоваться только один раз. ' \
-       # 'В случае повторного использования подсказки (случайно ли, намеренно ли) будет начислен штраф 2 часа.</font><br><br>' \
-       # 'Несгораемых сумм нет, до миллиона так или иначе дойдут все.<br><br>Метка игры: <b>IM</b>, в движок коды бить без префиксов.<br><br>' \
-       # 'Обращайте внимание на формат ответа, названия секторов и бонусов.<br><br>' \
-       # 'Перебор по умолчанию разрешён, если в тексте уровня не оговорено иное.<br><br>' \
-       # 'В связи с тем, что часть игры реализована через скрипты, авторы не гарантируют стабильную работу движка на ' \
-       # 'сторонних приложениях и не отвечают за возможные негативные последствия для команды.'
-
+text = ''
 tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr', 'object', 'param', 'audio', 'source', 'embed']
 
 
