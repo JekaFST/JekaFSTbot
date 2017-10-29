@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from SessionMethods import get_current_level
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
-    send_bonus_award_answer
+    send_bonus_award_answer, send_adm_message
 
 
 def updater(chat_id, bot, session):
@@ -13,11 +13,13 @@ def updater(chat_id, bot, session):
     loaded_helps = loaded_level['Helps']
     loaded_bonuses = loaded_level['Bonuses']
     loaded_sectors = loaded_level['Sectors']
+    loaded_messages = loaded_level['Messages']
 
     if not session.current_level:
         session.current_level = loaded_level
         session.number_of_levels = loaded_level['number_of_levels']
-        session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses = reset_level_vars()
+        session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
+                                                                        session.message_statuses = reset_level_vars()
         session.sectors_to_close = send_up_info(loaded_level, loaded_helps, loaded_bonuses, bot, chat_id,
                                                 session.channel_name, session.use_channel)
         if session.channel_name and session.use_channel:
@@ -27,11 +29,13 @@ def updater(chat_id, bot, session):
         session.bonus_statuses = fill_bonus_statuses(loaded_bonuses, session.game_answered_bonus_ids,
                                                      session.bonus_statuses)
         session.sector_statuses = fill_sector_statuses(loaded_sectors, session.sector_statuses)
+        session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
         return
 
     if loaded_level['LevelId'] != session.current_level['LevelId']:
         session.current_level = loaded_level
-        session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses = reset_level_vars()
+        session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
+                                                                        session.message_statuses = reset_level_vars()
         session.sectors_to_close = send_up_info(loaded_level, loaded_helps, loaded_bonuses, bot, chat_id,
                                                 session.channel_name, session.use_channel)
         if session.channel_name and session.use_channel:
@@ -41,6 +45,7 @@ def updater(chat_id, bot, session):
         session.bonus_statuses = fill_bonus_statuses(loaded_bonuses, session.game_answered_bonus_ids,
                                                      session.bonus_statuses)
         session.sector_statuses = fill_sector_statuses(loaded_sectors, session.sector_statuses)
+        session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
         return
 
     session.current_level = loaded_level
@@ -50,6 +55,10 @@ def updater(chat_id, bot, session):
         message = 'До автоперехода < 5 мин'
         bot.send_message(chat_id, message)
         session.time_to_up_sent = True
+
+    if loaded_messages:
+        message_parcer(loaded_messages, session.message_statuses, session.sent_messages, bot, chat_id,
+                       session.channel_name, session.use_channel)
 
     if loaded_sectors:
         codes_to_find = loaded_level['SectorsLeftToClose']
@@ -71,8 +80,9 @@ def reset_level_vars():
     help_statuses = dict()
     bonus_statuses = dict()
     answer_statuses = dict()
+    message_statuses = dict()
     time_to_up_sent = False
-    return help_statuses, bonus_statuses, time_to_up_sent, answer_statuses
+    return help_statuses, bonus_statuses, time_to_up_sent, answer_statuses, message_statuses
 
 
 def send_up_info(loaded_level, loaded_helps, loaded_bonuses, bot, chat_id, channel_name, use_channel, block=''):
@@ -137,6 +147,14 @@ def fill_sector_statuses(loaded_sectors, sector_statuses):
         for sector in loaded_sectors:
             sector_statuses[sector['SectorId']] = {'answer_info_not_sent': True}
     return sector_statuses
+
+
+def fill_message_statuses(loaded_messages, message_statuses, sent_messages):
+    if loaded_messages:
+        for message in loaded_messages:
+            message_statuses[message['MessageId']] = {'message_not_sent': True} \
+                if not message['MessageId'] in sent_messages else {'message_not_sent': False}
+    return message_statuses
 
 
 def sectors_parcer(loaded_sectors, codes_to_find, sector_statuses, bot, chat_id):
@@ -211,7 +229,6 @@ def bonus_parcer(loaded_bonuses, bonus_statuses, game_answered_bonus_ids, bot, c
 
             if bonus['IsAnswered'] and award_not_sent:
                 send_bonus_award_answer(bonus, bot, chat_id)
-                # if bonus['BonusId'] not in game_answered_bonus_ids:
                 game_answered_bonus_ids.append(bonus['BonusId'])
                 for k, v in bonus_statuses.items():
                     if bonus['BonusId'] == k:
@@ -231,6 +248,20 @@ def get_bonus_status(bonus, bonus_statuses):
             info_not_sent = v['info_not_sent']
             award_not_sent = v['award_not_sent']
             return info_not_sent, award_not_sent
+
+
+def message_parcer(loaded_messages, message_statuses, sent_messages, bot, chat_id, channel_name, use_channel):
+    if loaded_messages:
+        for message in loaded_messages:
+            if not message['MessageId'] in message_statuses.keys():
+                message_statuses[message['MessageId']] = {'message_not_sent': True}
+
+            if message_statuses[message['MessageId']]['message_not_sent']:
+                send_adm_message(message, bot, chat_id)
+                if channel_name and use_channel:
+                    send_adm_message(message, bot, channel_name)
+                message_statuses[message['MessageId']]['message_not_sent'] = False
+                sent_messages.append(message['MessageId'])
 
 
 def channel_sectors_editor(loaded_level, old_sectors_to_close, bot, channel_name, message_id):

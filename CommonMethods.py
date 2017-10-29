@@ -55,3 +55,9 @@ def send_bonus_award_answer(bonus, bot, chat_id):
         else '\n<b>Без награды</b>'
     bonus_award_text = bonus_help + bonus_award
     send_object_text(bonus_award_text, bonus_award_header, bot, chat_id)
+
+
+def send_adm_message(message, bot, chat_id):
+    bonus_award_header = '<b>Сообщение от авторов</b>'
+    message_text = message['MessageText'].encode('utf-8')
+    send_object_text(message_text, bonus_award_header, bot, chat_id)

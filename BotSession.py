@@ -25,6 +25,8 @@ class BotSession(object):
         self.help_statuses = dict()
         self.bonus_statuses = dict()
         self.sector_statuses = dict()
+        self.message_statuses = dict()
+        self.sent_messages = list()
         self.time_to_up_sent = None
         self.sectors_to_close = None
         self.sectors_message_id = None
