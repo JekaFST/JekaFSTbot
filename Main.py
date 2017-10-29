@@ -248,7 +248,7 @@ while True:
                 main_vars.task_queue.remove(task)
                 continue
             try:
-                start_session(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']], main_vars.additional_ids)
+                start_session(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду start_session')
             main_vars.task_queue.remove(task)

@@ -16,6 +16,7 @@ def updater(chat_id, bot, session):
 
     if not session.current_level:
         session.current_level = loaded_level
+        session.number_of_levels = loaded_level['number_of_levels']
         session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses = reset_level_vars()
         session.sectors_to_close = send_up_info(loaded_level, loaded_helps, loaded_bonuses, bot, chat_id,
                                                 session.channel_name, session.use_channel)
