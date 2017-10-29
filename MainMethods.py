@@ -4,7 +4,7 @@ import time
 import re
 from BotSession import BotSession
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
-    send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat
+    send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session
 
 
 def start(chat_id, bot, sessions_dict):
@@ -16,16 +16,17 @@ def start(chat_id, bot, sessions_dict):
                               '- ввести game id игры (/gameid 26991)\n'
                               '- ввести логин игрока (/login abc)\n'
                               '- ввести пароль игрока (/password abc)\n'
-                              'и залогиниться в движок (/login_and_start_session)\n'
+                              '- залогиниться в движок (/login_to_en)\n'
+                              'и активировать сессию (/start_session)\n'
                               'Краткое описание доступно по команде /help', disable_web_page_preview=True)
 
 
-def stop(chat_id, bot, session, additional_chat_ids):
-    bot.send_message(chat_id, 'Бот выключен')
+def stop_session(chat_id, bot, session, additional_chat_ids):
     session.stop_updater = True
     session.put_updater_task = False
     session.use_channel = False
     session.active = False
+    bot.send_message(chat_id, 'Сессия остановлена')
     for k, v in additional_chat_ids.items():
         if v == chat_id:
             del additional_chat_ids.updater_schedulers_dict[k]
@@ -81,6 +82,14 @@ def login(chat_id, bot, session):
     if session.config['en_domain'] and session.config['game_id'] and session.config['Login'] and session.config['Password']:
         session.urls = compile_urls(session.urls, session.config)
         login_to_en(session, bot, chat_id)
+    else:
+        bot.send_message(chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
+
+
+def start_session(chat_id, bot, session):
+    if session.config['en_domain'] and session.config['game_id'] and session.config['Login'] and session.config['Password']:
+        session.urls = compile_urls(session.urls, session.config)
+        launch_session(session, bot, chat_id)
     else:
         bot.send_message(chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
 
@@ -194,11 +203,17 @@ def stop_channel(chat_id, bot, session):
 
 def send_code_main(chat_id, bot, session, message_id, code):
     if session.active:
+        if not session.send_codes:
+            bot.send_message(chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
+            return
         send_code_to_level(code, bot, chat_id, message_id, session)
 
 
 def send_code_bonus(chat_id, bot, session, message_id, code):
     if session.active:
+        if not session.send_codes:
+            bot.send_message(chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
+            return
         send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=True)
 
 
@@ -218,3 +233,13 @@ def join(chat_id, bot, message_id, additional_chat_id, additional_chat_ids):
 def reset_join(chat_id, bot, message_id, additional_chat_id, additional_chat_ids):
     del additional_chat_ids[additional_chat_id]
     bot.send_message(chat_id, 'Взаимодействие с ботом через личный чат сброшено', reply_to_message_id=message_id)
+
+
+def enable_codes(chat_id, bot, session):
+    session.send_codes = True
+    bot.send_message(chat_id, 'Сдача кодов включена')
+
+
+def disable_codes(chat_id, bot, session):
+    session.send_codes = False
+    bot.send_message(chat_id, 'Сдача кодов выключена')

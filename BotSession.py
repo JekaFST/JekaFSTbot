@@ -33,3 +33,4 @@ class BotSession(object):
         self.send_coords_active = True
         self.current_game_model = None
         self.put_updater_task = None
+        self.send_codes = True

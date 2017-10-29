@@ -114,24 +114,39 @@ def run_app(bot, main_vars):
                                           '/set_channel_name - задать имя канала для репостинга (через пробел)\n'
                                           '/start_channel - запустить постинг в канал\n'
                                           '/stop_channel - остановить постинг в канал\n'
-                                          '/stop - остановить сессию\n'
+                                          '/stop_session - остановить сессию '
+                                          '(остановить выполнение команд из чата, слежение и постинг в канал)\n'
                                           '/config - прислать конфигурацию,\n'
                                           '/delay - выставить интервал слежения\n'
                                           '/join - включить работу с ботом через личный чат\n'
                                           '/reset_join - выключить работу с ботом через личный чат\n'
-                                          '/ask_for_permission - отправить запрос на разрешение использования бота\n')
+                                          '/ask_for_permission - отправить запрос на разрешение использования бота\n'
+                                          '/codes_off - выключить сдачу кодов\n'
+                                          '/codes_on - включить сдачу кодов')
 
-    @bot.message_handler(commands=['stop'])
-    def stop(message):
+    @bot.message_handler(commands=['start_session'])
+    def start_session(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
             bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
                                               'Для отправки запроса на разрешение введите /ask_for_permission')
             return
-        stop_task = {
-            'task_type': 'stop',
+        start_session_task = {
+            'task_type': 'start_session',
             'chat_id': message.chat.id
         }
-        main_vars.task_queue.append(stop_task)
+        main_vars.task_queue.append(start_session_task)
+
+    @bot.message_handler(commands=['stop_session'])
+    def stop_session(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
+            return
+        stop_session_task = {
+            'task_type': 'stop_session',
+            'chat_id': message.chat.id
+        }
+        main_vars.task_queue.append(stop_session_task)
 
     @bot.message_handler(commands=['config'])
     def config(message):
@@ -197,7 +212,7 @@ def run_app(bot, main_vars):
         }
         main_vars.task_queue.append(set_game_id_task)
 
-    @bot.message_handler(commands=['login_and_start_session'])
+    @bot.message_handler(commands=['login_to_en'])
     def login_to_en(message):
         if message.chat.id not in main_vars.allowed_chat_ids:
             bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
@@ -416,6 +431,30 @@ def run_app(bot, main_vars):
             'chat_id': message.chat.id
         }
         main_vars.task_queue.append(stop_channel_task)
+
+    @bot.message_handler(commands=['codes_on'])
+    def enable_codes(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
+            return
+        enable_codes_task = {
+            'task_type': 'codes_on',
+            'chat_id': message.chat.id
+        }
+        main_vars.task_queue.append(enable_codes_task)
+
+    @bot.message_handler(commands=['codes_off'])
+    def disable_codes(message):
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
+                                              'Для отправки запроса на разрешение введите /ask_for_permission')
+            return
+        disable_codes_task = {
+            'task_type': 'codes_off',
+            'chat_id': message.chat.id
+        }
+        main_vars.task_queue.append(disable_codes_task)
 
     @bot.message_handler(commands=['add_tag'])
     def add_tag(message):

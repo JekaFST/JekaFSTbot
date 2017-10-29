@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import threading
 from BotService import run_app
-from MainMethods import start, stop, login, send_task, start_updater, stop_updater, config, set_domain, \
+from MainMethods import start, stop_session, login, send_task, start_updater, stop_updater, config, set_domain, \
     set_game_id, send_code_main, send_code_bonus, send_coords, set_login, set_password, set_channel_name, start_channel, \
     stop_channel, set_updater_delay, send_all_sectors, send_all_helps, send_last_help, send_all_bonuses, join, \
-    reset_join, send_task_images
+    reset_join, send_task_images, enable_codes, disable_codes, start_session
 from MainThreadVars import MainVars
 from UpdaterMethods import updater
 
@@ -241,16 +241,29 @@ while True:
             main_vars.task_queue.remove(task)
             continue
 
-        if task['task_type'] == 'stop':
+        if task['task_type'] == 'start_session':
             if not task['chat_id'] in main_vars.sessions_dict.keys():
                 main_vars.bot.send_message(task['chat_id'],
                                            'Для данного чата не создана сессия. Для создания введите команду /start')
                 main_vars.task_queue.remove(task)
                 continue
             try:
-                stop(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']], main_vars.additional_ids)
+                start_session(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']], main_vars.additional_ids)
             except Exception:
-                main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду stop')
+                main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду start_session')
+            main_vars.task_queue.remove(task)
+            continue
+
+        if task['task_type'] == 'stop_session':
+            if not task['chat_id'] in main_vars.sessions_dict.keys():
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Для данного чата не создана сессия. Для создания введите команду /start')
+                main_vars.task_queue.remove(task)
+                continue
+            try:
+                stop_session(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']], main_vars.additional_ids)
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду stop_session')
             main_vars.task_queue.remove(task)
             continue
 
@@ -465,5 +478,33 @@ while True:
                            task['additional_chat_id'], main_vars.additional_ids)
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду reset_join')
+            main_vars.task_queue.remove(task)
+            continue
+
+        if task['task_type'] == 'codes_on':
+            if not task['chat_id'] in main_vars.sessions_dict.keys():
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Для данного чата не создана сессия. Для создания введите команду /start')
+                main_vars.task_queue.remove(task)
+                continue
+            try:
+                enable_codes(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду enable_codes')
+            main_vars.task_queue.remove(task)
+            continue
+
+        if task['task_type'] == 'codes_off':
+            if not task['chat_id'] in main_vars.sessions_dict.keys():
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Для данного чата не создана сессия. Для создания введите команду /start')
+                main_vars.task_queue.remove(task)
+                continue
+            try:
+                disable_codes(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду disable_codes')
             main_vars.task_queue.remove(task)
             continue

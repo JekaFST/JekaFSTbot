@@ -15,17 +15,27 @@ def compile_urls(urls, config):
 
 def login_to_en(session, bot, chat_id):
     got_cookies = upd_session_cookie(session, bot, chat_id)
-    if not got_cookies:
-        return
+    if got_cookies:
+        bot.send_message(chat_id, 'Бот успешно залогинился')
 
+
+def launch_session(session, bot, chat_id):
+    if not 'stoken' in session.config['cookie']:
+        bot.send_message(chat_id, 'Сессия не активирована - бот не залогинен\n'
+                                  'Проверьте конфигурацию /config и залогиньтесь /login_to_en')
     session.active = True
     session.current_level = get_current_level(session, bot, chat_id)
     if not session.current_level:
-        reply = 'Бот залогинился. Чтобы начать им пользоваться, нужно чтобы игра была в нормальном состоянии'
+        reply = 'Сессия активирована. Игра не в нормальном состоянии' \
+                'для запуска слежения введите /start_updater\r\n' \
+                'для остановки слежения введите /stop_updater\r\n' \
+                'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
+                'и запустите репстинг в канал /start_channel\r\n' \
+                'для остановки репостинга в канал введите /stop_channel'
         bot.send_message(chat_id, reply)
     else:
         session.number_of_levels = session.current_level['number_of_levels']
-        reply = 'Бот успешно залогинился, игра в нормальном состоянии\r\n' \
+        reply = 'Сессия активирована, игра в нормальном состоянии\r\n' \
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
                 'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
