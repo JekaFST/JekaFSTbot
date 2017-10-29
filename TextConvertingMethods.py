@@ -12,7 +12,7 @@ def send_object_text(text, header, bot, chat_id, parse=True):
         text = 'В тексте найдены и вырезаны скрипты и/или таблицы\r\n' \
                '\xE2\x9D\x97<b>Информация в чате может отличаться от движка</b>\xE2\x9D\x97\r\n' + text
     text = cut_script(text)
-    text = cut_formatting(text, tags_list)
+    text = cut_formatting(text, tags_list, bot, chat_id)
     text, images = cut_images(text)
     text, links = cut_links(text)
     text, coords = handle_coords(text)
@@ -47,7 +47,7 @@ def send_object_text(text, header, bot, chat_id, parse=True):
             bot.send_location(chat_id, latitude, longitude)
 
 
-def cut_formatting(text, tags_list):
+def cut_formatting(text, tags_list, bot, chat_id):
     text = text.replace('&amp;', '&')
     text = text.replace('<br/>', '\r\n')
     text = text.replace('<br />', '\r\n')
@@ -62,7 +62,7 @@ def cut_formatting(text, tags_list):
     text = text.replace('</b>', '')
 
     text = cut_style(text)
-    text = cut_tags(text, tags_list)
+    text = cut_tags(text, tags_list, bot, chat_id)
 
     h_tags = re.findall(r'<h\d>', text)
     soup = BeautifulSoup(text)
@@ -88,7 +88,7 @@ def cut_images(text):
             attr3 = attr3.encode('utf-8')
             if links:
                 for j, link in enumerate(links):
-                    if v in link:
+                    if v.encode('utf-8') in link:
                         replacement = '(link%s)' % j
                         text = text.replace(link, replacement)
                         text = text.replace(attr, '')
@@ -228,56 +228,33 @@ def cut_links(text, cut=False):
     return text, links
 
 
-def cut_rare_tags(text):
-    embeds = list()
-    audios = list()
-
-    soup = BeautifulSoup(text)
-    for i, embed in enumerate(soup.find_all('embed')):
-        for k,v in embed.attrs.items():
-            attr = ' %s=%s' % (k, v)
-            attr = attr.encode('utf-8')
-            attr2 = ' %s="%s"' % (k, v)
-            attr2 = attr2.encode('utf-8')
-            text = text.replace(attr, '')
-            text = text.replace(attr2, '')
-            emb = '(emb%s)' % i
-            embeds.append(embed.get('src').encode('utf-8'))
-        text = text.replace('<embed>', emb)
-        text = text.replace('<embed/>', emb)
-        text = text.replace('<embed />', emb)
-    text = text.replace('</embed>', '')
-
-    soup = BeautifulSoup(text)
-    for i, audio in enumerate(soup.find_all('audio')):
-        aud = '(audio%s)' % i
-        audios.append(audio.get('src').encode('utf-8'))
-        text = text.replace(str(audio), aud)
-
-    return text, embeds, audios
-
-
-def cut_tags(text, tags_list):
+def cut_tags(text, tags_list, bot, chat_id):
     for tag in tags_list:
         soup = BeautifulSoup(text)
-        for rep in soup.find_all(tag):
-            for k, v in rep.attrs.items():
-                if isinstance(v, list):
-                    attr = ' %s=%s' % (k, v[0])
-                    attr2 = ' %s="%s"' % (k, v[0])
-                    attr3 = " %s='%s'" % (k, v[0])
-                else:
-                    attr = ' %s=%s' % (k, v)
-                    attr2 = ' %s="%s"' % (k, v)
-                    attr3 = " %s='%s'" % (k, v)
-                text = text.replace(str(attr), '')
-                text = text.replace(str(attr2), '')
-                text = text.replace(str(attr3), '')
+        try:
+            for rep in soup.find_all(tag):
+                for k, v in rep.attrs.items():
+                    if isinstance(v, list):
+                        attr = ' %s=%s' % (k, v[0])
+                        attr2 = ' %s="%s"' % (k, v[0])
+                        attr3 = " %s='%s'" % (k, v[0])
+                    else:
+                        attr = ' %s=%s' % (k, v)
+                        attr2 = ' %s="%s"' % (k, v)
+                        attr3 = " %s='%s'" % (k, v)
+                    text = text.replace(str(attr.encode('utf-8')), '')
+                    text = text.replace(str(attr2.encode('utf-8')), '')
+                    text = text.replace(str(attr3.encode('utf-8')), '')
 
-            tag_rests = ['<%s>' % tag, '<%s >' % tag, '<%s/>' % tag, '<%s />' % tag, '<%s"">' % tag, '</%s>' % tag, '<%s  />' % tag, '<%s"" />' % tag]
-            for tag_rest in tag_rests:
-                for value in re.findall(tag_rest, text):
-                    text = text.replace(value, '')
+                tag_rests = ['<%s>' % tag, '<%s >' % tag, '<%s/>' % tag, '<%s />' % tag, '<%s"">' % tag, '</%s>' % tag, '<%s  />' % tag, '<%s"" />' % tag]
+                for tag_rest in tag_rests:
+                    for value in re.findall(tag_rest, text):
+                        text = text.replace(value, '')
+        except Exception:
+            bot.send_message(45839899, 'Unparsed tag "%s" in chat_id: %s\r\n\r\n' % (tag, str(chat_id)) + text,
+                             disable_web_page_preview=True)
+            with open("Exceptions_%s.txt" % str(chat_id), "a+") as raw_text_file:
+                raw_text_file.write('Unparsed tag "%s" in text:\r\n' % tag + text + '\r\n\r\n')
 
     return text
 
