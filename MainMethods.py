@@ -5,7 +5,7 @@ import re
 from BotSession import BotSession
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
     send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session, \
-    send_auth_messages_to_chat
+    send_auth_messages_to_chat, send_unclosed_bonuses_to_chat
 
 
 def start(chat_id, bot, sessions_dict):
@@ -137,11 +137,18 @@ def send_all_bonuses(chat_id, bot, session):
         bot.send_message(chat_id, 'Нельзя запросить бонусы при неактивной сессии')
 
 
+def send_unclosed_bonuses(chat_id, bot, session):
+    if session.active:
+        send_unclosed_bonuses_to_chat(bot, chat_id, session)
+    else:
+        bot.send_message(chat_id, 'Нельзя запросить не закрытые бонусы при неактивной сессии')
+
+
 def send_auth_messages(chat_id, bot, session):
     if session.active:
         send_auth_messages_to_chat(bot, chat_id, session)
     else:
-        bot.send_message(chat_id, 'Нельзя запросить бонусы при неактивной сессии')
+        bot.send_message(chat_id, 'Нельзя запросить сообщения от авторов при неактивной сессии')
 
 
 def start_updater(chat_id, bot, main_vars):

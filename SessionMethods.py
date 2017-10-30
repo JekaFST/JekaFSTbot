@@ -134,6 +134,13 @@ def send_all_bonuses_to_chat(bot, chat_id, session):
     send_bonuses(level, bot, chat_id)
 
 
+def send_unclosed_bonuses_to_chat(bot, chat_id, session):
+    level = get_current_level(session, bot, chat_id)
+    if not level:
+        return
+    send_unclosed_bonuses(level, bot, chat_id)
+
+
 def send_auth_messages_to_chat(bot, chat_id, session):
     level = get_current_level(session, bot, chat_id)
     if not level:
@@ -336,6 +343,26 @@ def send_bonuses(level, bot, chat_id):
                                                                                                          chat_id)
     else:
         bot.send_message(chat_id, 'Бонусов нет')
+
+
+def send_unclosed_bonuses(level, bot, chat_id):
+    bonuses = level['Bonuses']
+    unclosed_bonuses = list()
+    bonus_nums = ''
+    if bonuses:
+        if not isinstance(bonuses, list):
+            bot.send_message(chat_id, bonuses)
+            return
+
+        for bonus in bonuses:
+            if not bonus['IsAnswered']:
+                unclosed_bonuses.append(bonus)
+                bonus_nums += str(bonus['Number']) if not bonus_nums else ', ' + str(bonus['Number'])
+        if unclosed_bonuses:
+            num = 'Не закрыто <b>%s бонусов</b>:\r\n' % str(len(unclosed_bonuses))
+            bot.send_message(chat_id, num + bonus_nums, parse_mode='HTML')
+    else:
+        bot.send_message(chat_id, 'Не закрытых бонусов нет')
 
 
 def send_auth_messages(level, bot, chat_id):
