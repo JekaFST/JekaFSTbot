@@ -8,8 +8,8 @@ def send_object_text(text, header, bot, chat_id, parse=True):
     text_pieces = list()
     raw_text = text
 
-    if 'table' in text or 'script' in text:
-        text = 'В тексте найдены и вырезаны скрипты и/или таблицы\r\n' \
+    if 'table' in text or 'script' in text or 'object' in text or 'audio' in text:
+        text = 'В тексте найдены и вырезаны скрипты таблицы, аудию и/или иные объекты\r\n' \
                '\xE2\x9D\x97<b>Информация в чате может отличаться от движка</b>\xE2\x9D\x97\r\n' + text
     text = cut_script(text)
     text = cut_formatting(text, tags_list, bot, chat_id)
@@ -49,17 +49,14 @@ def send_object_text(text, header, bot, chat_id, parse=True):
 
 def cut_formatting(text, tags_list, bot, chat_id):
     text = text.replace('&amp;', '&')
-    text = text.replace('<br/>', '\r\n')
-    text = text.replace('<br />', '\r\n')
-    text = text.replace('<br>', '\r\n')
-    text = text.replace('<i>', '')
-    text = text.replace('</i>', '')
-    text = text.replace('<u>', '')
-    text = text.replace('</u>', '')
-    text = text.replace('<strong>', '')
-    text = text.replace('</strong>', '')
-    text = text.replace('<b>', '')
-    text = text.replace('</b>', '')
+
+    br_tags_to_cut = ['<br/>', '<br />', '<br>']
+    for br_tag in br_tags_to_cut:
+        text = text.replace(br_tag, '\r\n')
+
+    layout_tags_to_cut = ['<i>', '</i>', '<u>', '</u>', '<strong>', '</strong>', '<b>', '</b>']
+    for layout_tag in layout_tags_to_cut:
+        text = text.replace(layout_tag, '')
 
     text = cut_style(text)
     text = cut_tags(text, tags_list, bot, chat_id)
