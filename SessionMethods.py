@@ -2,7 +2,8 @@
 import requests
 import json
 from bs4 import BeautifulSoup
-from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task
+from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, \
+    send_adm_message
 from Config import game_wrong_statuses
 
 
@@ -131,6 +132,13 @@ def send_all_bonuses_to_chat(bot, chat_id, session):
     if not level:
         return
     send_bonuses(level, bot, chat_id)
+
+
+def send_auth_messages_to_chat(bot, chat_id, session):
+    level = get_current_level(session, bot, chat_id)
+    if not level:
+        return
+    send_auth_messages(level, bot, chat_id)
 
 
 def get_current_game_model(session, bot, chat_id, from_updater):
@@ -328,6 +336,19 @@ def send_bonuses(level, bot, chat_id):
                                                                                                          chat_id)
     else:
         bot.send_message(chat_id, 'Бонусов нет')
+
+
+def send_auth_messages(level, bot, chat_id):
+    messages = level['Messages']
+    if messages:
+        if not isinstance(messages, list):
+            bot.send_message(chat_id, messages)
+            return
+
+        for message in messages:
+            send_adm_message(message, bot, chat_id)
+    else:
+        bot.send_message(chat_id, 'Сообщений от авторов нет')
 
 
 def send_task_images(level, bot, chat_id):

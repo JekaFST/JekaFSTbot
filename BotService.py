@@ -109,6 +109,7 @@ def run_app(bot, main_vars):
                                           '/helps - прислать все подсказки\n'
                                           '/last_help - прислать последнюю пришедшую подсказку\n'
                                           '/bonuses - прислать бонусы\n'
+                                          '/messages - прислать сообщения авторов\n'
                                           '/start_updater - запустить слежение\n'
                                           '/stop_updater - остановить слежение\n'
                                           '/set_channel_name - задать имя канала для репостинга (через пробел)\n'
@@ -349,6 +350,30 @@ def run_app(bot, main_vars):
                 'additional_chat_id': message.chat.id
             }
             main_vars.task_queue.append(send_all_bonuses_task)
+            return
+        if message.chat.id not in main_vars.allowed_chat_ids:
+            bot.send_message(message.chat.id,
+                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
+                             'Для отправки запроса на разрешение введите /ask_for_permission')
+            return
+
+    @bot.message_handler(commands=['messages'])
+    def send_auth_messages(message):
+        if message.chat.id in main_vars.allowed_chat_ids:
+            send_auth_messages_task = {
+                'task_type': 'send_messages',
+                'chat_id': message.chat.id,
+                'additional_chat_id': None
+            }
+            main_vars.task_queue.append(send_auth_messages_task)
+            return
+        elif message.chat.id in main_vars.additional_ids.keys():
+            send_auth_messages_task = {
+                'task_type': 'send_messages',
+                'chat_id': None,
+                'additional_chat_id': message.chat.id
+            }
+            main_vars.task_queue.append(send_auth_messages_task)
             return
         if message.chat.id not in main_vars.allowed_chat_ids:
             bot.send_message(message.chat.id,
