@@ -21,7 +21,6 @@ class BotSession(object):
                    }
         self.current_level = None
         self.urls = dict()
-        self.number_of_levels = None
         self.game_answered_bonus_ids = list()
         self.help_statuses = dict()
         self.bonus_statuses = dict()
@@ -37,3 +36,4 @@ class BotSession(object):
         self.current_game_model = None
         self.put_updater_task = None
         self.send_codes = True
+        self.dismissed_level_ids = list()

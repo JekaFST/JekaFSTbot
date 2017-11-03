@@ -5,7 +5,7 @@ from CommonMethods import send_help, send_time_to_help, send_task, time_converte
 
 
 def updater(chat_id, bot, session):
-    loaded_level = get_current_level(session, bot, chat_id, from_updater=True)
+    loaded_level, levels = get_current_level(session, bot, chat_id, from_updater=True)
 
     if not loaded_level:
         return
@@ -17,10 +17,9 @@ def updater(chat_id, bot, session):
 
     if not session.current_level:
         session.current_level = loaded_level
-        session.number_of_levels = loaded_level['number_of_levels']
         session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
                                                                         session.message_statuses = reset_level_vars()
-        session.sectors_to_close = send_up_info(loaded_level, loaded_helps, loaded_bonuses, bot, chat_id,
+        session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
                                                 session.channel_name, session.use_channel)
         if session.channel_name and session.use_channel:
             session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
@@ -36,7 +35,7 @@ def updater(chat_id, bot, session):
         session.current_level = loaded_level
         session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
                                                                         session.message_statuses = reset_level_vars()
-        session.sectors_to_close = send_up_info(loaded_level, loaded_helps, loaded_bonuses, bot, chat_id,
+        session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
                                                 session.channel_name, session.use_channel)
         if session.channel_name and session.use_channel:
             session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
@@ -74,6 +73,7 @@ def updater(chat_id, bot, session):
             and session.sectors_message_id:
         session.sectors_to_close = channel_sectors_editor(loaded_level, session.sectors_to_close,
                                                           bot, session.channel_name, session.sectors_message_id)
+    levels_parcer(levels, session, bot, chat_id)
 
 
 def reset_level_vars():
@@ -85,10 +85,11 @@ def reset_level_vars():
     return help_statuses, bonus_statuses, time_to_up_sent, answer_statuses, message_statuses
 
 
-def send_up_info(loaded_level, loaded_helps, loaded_bonuses, bot, chat_id, channel_name, use_channel, block=''):
+def send_up_info(loaded_level, number_of_levels, loaded_helps, loaded_bonuses, bot, chat_id, channel_name, use_channel,
+                 block=''):
     up = '\xE2\x9D\x97#АП'
     name = loaded_level['Name'].encode('utf-8') if loaded_level['Name'] else 'без названия'
-    level = '\r\n<b>Уровень %s из %s: %s</b>' % (str(loaded_level['Number']), str(loaded_level['number_of_levels']),
+    level = '\r\n<b>Уровень %s из %s: %s</b>' % (str(loaded_level['Number']), str(number_of_levels),
                                                  name)
     time_to_up = '\r\nБез автоперехода' if loaded_level['Timeout'] == 0 else '\r\nАвтопереход: %s' %\
                                                                              time_converter(loaded_level['Timeout'])
@@ -224,6 +225,21 @@ def message_parcer(loaded_messages, message_statuses, sent_messages, bot, chat_i
                     send_adm_message(message, bot, channel_name)
                 message_statuses[message['MessageId']]['message_not_sent'] = False
                 sent_messages.append(message['MessageId'])
+
+
+def levels_parcer(levels, session, bot, chat_id):
+    for level in levels:
+        if level['Dismissed'] and level['LevelId'] not in session.dismissed_level_ids:
+            text = '\xE2\x9D\x97 <b>Уровень %s, "%s" - снят</b> \xE2\x9D\x97' % (str(level['LevelNumber']),
+                                                                                 level['LevelName'].encode('utf-8')) \
+                if level['LevelName'] else '\xE2\x9D\x97 <b>Уровень %s - снят</b> \xE2\x9D\x97' % str(level['LevelNumber'])
+            bot.send_message(chat_id, text, parse_mode='HTML')
+            session.dismissed_level_ids.append(level['LevelId'])
+        if not level['Dismissed'] and level['LevelId'] in session.dismissed_level_ids:
+            text = '\xE2\x9D\x97 <b>Уровень %s, "%s" - возвращен</b> \xE2\x9D\x97' % (str(level['LevelNumber']), level['LevelName'].encode('utf-8')) \
+                if level['LevelName'] else '\xE2\x9D\x97 <b>Уровень %s - возвращен</b> \xE2\x9D\x97' % str(level['LevelNumber'])
+            bot.send_message(chat_id, text, parse_mode='HTML')
+            session.dismissed_level_ids.remove(level['LevelId'])
 
 
 def channel_sectors_editor(loaded_level, old_sectors_to_close, bot, channel_name, message_id):

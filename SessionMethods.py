@@ -26,7 +26,7 @@ def launch_session(session, bot, chat_id):
                                   'Проверьте конфигурацию /config и залогиньтесь /login_to_en')
         return
     session.active = True
-    session.current_level = get_current_level(session, bot, chat_id)
+    session.current_level, _ = get_current_level(session, bot, chat_id)
     if not session.current_level:
         reply = 'Сессия активирована. Игра не в нормальном состоянии\r\n' \
                 'для запуска слежения введите /start_updater\r\n' \
@@ -36,7 +36,6 @@ def launch_session(session, bot, chat_id):
                 'для остановки репостинга в канал введите /stop_channel'
         bot.send_message(chat_id, reply)
     else:
-        session.number_of_levels = session.current_level['number_of_levels']
         reply = 'Сессия активирована, игра в нормальном состоянии\r\n' \
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
@@ -81,14 +80,14 @@ def get_current_level(session, bot, chat_id, from_updater=False):
     game_model = get_current_game_model(session, bot, chat_id, from_updater)
     if game_model:
         current_level_info = game_model['Level']
-        current_level_info['number_of_levels'] = len(game_model['Levels'])
-        return current_level_info
+        levels = game_model['Levels']
+        return current_level_info, levels
     else:
         return None
 
 
 def send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=False):
-    level = get_current_level(session, bot, chat_id)
+    level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
     is_repeat_code = check_repeat_code(level, code)
@@ -96,56 +95,56 @@ def send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=False
 
 
 def send_task_to_chat(bot, chat_id, session):
-    level = get_current_level(session, bot, chat_id)
+    level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
     send_task(level, bot, chat_id)
 
 
 def send_task_images_to_chat(bot, chat_id, session):
-    level = get_current_level(session, bot, chat_id)
+    level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
     send_task_images(level, bot, chat_id)
 
 
 def send_all_sectors_to_chat(bot, chat_id, session):
-    level = get_current_level(session, bot, chat_id)
+    level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
     send_sectors(level, bot, chat_id)
 
 
 def send_all_helps_to_chat(bot, chat_id, session):
-    level = get_current_level(session, bot, chat_id)
+    level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
     send_helps(level, bot, chat_id)
 
 
 def send_last_help_to_chat(bot, chat_id, session):
-    level = get_current_level(session, bot, chat_id)
+    level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
     send_last_help(level, bot, chat_id)
 
 
 def send_all_bonuses_to_chat(bot, chat_id, session):
-    level = get_current_level(session, bot, chat_id)
+    level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
     send_bonuses(level, bot, chat_id)
 
 
 def send_unclosed_bonuses_to_chat(bot, chat_id, session):
-    level = get_current_level(session, bot, chat_id)
+    level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
     send_unclosed_bonuses(level, bot, chat_id)
 
 
 def send_auth_messages_to_chat(bot, chat_id, session):
-    level = get_current_level(session, bot, chat_id)
+    level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
     send_auth_messages(level, bot, chat_id)
@@ -249,7 +248,8 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
 
     code_request = generate_code_request(session.config['code_request'], level, code, bonus_only)
 
-    response = requests.post(session.urls['game_url_js'], data=code_request, headers={'Cookie': session.config['cookie']})
+    response = requests.post(session.urls['game_url_js'], data=code_request,
+                             headers={'Cookie': session.config['cookie']})
     try:
         response_json = json.loads(response.text)
     except Exception:
