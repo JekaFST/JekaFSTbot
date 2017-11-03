@@ -83,7 +83,7 @@ def get_current_level(session, bot, chat_id, from_updater=False):
         levels = game_model['Levels']
         return current_level_info, levels
     else:
-        return None
+        return None, None
 
 
 def send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=False):
