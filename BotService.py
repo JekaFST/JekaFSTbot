@@ -25,8 +25,9 @@ def run_app(bot, main_vars):
         if message.chat.id in main_vars.allowed_chat_ids:
             bot.send_message(message.chat.id, 'Данный чат уже разрешен для работы с ботом')
             return
-        text = '<b>%s</b> запрашивает разрешение на работу с ботом из чата %s\r\nchat_id: %s' % \
-               (str(message.from_user.username), str(message.chat.title), str(message.chat.id))
+        text = '<b>%s</b> запрашивает разрешение на работу с ботом из чата "%s"\r\nchat_id: %s' % \
+               (str(message.from_user.username.encode('utf-8')), str(message.chat.title.encode('utf-8')),
+                str(message.chat.id))
         bot.send_message(45839899, text, parse_mode='HTML')
 
     @bot.message_handler(commands=['join'])
@@ -74,7 +75,7 @@ def run_app(bot, main_vars):
         if message.chat.id != 45839899:
             bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
             return
-        chat_id = int(re.search(r'[-\d]+', str(message.text)).group(0))
+        chat_id = int(re.search(r'[-\d]+', str(message.text.encode('utf-8'))).group(0))
         main_vars.allowed_chat_ids.append(chat_id)
         if chat_id in main_vars.allowed_chat_ids:
             bot.send_message(chat_id, 'Этот чат добавлен в список разрешенных для работы с ботом')
@@ -196,7 +197,7 @@ def run_app(bot, main_vars):
         set_domain_task = {
             'task_type': 'domain',
             'chat_id': message.chat.id,
-            'new_domain': re.findall(r'/domain\s*(.+)', str(message.text))[0]
+            'new_domain': re.findall(r'/domain\s*(.+)', str(message.text.encode('utf-8')))[0]
         }
         main_vars.task_queue.append(set_domain_task)
 
@@ -209,7 +210,7 @@ def run_app(bot, main_vars):
         set_game_id_task = {
             'task_type': 'game_id',
             'chat_id': message.chat.id,
-            'new_game_id': re.search(r'[\d]+', str(message.text)).group(0)
+            'new_game_id': re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)
         }
         main_vars.task_queue.append(set_game_id_task)
 
@@ -426,7 +427,7 @@ def run_app(bot, main_vars):
         set_delay_task = {
             'task_type': 'delay',
             'chat_id': message.chat.id,
-            'new_delay': int(re.search(r'[\d]+', str(message.text)).group(0))
+            'new_delay': int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0))
         }
         main_vars.task_queue.append(set_delay_task)
 
@@ -451,7 +452,7 @@ def run_app(bot, main_vars):
         set_channel_name_task = {
             'task_type': 'channel_name',
             'chat_id': message.chat.id,
-            'new_channel_name': re.findall(r'/set_channel_name\s*(.+)', str(message.text))[0]
+            'new_channel_name': re.findall(r'/set_channel_name\s*(.+)', str(message.text.encode('utf-8')))[0]
         }
         main_vars.task_queue.append(set_channel_name_task)
         main_vars.id += 1
@@ -509,7 +510,7 @@ def run_app(bot, main_vars):
         if message.chat.id != 45839899:
             bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
             return
-        tag_to_add = re.findall(r'/add_tag\s*(.+)', str(message.text))[0]
+        tag_to_add = re.findall(r'/add_tag\s*(.+)', str(message.text.encode('utf-8')))[0]
         tags_list.append(tag_to_add)
         if tag_to_add in tags_list:
             bot.send_message(message.chat.id, 'Тег успешно добавлен в обработчик')
@@ -528,8 +529,6 @@ def run_app(bot, main_vars):
                             r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
                             r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
         if message.text[0] == '!':
-            # code = (message.text[1:]).lower().encode('utf-8') if message.text[1] != ' ' \
-            #     else (message.text[2:]).lower().encode('utf-8')
             code = re.findall(r'!\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
             if message.chat.id in main_vars.allowed_chat_ids:
                 send_code_main_task = {
@@ -552,8 +551,6 @@ def run_app(bot, main_vars):
                 main_vars.task_queue.append(send_code_main_task)
                 return
         if message.text[0] == '?':
-            # code = (message.text[1:]).lower().encode('utf-8') if message.text[1] != ' ' \
-            #     else (message.text[2:]).lower().encode('utf-8')
             code = re.findall(r'\?\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
             if message.chat.id in main_vars.allowed_chat_ids:
                 send_code_bonus_task = {

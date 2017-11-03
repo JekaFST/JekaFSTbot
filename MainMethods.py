@@ -168,11 +168,6 @@ def start_updater(chat_id, bot, main_vars):
 def updater_scheduler(chat_id, bot, main_vars):
     session = main_vars.sessions_dict[chat_id]
     while not session.stop_updater:
-        # chat_ids = list()
-        # for task in main_vars.task_queue:
-        #     if task['task_type'] == 'updater':
-        #         chat_ids.append(task['chat_id'])
-        # if chat_id not in chat_ids:
         if session.put_updater_task:
             time.sleep(session.delay)
             updater_task = {
@@ -201,6 +196,8 @@ def stop_updater(session):
 
 
 def set_channel_name(chat_id, bot, session, new_channel_name):
+    if "@" not in new_channel_name:
+        new_channel_name = "@" + new_channel_name
     session.channel_name = new_channel_name
     reply = 'Канал успешно задан' if session.channel_name == new_channel_name else 'Канал не задан, повторите'
     bot.send_message(chat_id, reply)
