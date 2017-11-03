@@ -245,12 +245,10 @@ def get_sectors_to_close(sectors, get_sector_names=False):
         sectors_to_close = '1'
     elif get_sector_names:
         for i, sector in enumerate(get_unclosed_sectors(sectors)):
-            sectors_to_close = sectors_to_close + sector['Name'].encode('utf-8') if i == 0 else sectors_to_close + \
-                                                                                '\r\n' + sector['Name'].encode('utf-8')
+            sectors_to_close += sector['Name'].encode('utf-8') if i == 0 else '\r\n' + sector['Name'].encode('utf-8')
     else:
         for i, sector in enumerate(get_unclosed_sectors(sectors)):
-            sectors_to_close = sectors_to_close + str(sector['Order']) if i == 0 else sectors_to_close + \
-                                                                                   ', ' + str(sector['Order'])
+            sectors_to_close += str(sector['Order']) if i == 0 else ', ' + str(sector['Order'])
     return sectors_to_close
 
 

@@ -21,13 +21,14 @@ def login_to_en(session, bot, chat_id):
 
 
 def launch_session(session, bot, chat_id):
-    if not 'stoken' in session.config['cookie']:
+    if 'stoken' not in session.config['cookie']:
         bot.send_message(chat_id, 'Сессия не активирована - бот не залогинен\n'
                                   'Проверьте конфигурацию /config и залогиньтесь /login_to_en')
+        return
     session.active = True
     session.current_level = get_current_level(session, bot, chat_id)
     if not session.current_level:
-        reply = 'Сессия активирована. Игра не в нормальном состоянии' \
+        reply = 'Сессия активирована. Игра не в нормальном состоянии\r\n' \
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
                 'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
@@ -47,6 +48,8 @@ def launch_session(session, bot, chat_id):
 
 def upd_session_cookie(session, bot, chat_id):
     try:
+        if session.config['en_domain'] not in session.urls['login_url']:
+            session.urls = compile_urls(session.urls, session.config)
         response = requests.post(session.urls['login_url'], data={'Login': session.config['Login'],
                                                                   'Password': session.config['Password']},
                                  headers={'Cookie': 'lang=ru'})
@@ -152,6 +155,8 @@ def get_current_game_model(session, bot, chat_id, from_updater):
     for i in xrange(2):
         if not i == 0:
             _ = upd_session_cookie(session, bot, chat_id)
+        if session.config['en_domain'] or session.config['game_id'] not in session.urls['game_url_js']:
+            session.urls = compile_urls(session.urls, session.config)
         response = requests.get(session.urls['game_url_js'], headers={'Cookie': session.config['cookie']})
         try:
             response_json = json.loads(response.text)
@@ -224,14 +229,13 @@ def get_answered_objects_for_code(code, answered_sectors, opened_bonuses):
 
     for sector in answered_sectors:
         if code == (sector['Answer']['Answer']).lower().encode('utf-8'):
-            answered_objects = answered_objects + sector['Name'].encode('utf-8') if not answered_objects else \
-                answered_objects + ', ' + sector['Name'].encode('utf-8')
+            answered_objects += sector['Name'].encode('utf-8') if not answered_objects \
+                else ', ' + sector['Name'].encode('utf-8')
 
     for bonus in opened_bonuses:
         if code == (bonus['Answer']['Answer']).lower().encode('utf-8'):
             bonus_name = bonus['Name'].encode('utf-8') if bonus['Name'] else "Бонус " + str(bonus['Number'])
-            answered_objects = answered_objects + bonus_name if not answered_objects else \
-                answered_objects + ', ' + bonus_name
+            answered_objects += bonus_name if not answered_objects else ', ' + bonus_name
 
     return answered_objects
 

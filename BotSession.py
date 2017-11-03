@@ -3,8 +3,8 @@ class BotSession(object):
     def __init__(self):
         self.stop_updater = None
         self.use_channel = False
-        # self.channel_name = '@fst_channel'
-        self.channel_name = '@nnm_channel'
+        self.channel_name = '@fst_channel'
+        # self.channel_name = '@nnm_channel'
         self.active = False
         self.config = {
                     'game_url_ending': '/gameengines/encounter/play/',
@@ -16,7 +16,8 @@ class BotSession(object):
                     'Password': 'jekabot_1412',
                     'code_request': {},
                     'en_domain': 'http://demo.en.cx',
-                    'game_id': '26991'
+                    'game_id': '26991',
+                    'cookie': ''
                    }
         self.current_level = None
         self.urls = dict()
