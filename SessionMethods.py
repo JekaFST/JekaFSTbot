@@ -26,8 +26,8 @@ def launch_session(session, bot, chat_id):
                                   'Проверьте конфигурацию /config и залогиньтесь /login_to_en')
         return
     session.active = True
-    session.current_level, _ = get_current_level(session, bot, chat_id)
-    if not session.current_level:
+    session.current_level, session.storm_levels, _ = initiate_session_vars(session, bot, chat_id)
+    if not session.current_level or session.storm_levels:
         reply = 'Сессия активирована. Игра не в нормальном состоянии\r\n' \
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
@@ -76,14 +76,98 @@ def upd_session_cookie(session, bot, chat_id):
     return True
 
 
+def initiate_session_vars(session, bot, chat_id, from_updater=False):
+    game_model = get_current_game_model(session, bot, chat_id, from_updater)
+    if game_model and game_model['LevelSequence'] == 3:
+        levels = game_model['Levels']
+        storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater)
+        session.storm_game = True
+        return None, storm_levels, levels
+    elif game_model:
+        current_level_info = game_model['Level']
+        levels = game_model['Levels']
+        return current_level_info, None, levels
+    else:
+        return None, None, None
+
+
+def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=None):
+    for i in xrange(2):
+        if not i == 0:
+            _ = upd_session_cookie(session, bot, chat_id)
+        if session.config['en_domain'] or session.config['game_id'] not in session.urls['game_url_js']:
+            session.urls = compile_urls(session.urls, session.config)
+        if not storm_level_url:
+            response = requests.get(session.urls['game_url_js'], headers={'Cookie': session.config['cookie']})
+        else:
+            response = requests.get(storm_level_url, headers={'Cookie': session.config['cookie']})
+        try:
+            response_json = json.loads(response.text)
+            break
+        except Exception:
+            if i == 0:
+                continue
+            if "Your requests have been classified as robot's requests." in response.text:
+                session.stop_updater = True
+                reply = 'Сработала защита движка от повторяющихся запросов.' \
+                        ' Необходимо перелогиниться и перезапустить апдейтер.\r\n/login_to_en\r\n/start_updater'
+                bot.send_message(chat_id, reply)
+                return False
+            else:
+                session.stop_updater = True
+                bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
+                return False
+
+    game_model = check_game_model(response_json, session, bot, chat_id, from_updater)
+    return game_model
+
+
+def check_game_model(game_model, session, bot, chat_id, from_updater=False):
+    if game_model['Event'] == 0:
+        # session.current_game_model = game_model
+        return game_model
+
+    loaded_game_wrong_status = None
+    if game_model['Event'] in game_wrong_statuses.keys():
+        if game_model['Event'] == 17:
+            session.stop_updater = True
+            session.use_channel = False
+            session.active = False
+        for k, v in game_wrong_statuses.items():
+            if game_model['Event'] == k:
+                loaded_game_wrong_status = v
+    else:
+        loaded_game_wrong_status = 'Состояние игры не соответствует ни одному из ожидаемых. Проверьте настройки бота'
+
+    if not from_updater or not session.game_model_status == loaded_game_wrong_status:
+        bot.send_message(chat_id, loaded_game_wrong_status)
+        session.game_model_status = loaded_game_wrong_status
+
+    return False
+
+
 def get_current_level(session, bot, chat_id, from_updater=False):
     game_model = get_current_game_model(session, bot, chat_id, from_updater)
     if game_model:
-        current_level_info = game_model['Level']
+        current_level = game_model['Level']
         levels = game_model['Levels']
-        return current_level_info, levels
+        return current_level, levels
     else:
         return None, None
+
+
+def get_storm_levels(levels_qty, session, bot, chat_id, from_updater=False):
+    storm_levels = list()
+    for i in xrange(levels_qty):
+        storm_levels.append(get_storm_level(i+1, session, bot, chat_id, from_updater))
+    return storm_levels
+
+
+def get_storm_level(level_number, session, bot, chat_id, from_updater):
+    url_ending = '?level=%s&json=1' % str(level_number)
+    url = str(session.config['en_domain'] + session.config['game_url_ending'] + session.config['game_id'] + url_ending)
+    storm_level_game_model = get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=url)
+    return storm_level_game_model['Level']
 
 
 def send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=False):
@@ -148,58 +232,6 @@ def send_auth_messages_to_chat(bot, chat_id, session):
     if not level:
         return
     send_auth_messages(level, bot, chat_id)
-
-
-def get_current_game_model(session, bot, chat_id, from_updater):
-    for i in xrange(2):
-        if not i == 0:
-            _ = upd_session_cookie(session, bot, chat_id)
-        if session.config['en_domain'] or session.config['game_id'] not in session.urls['game_url_js']:
-            session.urls = compile_urls(session.urls, session.config)
-        response = requests.get(session.urls['game_url_js'], headers={'Cookie': session.config['cookie']})
-        try:
-            response_json = json.loads(response.text)
-            break
-        except Exception:
-            if i == 0:
-                continue
-            if "Your requests have been classified as robot's requests." in response.text:
-                session.stop_updater = True
-                reply = 'Сработала защита движка от повторяющихся запросов.' \
-                        ' Необходимо перелогиниться и перезапустить апдейтер.\r\n/login_to_en\r\n/start_updater'
-                bot.send_message(chat_id, reply)
-                return False
-            else:
-                session.stop_updater = True
-                bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
-                return False
-
-    game_model = check_game_model(response_json, session, bot, chat_id, from_updater)
-    return game_model
-
-
-def check_game_model(game_model, session, bot, chat_id, from_updater=False):
-    if game_model['Event'] == 0:
-        session.current_game_model = game_model
-        return game_model
-
-    loaded_game_wrong_status = None
-    if game_model['Event'] in game_wrong_statuses.keys():
-        if game_model['Event'] == 17:
-            session.stop_updater = True
-            session.use_channel = False
-            session.active = False
-        for k, v in game_wrong_statuses.items():
-            if game_model['Event'] == k:
-                loaded_game_wrong_status = v
-    else:
-        loaded_game_wrong_status = 'Состояние игры не соответствует ни одному из ожидаемых. Проверьте настройки бота'
-
-    if not from_updater or not session.game_model_status == loaded_game_wrong_status:
-        bot.send_message(chat_id, loaded_game_wrong_status)
-        session.game_model_status = loaded_game_wrong_status
-
-    return False
 
 
 def check_repeat_code(level, code, is_repeat_code=False):

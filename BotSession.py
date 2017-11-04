@@ -16,10 +16,11 @@ class BotSession(object):
                     'Password': 'jekabot_1412',
                     'code_request': {},
                     'en_domain': 'http://demo.en.cx',
-                    'game_id': '26991',
+                    'game_id': '27495',
                     'cookie': ''
                    }
         self.current_level = None
+        self.storm_levels = None
         self.urls = dict()
         self.game_answered_bonus_ids = list()
         self.help_statuses = dict()
@@ -33,7 +34,8 @@ class BotSession(object):
         self.game_model_status = None
         self.delay = 2
         self.send_coords_active = True
-        self.current_game_model = None
+        # self.current_game_model = None
         self.put_updater_task = None
         self.send_codes = True
         self.dismissed_level_ids = list()
+        self.storm_game = False
