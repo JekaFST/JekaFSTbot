@@ -5,6 +5,92 @@ from CommonMethods import send_help, send_time_to_help, send_task, time_converte
 
 
 def updater(chat_id, bot, session):
+    if not session.storm_game:
+        linear_updater(chat_id, bot, session)
+    else:
+        storm_updater(chat_id, bot, session)
+
+
+def linear_updater(chat_id, bot, session):
+    loaded_level, levels = get_current_level(session, bot, chat_id, from_updater=True)
+
+    if not loaded_level:
+        return
+
+    loaded_helps = loaded_level['Helps']
+    loaded_bonuses = loaded_level['Bonuses']
+    loaded_sectors = loaded_level['Sectors']
+    loaded_messages = loaded_level['Messages']
+
+    if not session.current_level:
+        session.current_level = loaded_level
+        session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
+                                                                        session.message_statuses = reset_level_vars()
+        session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
+                                                session.channel_name, session.use_channel)
+        if session.channel_name and session.use_channel:
+            session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
+                                                                          session.channel_name)
+        session.help_statuses = fill_help_statuses(loaded_helps, session.help_statuses)
+        session.bonus_statuses = fill_bonus_statuses(loaded_bonuses, session.game_answered_bonus_ids,
+                                                     session.bonus_statuses)
+        session.sector_statuses = fill_sector_statuses(loaded_sectors, session.sector_statuses)
+        session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
+        return
+
+    if loaded_level['LevelId'] != session.current_level['LevelId']:
+        session.current_level = loaded_level
+        session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
+                                                                        session.message_statuses = reset_level_vars()
+        session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
+                                                session.channel_name, session.use_channel)
+        if session.channel_name and session.use_channel:
+            session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
+                                                                          session.channel_name)
+        session.help_statuses = fill_help_statuses(loaded_helps, session.help_statuses)
+        session.bonus_statuses = fill_bonus_statuses(loaded_bonuses, session.game_answered_bonus_ids,
+                                                     session.bonus_statuses)
+        session.sector_statuses = fill_sector_statuses(loaded_sectors, session.sector_statuses)
+        session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
+        return
+
+    session.current_level = loaded_level
+
+    if not loaded_level['Timeout'] == 0 and not session.time_to_up_sent\
+            and loaded_level['TimeoutSecondsRemain'] <= 300:
+        message = 'До автоперехода < 5 мин'
+        bot.send_message(chat_id, message)
+        session.time_to_up_sent = True
+
+    if loaded_messages:
+        message_parcer(loaded_messages, session.message_statuses, session.sent_messages, bot, chat_id,
+                       session.channel_name, session.use_channel)
+
+    if loaded_sectors:
+        codes_to_find = loaded_level['SectorsLeftToClose']
+        sectors_parcer(loaded_sectors, codes_to_find, session.sector_statuses, bot, chat_id)
+
+    if loaded_helps:
+        help_parcer(loaded_helps, session.help_statuses, bot, chat_id, session.channel_name, session.use_channel)
+
+    if loaded_bonuses:
+        bonus_parcer(loaded_bonuses, session.bonus_statuses, session.game_answered_bonus_ids, bot, chat_id)
+
+    if session.channel_name and session.use_channel and session.sectors_to_close and session.sectors_to_close != '1'\
+            and session.sectors_message_id:
+        session.sectors_to_close = channel_sectors_editor(loaded_level, session.sectors_to_close,
+                                                          bot, session.channel_name, session.sectors_message_id)
+    levels_parcer(levels, session, bot, chat_id)
+
+
+def storm_updater(chat_id, bot, session):
+
+
+    get_storm_level(level_number, session, bot, chat_id, from_updater)
+    get_storm_levels(levels_qty, session, bot, chat_id, from_updater=False):
+
+
+
     loaded_level, levels = get_current_level(session, bot, chat_id, from_updater=True)
 
     if not loaded_level:
