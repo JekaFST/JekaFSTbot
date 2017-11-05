@@ -84,7 +84,6 @@ def linear_updater(chat_id, bot, session):
 
 
 def storm_updater(chat_id, bot, session):
-    # заполнение переменных, если игра началась после инициации. Нужно инициировать лист уровней
     if not session.storm_levels:
         _, session.storm_levels = initiate_session_vars(session, bot, chat_id, from_updater=True)
         return
