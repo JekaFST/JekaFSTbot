@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from SessionMethods import get_current_level, get_storm_level, initiate_session_vars
+from SessionMethods import get_current_level, get_storm_level, get_storm_levels, get_current_game_model
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
     send_bonus_award_answer, send_adm_message
 
@@ -85,9 +85,9 @@ def linear_updater(chat_id, bot, session):
 
 def storm_updater(chat_id, bot, session):
     if not session.storm_levels:
-        # levels = game_model['Levels']
-        # storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater)
-        _, session.storm_levels = initiate_session_vars(session, bot, chat_id, from_updater=True)
+        game_model = get_current_game_model(session, bot, chat_id, from_updater=True)
+        levels = game_model['Levels']
+        session.storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater=True)
         return
 
     if not session.help_statuses or not session.bonus_statuses or not session.sector_statuses or not session.message_statuses:
@@ -107,7 +107,7 @@ def storm_updater(chat_id, bot, session):
         loaded_sectors = loaded_storm_level['Sectors']
         loaded_messages = loaded_storm_level['Messages']
 
-        level = loaded_storm_level
+        session.storm_levels[level['Number']-1] = loaded_storm_level
         levelmark = '<b>Уровень %s: %s</b>' % (str(loaded_storm_level['Number']), loaded_storm_level['Name'].encode('utf-8')) \
             if loaded_storm_level['Name'] else '<b>Уровень %s</b>' % str(loaded_storm_level['Number'])
 
