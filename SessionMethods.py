@@ -27,8 +27,16 @@ def launch_session(session, bot, chat_id):
         return
     session.active = True
     session.current_level, session.storm_levels = initiate_session_vars(session, bot, chat_id)
-    if not session.current_level or session.storm_levels:
-        reply = 'Сессия активирована. Игра не в нормальном состоянии\r\n' \
+    if session.current_level:
+        reply = 'Сессия активирована, игра в нормальном состоянии\r\n' \
+                'для запуска слежения введите /start_updater\r\n' \
+                'для остановки слежения введите /stop_updater\r\n' \
+                'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
+                'и запустите репстинг в канал /start_channel\r\n' \
+                'для остановки репостинга в канал введите /stop_channel'
+        bot.send_message(chat_id, reply)
+    elif session.storm_levels:
+        reply = 'Сессия активирована, штурмовая игра в нормальном состоянии\r\n' \
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
                 'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
@@ -36,7 +44,7 @@ def launch_session(session, bot, chat_id):
                 'для остановки репостинга в канал введите /stop_channel'
         bot.send_message(chat_id, reply)
     else:
-        reply = 'Сессия активирована, игра в нормальном состоянии\r\n' \
+        reply = 'Сессия активирована. Игра не в нормальном состоянии\r\n' \
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
                 'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
@@ -178,6 +186,14 @@ def send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=False
         return
     is_repeat_code = check_repeat_code(level, code)
     send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bonus_only)
+
+
+def send_code_to_storm_level(code, level_number, bot, chat_id, message_id, session, bonus_only=False):
+    storm_level = get_storm_level(level_number, session, bot, chat_id, from_updater=False)
+    if not storm_level:
+        return
+    is_repeat_code = check_repeat_code(storm_level, code)
+    send_code(session, storm_level, code, bot, chat_id, message_id, is_repeat_code, bonus_only)
 
 
 def send_task_to_chat(bot, chat_id, session):

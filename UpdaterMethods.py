@@ -85,6 +85,8 @@ def linear_updater(chat_id, bot, session):
 
 def storm_updater(chat_id, bot, session):
     if not session.storm_levels:
+        # levels = game_model['Levels']
+        # storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater)
         _, session.storm_levels = initiate_session_vars(session, bot, chat_id, from_updater=True)
         return
 
