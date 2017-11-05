@@ -116,7 +116,7 @@ def storm_updater(chat_id, bot, session):
         if loaded_sectors:
             codes_to_find = loaded_storm_level['SectorsLeftToClose']
             sectors_parcer(loaded_sectors, codes_to_find,
-                           session.sector_statuses[loaded_storm_level['LevelId']]['sector_statuses'], bot, chat_id,
+                           session.sector_statuses[loaded_storm_level['LevelId']], bot, chat_id,
                            levelmark=levelmark, storm=True)
 
         if loaded_helps:
@@ -124,7 +124,7 @@ def storm_updater(chat_id, bot, session):
                         bot, chat_id, session.channel_name, session.use_channel, levelmark=levelmark, storm=True)
 
         if loaded_bonuses:
-            bonus_parcer(loaded_bonuses, session.bonus_statuses[loaded_storm_level['LevelId']]['bonus_statuses'],
+            bonus_parcer(loaded_bonuses, session.bonus_statuses[loaded_storm_level['LevelId']],
                          session.game_answered_bonus_ids, bot, chat_id, levelmark=levelmark, storm=True)
 
 
