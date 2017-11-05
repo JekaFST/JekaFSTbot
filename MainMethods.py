@@ -96,16 +96,16 @@ def start_session(chat_id, bot, session):
 
 
 def send_task(chat_id, bot, session, storm_level_number):
-    if session.active:
-        if not session.storm_game:
-            send_task_to_chat(bot, chat_id, session)
-        else:
-            if not storm_level_number:
-                bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/task номер уровня</b>', parse_mode='HTML')
-                return
-            send_task_to_chat_storm(bot, chat_id, session, storm_level_number)
-    else:
+    if not session.active:
         bot.send_message(chat_id, 'Нельзя запросить задание при неактивной сессии')
+        return
+    if not session.storm_game:
+        send_task_to_chat(bot, chat_id, session)
+    else:
+        if not storm_level_number:
+            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/task номер уровня</b>', parse_mode='HTML')
+            return
+        send_task_to_chat_storm(bot, chat_id, session, storm_level_number)
 
 
 def send_task_images(chat_id, bot, session):
@@ -220,43 +220,43 @@ def stop_channel(chat_id, bot, session):
 
 
 def send_code_main(chat_id, bot, session, message_id, code):
-    if session.active:
-        if not session.send_codes:
-            bot.send_message(chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
-            return
-        if not session.storm_game:
-            send_code_to_level(code, bot, chat_id, message_id, session)
-        else:
-            try:
-                level_number = re.findall(r'([\d]+)\s*!', code)[0]
-                code = re.findall(r'!\s*(.+)', code)[0]
-            except Exception:
-                bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>!номер уровня!код</b>',
-                                 reply_to_message_id=message_id, parse_mode='HTML')
-                return
-            send_code_to_storm_level(code, level_number, bot, chat_id, message_id, session)
-    else:
+    if not session.active:
         bot.send_message(chat_id, 'Нельзя сдавать коды при неактивной сессии')
+        return
+    if not session.send_codes:
+        bot.send_message(chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
+        return
+    if not session.storm_game:
+        send_code_to_level(code, bot, chat_id, message_id, session)
+    else:
+        try:
+            level_number = re.findall(r'([\d]+)\s*!', code)[0]
+            code = re.findall(r'!\s*(.+)', code)[0]
+        except Exception:
+            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>!номер уровня!код</b>',
+                             reply_to_message_id=message_id, parse_mode='HTML')
+            return
+        send_code_to_storm_level(code, level_number, bot, chat_id, message_id, session)
 
 
 def send_code_bonus(chat_id, bot, session, message_id, code):
-    if session.active:
-        if not session.send_codes:
-            bot.send_message(chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
-            return
-        if not session.storm_game:
-            send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=True)
-        else:
-            try:
-                level_number = re.findall(r'([\d]+)\s*\?', code)[0]
-                code = re.findall(r'\?\s*(.+)', code)[0]
-            except Exception:
-                bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>?номер уровня?код</b>',
-                                 reply_to_message_id=message_id, parse_mode='HTML')
-                return
-            send_code_to_storm_level(code, level_number, bot, chat_id, message_id, session, bonus_only=True)
-    else:
+    if not session.active:
         bot.send_message(chat_id, 'Нельзя сдавать коды при неактивной сессии')
+        return
+    if not session.send_codes:
+        bot.send_message(chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
+        return
+    if not session.storm_game:
+        send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=True)
+    else:
+        try:
+            level_number = re.findall(r'([\d]+)\s*\?', code)[0]
+            code = re.findall(r'\?\s*(.+)', code)[0]
+        except Exception:
+            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>?номер уровня?код</b>',
+                             reply_to_message_id=message_id, parse_mode='HTML')
+            return
+        send_code_to_storm_level(code, level_number, bot, chat_id, message_id, session, bonus_only=True)
 
 
 def send_coords(chat_id, bot, session, coords):
