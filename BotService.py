@@ -228,11 +228,14 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(commands=['task'])
     def send_task(message):
+        storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
+            re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
         if message.chat.id in main_vars.allowed_chat_ids:
             send_task_task = {
                 'task_type': 'send_task',
                 'chat_id': message.chat.id,
-                'additional_chat_id': None
+                'additional_chat_id': None,
+                'storm_level': storm_level
             }
             main_vars.task_queue.append(send_task_task)
             return
@@ -240,7 +243,8 @@ def run_app(bot, main_vars):
             send_task_task = {
                 'task_type': 'send_task',
                 'chat_id': None,
-                'additional_chat_id': message.chat.id
+                'additional_chat_id': message.chat.id,
+                'storm_level': storm_level
             }
             main_vars.task_queue.append(send_task_task)
             return

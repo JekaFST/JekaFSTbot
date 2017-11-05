@@ -5,7 +5,7 @@ import re
 from BotSession import BotSession
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
     send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session, \
-    send_auth_messages_to_chat, send_unclosed_bonuses_to_chat, send_code_to_storm_level
+    send_auth_messages_to_chat, send_unclosed_bonuses_to_chat, send_code_to_storm_level, send_task_to_chat_storm
 
 
 def start(chat_id, bot, sessions_dict):
@@ -95,9 +95,15 @@ def start_session(chat_id, bot, session):
         bot.send_message(chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
 
 
-def send_task(chat_id, bot, session):
+def send_task(chat_id, bot, session, storm_level_number):
     if session.active:
-        send_task_to_chat(bot, chat_id, session)
+        if not session.storm_game:
+            send_task_to_chat(bot, chat_id, session)
+        else:
+            if not storm_level_number:
+                bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/task номер уровня</b>', parse_mode='HTML')
+                return
+            send_task_to_chat_storm(bot, chat_id, session, storm_level_number)
     else:
         bot.send_message(chat_id, 'Нельзя запросить задание при неактивной сессии')
 
@@ -229,6 +235,8 @@ def send_code_main(chat_id, bot, session, message_id, code):
                                  reply_to_message_id=message_id, parse_mode='HTML')
                 return
             send_code_to_storm_level(code, level_number, bot, chat_id, message_id, session)
+    else:
+        bot.send_message(chat_id, 'Нельзя сдавать коды при неактивной сессии')
 
 
 def send_code_bonus(chat_id, bot, session, message_id, code):
@@ -247,6 +255,8 @@ def send_code_bonus(chat_id, bot, session, message_id, code):
                                  reply_to_message_id=message_id, parse_mode='HTML')
                 return
             send_code_to_storm_level(code, level_number, bot, chat_id, message_id, session, bonus_only=True)
+    else:
+        bot.send_message(chat_id, 'Нельзя сдавать коды при неактивной сессии')
 
 
 def send_coords(chat_id, bot, session, coords):
