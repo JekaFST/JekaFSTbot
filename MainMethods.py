@@ -5,7 +5,8 @@ import re
 from BotSession import BotSession
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
     send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session, \
-    send_auth_messages_to_chat, send_unclosed_bonuses_to_chat, send_code_to_storm_level, send_task_to_chat_storm
+    send_auth_messages_to_chat, send_unclosed_bonuses_to_chat, send_code_to_storm_level, send_task_to_chat_storm, \
+    drop_session_vars
 
 
 def start(chat_id, bot, sessions_dict):
@@ -61,6 +62,8 @@ def set_password(chat_id, bot, session, new_password):
 
 def set_domain(chat_id, bot, session, new_domain):
     if not session.active:
+        if 'http://' not in new_domain:
+            new_domain = 'http://' + new_domain
         session.config['en_domain'] = new_domain
         reply = 'Домен успешно задан' if session.config['en_domain'] == new_domain \
             else 'Домен не задан, повторите (/domain http://demo.en.cx)'
@@ -74,6 +77,7 @@ def set_game_id(chat_id, bot, session, new_game_id):
         session.config['game_id'] = new_game_id
         reply = 'Игра успешно задана' if session.config['game_id'] == new_game_id \
             else 'Игра не задана, повторите (/gameid 26991)'
+        drop_session_vars(session)
         bot.send_message(chat_id, reply)
     else:
         bot.send_message(chat_id, 'Нельзя менять игру при активной сессии')
@@ -81,7 +85,7 @@ def set_game_id(chat_id, bot, session, new_game_id):
 
 def login(chat_id, bot, session):
     if session.config['en_domain'] and session.config['game_id'] and session.config['Login'] and session.config['Password']:
-        session.urls = compile_urls(session.urls, session.config)
+        session.urls = compile_urls(session.config)
         login_to_en(session, bot, chat_id)
     else:
         bot.send_message(chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
@@ -89,7 +93,7 @@ def login(chat_id, bot, session):
 
 def start_session(chat_id, bot, session):
     if session.config['en_domain'] and session.config['game_id'] and session.config['Login'] and session.config['Password']:
-        session.urls = compile_urls(session.urls, session.config)
+        session.urls = compile_urls(session.config)
         launch_session(session, bot, chat_id)
     else:
         bot.send_message(chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')

@@ -7,7 +7,8 @@ from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bo
 from Config import game_wrong_statuses
 
 
-def compile_urls(urls, config):
+def compile_urls(config):
+    urls = dict()
     urls['game_url'] = str(config['en_domain'] + config['game_url_ending'] + config['game_id'])
     urls['game_url_js'] = str(config['en_domain'] + config['game_url_ending'] + config['game_id'] + config['json'])
     urls['login_url'] = str(config['en_domain'] + config['login_url_ending'])
@@ -21,6 +22,8 @@ def login_to_en(session, bot, chat_id):
 
 
 def launch_session(session, bot, chat_id):
+    # if not session.urls:
+    #     session.urls = compile_urls(session.config)
     if 'stoken' not in session.config['cookie']:
         bot.send_message(chat_id, 'Сессия не активирована - бот не залогинен\n'
                                   'Проверьте конфигурацию /config и залогиньтесь /login_to_en')
@@ -140,6 +143,7 @@ def check_game_model(game_model, session, bot, chat_id, from_updater=False):
             session.stop_updater = True
             session.use_channel = False
             session.active = False
+            drop_session_vars(session)
         for k, v in game_wrong_statuses.items():
             if game_model['Event'] == k:
                 loaded_game_wrong_status = v
@@ -453,3 +457,25 @@ def send_task_images(level, bot, chat_id):
     if images:
         for image in images:
             bot.send_photo(chat_id, image)
+
+
+def drop_session_vars(session):
+    session.channel_name = None
+    session.current_level = None
+    session.storm_levels = None
+    session.urls = dict()
+    session.game_answered_bonus_ids = list()
+    session.help_statuses = dict()
+    session.bonus_statuses = dict()
+    session.sector_statuses = dict()
+    session.message_statuses = dict()
+    session.sent_messages = list()
+    session.time_to_up_sent = None
+    session.sectors_to_close = None
+    session.sectors_message_id = None
+    session.game_model_status = None
+    session.send_coords_active = True
+    session.put_updater_task = None
+    session.send_codes = True
+    session.dismissed_level_ids = list()
+    session.storm_game = False
