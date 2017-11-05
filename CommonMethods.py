@@ -19,23 +19,26 @@ def send_task(loaded_level, bot, chat_id):
         bot.send_message(chat_id, 'Задание не предусмотрено')
 
 
-def send_help(help, bot, chat_id):
+def send_help(help, bot, chat_id, levelmark=None, storm=False):
     help_number = str(help['Number'])
     help_text = help['HelpText'].encode('utf-8')
-    help_header = '<b>Подсказка ' + help_number + '</b>'
+    help_header = '<b>Подсказка ' + help_number + '</b>' if not storm else levelmark + '\r\n<b>Подсказка ' + help_number + '</b>'
     send_object_text(help_text, help_header, bot, chat_id)
 
 
-def send_time_to_help(help, bot, chat_id):
+def send_time_to_help(help, bot, chat_id, levelmark=None, storm=False):
     help_number = str(help['Number'])
     time_to_help = time_converter(help['RemainSeconds'])
-    message_text = '<b>Подсказка ' + help_number + '</b>\r\nпридет через %s' % time_to_help
+    message_text = '<b>Подсказка ' + help_number + '</b>\r\nпридет через %s' % time_to_help if not storm else \
+        levelmark + '\r\n<b>Подсказка ' + help_number + '</b>\r\nпридет через %s'
     bot.send_message(chat_id, message_text, parse_mode='HTML')
 
 
-def send_bonus_info(bonus, bot, chat_id):
+def send_bonus_info(bonus, bot, chat_id, levelmark=None, storm=False):
     bonus_name = "<b>б-с " + str(bonus['Number']) + ': ' + bonus['Name'].encode('utf-8') + '</b>' if bonus['Name'] \
         else "<b>Бонус " + str(bonus['Number']) + '</b>'
+    if storm:
+        bonus_name = levelmark + '\r\n' + bonus_name
     if bonus['Expired']:
         send_object_text('Время истекло', bonus_name, bot, chat_id)
         return
@@ -44,12 +47,14 @@ def send_bonus_info(bonus, bot, chat_id):
     send_object_text(bonus_task + bonus_left_time, bonus_name, bot, chat_id)
 
 
-def send_bonus_award_answer(bonus, bot, chat_id):
+def send_bonus_award_answer(bonus, bot, chat_id, levelmark=None, storm=False):
     bonus_name = "<b>б-с " + str(bonus['Number']) + ': ' + bonus['Name'].encode('utf-8') if bonus['Name'] \
         else "<b>Бонус " + str(bonus['Number'])
     code = bonus['Answer']['Answer'].encode('utf-8')
     player = bonus['Answer']['Login'].encode('utf-8')
     bonus_award_header = bonus_name + ' - </b>' + '\xE2\x9C\x85' + '<b> (' + player + ': ' + code + ')</b>'
+    if storm:
+        bonus_award_header = levelmark + '\r\n' + bonus_award_header
     bonus_help = 'Подсказка:\r\n' + bonus['Help'].encode('utf-8') if bonus['Help'] else 'Без подсказки'
     bonus_award = '\r\n<b>Награда: ' + time_converter(bonus['AwardTime']) + '</b>' if bonus['AwardTime'] != 0 \
         else '\n<b>Без награды</b>'
@@ -57,7 +62,7 @@ def send_bonus_award_answer(bonus, bot, chat_id):
     send_object_text(bonus_award_text, bonus_award_header, bot, chat_id)
 
 
-def send_adm_message(message, bot, chat_id):
-    bonus_award_header = '<b>Сообщение от авторов</b>'
+def send_adm_message(message, bot, chat_id, levelmark=None, storm=False):
+    bonus_award_header = '<b>Сообщение от авторов</b>' if not storm else levelmark + '\r\n<b>Сообщение от авторов</b>'
     message_text = message['MessageText'].encode('utf-8')
     send_object_text(message_text, bonus_award_header, bot, chat_id)

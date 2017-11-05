@@ -26,7 +26,7 @@ def launch_session(session, bot, chat_id):
                                   'Проверьте конфигурацию /config и залогиньтесь /login_to_en')
         return
     session.active = True
-    session.current_level, session.storm_levels, _ = initiate_session_vars(session, bot, chat_id)
+    session.current_level, session.storm_levels = initiate_session_vars(session, bot, chat_id)
     if not session.current_level or session.storm_levels:
         reply = 'Сессия активирована. Игра не в нормальном состоянии\r\n' \
                 'для запуска слежения введите /start_updater\r\n' \
@@ -82,13 +82,12 @@ def initiate_session_vars(session, bot, chat_id, from_updater=False):
         levels = game_model['Levels']
         storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater)
         session.storm_game = True
-        return None, storm_levels, levels
+        return None, storm_levels
     elif game_model:
         current_level_info = game_model['Level']
-        levels = game_model['Levels']
-        return current_level_info, None, levels
+        return current_level_info, None
     else:
-        return None, None, None
+        return None, None
 
 
 def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=None):
@@ -167,7 +166,10 @@ def get_storm_level(level_number, session, bot, chat_id, from_updater):
     url_ending = '?level=%s&json=1' % str(level_number)
     url = str(session.config['en_domain'] + session.config['game_url_ending'] + session.config['game_id'] + url_ending)
     storm_level_game_model = get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=url)
-    return storm_level_game_model['Level']
+    if not storm_level_game_model:
+        return
+    storm_level = storm_level_game_model['Level']
+    return storm_level
 
 
 def send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=False):

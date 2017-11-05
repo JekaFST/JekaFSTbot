@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from SessionMethods import get_current_level
+from SessionMethods import get_current_level, get_storm_level, initiate_session_vars
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
     send_bonus_award_answer, send_adm_message
 
@@ -84,82 +84,49 @@ def linear_updater(chat_id, bot, session):
 
 
 def storm_updater(chat_id, bot, session):
-
-
-    get_storm_level(level_number, session, bot, chat_id, from_updater)
-    get_storm_levels(levels_qty, session, bot, chat_id, from_updater=False):
-
-
-
-    loaded_level, levels = get_current_level(session, bot, chat_id, from_updater=True)
-
-    if not loaded_level:
+    # заполнение переменных, если игра началась после инициации. Нужно инициировать лист уровней
+    if not session.storm_levels:
+        _, session.storm_levels = initiate_session_vars(session, bot, chat_id, from_updater=True)
         return
 
-    loaded_helps = loaded_level['Helps']
-    loaded_bonuses = loaded_level['Bonuses']
-    loaded_sectors = loaded_level['Sectors']
-    loaded_messages = loaded_level['Messages']
+    if not session.help_statuses or not session.bonus_statuses or not session.sector_statuses or not session.message_statuses:
+        fill_all_statuses_storm(session, bot, chat_id)
 
-    if not session.current_level:
-        session.current_level = loaded_level
-        session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
-                                                                        session.message_statuses = reset_level_vars()
-        session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
-                                                session.channel_name, session.use_channel)
-        if session.channel_name and session.use_channel:
-            session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
-                                                                          session.channel_name)
-        session.help_statuses = fill_help_statuses(loaded_helps, session.help_statuses)
-        session.bonus_statuses = fill_bonus_statuses(loaded_bonuses, session.game_answered_bonus_ids,
-                                                     session.bonus_statuses)
-        session.sector_statuses = fill_sector_statuses(loaded_sectors, session.sector_statuses)
-        session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
-        return
+    for level in session.storm_levels:
+        if session.stop_updater:
+            return
+        if level['IsPassed'] or level['Dismissed']:
+            continue
+        loaded_storm_level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
+        if not loaded_storm_level:
+            continue
 
-    if loaded_level['LevelId'] != session.current_level['LevelId']:
-        session.current_level = loaded_level
-        session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
-                                                                        session.message_statuses = reset_level_vars()
-        session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
-                                                session.channel_name, session.use_channel)
-        if session.channel_name and session.use_channel:
-            session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
-                                                                          session.channel_name)
-        session.help_statuses = fill_help_statuses(loaded_helps, session.help_statuses)
-        session.bonus_statuses = fill_bonus_statuses(loaded_bonuses, session.game_answered_bonus_ids,
-                                                     session.bonus_statuses)
-        session.sector_statuses = fill_sector_statuses(loaded_sectors, session.sector_statuses)
-        session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
-        return
+        loaded_helps = loaded_storm_level['Helps']
+        loaded_bonuses = loaded_storm_level['Bonuses']
+        loaded_sectors = loaded_storm_level['Sectors']
+        loaded_messages = loaded_storm_level['Messages']
 
-    session.current_level = loaded_level
+        level = loaded_storm_level
+        levelmark = '<b>Уровень %s: %s</b>' % (str(loaded_storm_level['Number']), loaded_storm_level['Name'].encode('utf-8')) \
+            if loaded_storm_level['Name'] else '<b>Уровень %s</b>' % str(loaded_storm_level['Number'])
 
-    if not loaded_level['Timeout'] == 0 and not session.time_to_up_sent\
-            and loaded_level['TimeoutSecondsRemain'] <= 300:
-        message = 'До автоперехода < 5 мин'
-        bot.send_message(chat_id, message)
-        session.time_to_up_sent = True
+        if loaded_messages:
+            message_parcer(loaded_messages, session.message_statuses, session.sent_messages, bot, chat_id,
+                           session.channel_name, session.use_channel, levelmark=levelmark, storm=True)
 
-    if loaded_messages:
-        message_parcer(loaded_messages, session.message_statuses, session.sent_messages, bot, chat_id,
-                       session.channel_name, session.use_channel)
+        if loaded_sectors:
+            codes_to_find = loaded_storm_level['SectorsLeftToClose']
+            sectors_parcer(loaded_sectors, codes_to_find,
+                           session.sector_statuses[loaded_storm_level['LevelId']]['sector_statuses'], bot, chat_id,
+                           levelmark=levelmark, storm=True)
 
-    if loaded_sectors:
-        codes_to_find = loaded_level['SectorsLeftToClose']
-        sectors_parcer(loaded_sectors, codes_to_find, session.sector_statuses, bot, chat_id)
+        if loaded_helps:
+            help_parcer(loaded_helps, session.help_statuses[loaded_storm_level['LevelId']],
+                        bot, chat_id, session.channel_name, session.use_channel, levelmark=levelmark, storm=True)
 
-    if loaded_helps:
-        help_parcer(loaded_helps, session.help_statuses, bot, chat_id, session.channel_name, session.use_channel)
-
-    if loaded_bonuses:
-        bonus_parcer(loaded_bonuses, session.bonus_statuses, session.game_answered_bonus_ids, bot, chat_id)
-
-    if session.channel_name and session.use_channel and session.sectors_to_close and session.sectors_to_close != '1'\
-            and session.sectors_message_id:
-        session.sectors_to_close = channel_sectors_editor(loaded_level, session.sectors_to_close,
-                                                          bot, session.channel_name, session.sectors_message_id)
-    levels_parcer(levels, session, bot, chat_id)
+        if loaded_bonuses:
+            bonus_parcer(loaded_bonuses, session.bonus_statuses[loaded_storm_level['LevelId']]['bonus_statuses'],
+                         session.game_answered_bonus_ids, bot, chat_id, levelmark=levelmark, storm=True)
 
 
 def reset_level_vars():
@@ -244,7 +211,7 @@ def fill_message_statuses(loaded_messages, message_statuses, sent_messages):
     return message_statuses
 
 
-def sectors_parcer(loaded_sectors, codes_to_find, sector_statuses, bot, chat_id):
+def sectors_parcer(loaded_sectors, codes_to_find, sector_statuses, bot, chat_id, levelmark=None, storm=False):
     if loaded_sectors:
         for sector in loaded_sectors:
             if not sector['SectorId'] in sector_statuses.keys():
@@ -260,55 +227,58 @@ def sectors_parcer(loaded_sectors, codes_to_find, sector_statuses, bot, chat_id)
                 message = '<b>с-р: ' + name + ' - </b>' + '\xE2\x9C\x85' + '<b> (' + player + ': ' + code + ')</b>' \
                           '\r\nОсталось закрыть: %s из %s:\r\n%s' % (str(codes_to_find), str(codes_all),
                                                                      sectors_to_close)
+                if storm:
+                    message = levelmark + '\r\n' + message
                 bot.send_message(chat_id, message, parse_mode='HTML')
                 sector_statuses[sector['SectorId']]['answer_info_not_sent'] = False
 
 
-def help_parcer(loaded_helps, help_statuses, bot, chat_id, channel_name, use_channel):
+def help_parcer(loaded_helps, help_statuses, bot, chat_id, channel_name, use_channel, levelmark=None, storm=False):
     if loaded_helps:
         for help in loaded_helps:
             if not help['HelpId'] in help_statuses.keys():
                 help_statuses[help['HelpId']] = {'not_sent': True, 'time_not_sent': True}
 
             if help_statuses[help['HelpId']]['not_sent'] and help['HelpText'] is not None:
-                send_help(help, bot, chat_id)
+                send_help(help, bot, chat_id, levelmark, storm)
                 if channel_name and use_channel:
-                    send_help(help, bot, channel_name)
+                    send_help(help, bot, channel_name, levelmark, storm)
                 help_statuses[help['HelpId']]['not_sent'] = False
                 help_statuses[help['HelpId']]['time_not_sent'] = False
                 continue
             if help_statuses[help['HelpId']]['time_not_sent'] and help['RemainSeconds'] <= 180:
-                send_time_to_help(help, bot, chat_id)
+                send_time_to_help(help, bot, chat_id, levelmark, storm)
                 help_statuses[help['HelpId']]['time_not_sent'] = False
 
 
-def bonus_parcer(loaded_bonuses, bonus_statuses, game_answered_bonus_ids, bot, chat_id):
+def bonus_parcer(loaded_bonuses, bonus_statuses, game_answered_bonus_ids, bot, chat_id, levelmark=None, storm=False):
     if loaded_bonuses:
         for bonus in loaded_bonuses:
             if not bonus['BonusId'] in bonus_statuses.keys():
                 bonus_statuses[bonus['BonusId']] = {'info_not_sent': True, 'award_not_sent': True}
 
             if bonus['IsAnswered'] and bonus_statuses[bonus['BonusId']]['award_not_sent']:
-                send_bonus_award_answer(bonus, bot, chat_id)
+                send_bonus_award_answer(bonus, bot, chat_id, levelmark, storm)
                 game_answered_bonus_ids.append(bonus['BonusId'])
                 bonus_statuses[bonus['BonusId']]['award_not_sent'] = False
                 bonus_statuses[bonus['BonusId']]['info_not_sent'] = False
                 continue
             if bonus_statuses[bonus['BonusId']]['info_not_sent'] and bonus['Task'] and not bonus['Expired']:
-                send_bonus_info(bonus, bot, chat_id)
+                send_bonus_info(bonus, bot, chat_id, levelmark, storm)
                 bonus_statuses[bonus['BonusId']]['info_not_sent'] = False
 
 
-def message_parcer(loaded_messages, message_statuses, sent_messages, bot, chat_id, channel_name, use_channel):
+def message_parcer(loaded_messages, message_statuses, sent_messages, bot, chat_id, channel_name, use_channel,
+                   levelmark=None, storm=False):
     if loaded_messages:
         for message in loaded_messages:
             if not message['MessageId'] in message_statuses.keys():
                 message_statuses[message['MessageId']] = {'message_not_sent': True}
 
             if message_statuses[message['MessageId']]['message_not_sent']:
-                send_adm_message(message, bot, chat_id)
+                send_adm_message(message, bot, chat_id, levelmark, storm)
                 if channel_name and use_channel:
-                    send_adm_message(message, bot, channel_name)
+                    send_adm_message(message, bot, channel_name, levelmark, storm)
                 message_statuses[message['MessageId']]['message_not_sent'] = False
                 sent_messages.append(message['MessageId'])
 
@@ -356,3 +326,53 @@ def get_sectors_to_close(sectors, get_sector_names=False):
 
 def get_unclosed_sectors(sectors):
     return [sector for sector in sectors if not sector['IsAnswered']]
+
+
+def fill_all_statuses_storm(session, bot, chat_id):
+    if not session.help_statuses:
+        for level in session.storm_levels:
+            if session.stop_updater:
+                return
+            loaded_storm_level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
+            if not loaded_storm_level:
+                continue
+            session.help_statuses[loaded_storm_level['LevelId']] = loaded_storm_level['help_statuses'] = dict()
+            session.help_statuses[loaded_storm_level['LevelId']] = \
+                fill_help_statuses(loaded_storm_level['Helps'], session.help_statuses[loaded_storm_level['LevelId']]) \
+                    if loaded_storm_level['Helps'] else dict()
+
+    if not session.bonus_statuses:
+        for level in session.storm_levels:
+            if session.stop_updater:
+                return
+            loaded_storm_level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
+            if not loaded_storm_level:
+                continue
+            session.bonus_statuses[loaded_storm_level['LevelId']] = loaded_storm_level['bonus_statuses'] = dict()
+            session.bonus_statuses[loaded_storm_level['LevelId']] = \
+                fill_bonus_statuses(loaded_storm_level['Bonuses'], session.game_answered_bonus_ids,
+                                    session.bonus_statuses[loaded_storm_level['LevelId']]) if loaded_storm_level['Bonuses'] else dict()
+
+    if not session.sector_statuses:
+        for level in session.storm_levels:
+            if session.stop_updater:
+                return
+            loaded_storm_level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
+            if not loaded_storm_level:
+                continue
+            session.sector_statuses[loaded_storm_level['LevelId']] = loaded_storm_level['sector_statuses'] = dict()
+            session.sector_statuses[loaded_storm_level['LevelId']] = \
+                fill_sector_statuses(loaded_storm_level['Sectors'],
+                                     session.sector_statuses[loaded_storm_level['LevelId']]) if loaded_storm_level['Sectors'] else dict()
+
+    if not session.message_statuses:
+        for level in session.storm_levels:
+            if session.stop_updater:
+                return
+            loaded_storm_level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
+            if not loaded_storm_level:
+                continue
+            session.message_statuses[loaded_storm_level['LevelId']] = loaded_storm_level['message_statuses'] = dict()
+            session.message_statuses[loaded_storm_level['LevelId']] = \
+                fill_message_statuses(loaded_storm_level['Messages'],
+                                      session.message_statuses[loaded_storm_level['LevelId']], session.sent_messages)
