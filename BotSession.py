@@ -18,7 +18,11 @@ class BotSession(object):
                    }
         self.current_level = None
         self.storm_levels = None
-        self.urls = dict()
+        self.urls = {
+            'game_url': '',
+            'game_url_js': '',
+            'login_url': ''
+        }
         self.game_answered_bonus_ids = list()
         self.help_statuses = dict()
         self.bonus_statuses = dict()

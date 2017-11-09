@@ -22,8 +22,6 @@ def login_to_en(session, bot, chat_id):
 
 
 def launch_session(session, bot, chat_id):
-    # if not session.urls:
-    #     session.urls = compile_urls(session.config)
     if 'stoken' not in session.config['cookie']:
         bot.send_message(chat_id, 'Сессия не активирована - бот не залогинен\n'
                                   'Проверьте конфигурацию /config и залогиньтесь /login_to_en')
@@ -59,7 +57,7 @@ def launch_session(session, bot, chat_id):
 def upd_session_cookie(session, bot, chat_id):
     try:
         if session.config['en_domain'] not in session.urls['login_url']:
-            session.urls = compile_urls(session.urls, session.config)
+            session.urls = compile_urls(session.config)
         response = requests.post(session.urls['login_url'], data={'Login': session.config['Login'],
                                                                   'Password': session.config['Password']},
                                  headers={'Cookie': 'lang=ru'})
@@ -105,8 +103,8 @@ def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=
     for i in xrange(2):
         if not i == 0:
             _ = upd_session_cookie(session, bot, chat_id)
-        if session.config['en_domain'] or session.config['game_id'] not in session.urls['game_url_js']:
-            session.urls = compile_urls(session.urls, session.config)
+        if session.config['en_domain'] not in session.urls['game_url_js'] or session.config['game_id'] not in session.urls['game_url_js']:
+            session.urls = compile_urls(session.config)
         if not storm_level_url:
             response = requests.get(session.urls['game_url_js'], headers={'Cookie': session.config['cookie']})
         else:
@@ -505,7 +503,11 @@ def drop_session_vars(session):
     session.channel_name = None
     session.current_level = None
     session.storm_levels = None
-    session.urls = dict()
+    session.urls = {
+            'game_url': '',
+            'game_url_js': '',
+            'login_url': ''
+        }
     session.game_answered_bonus_ids = list()
     session.help_statuses = dict()
     session.bonus_statuses = dict()

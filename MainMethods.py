@@ -93,8 +93,7 @@ def login(chat_id, bot, session):
 
 
 def start_session(chat_id, bot, session):
-    if session.config['en_domain'] and session.config['game_id'] and session.config['Login'] and session.config['Password']:
-        session.urls = compile_urls(session.config)
+    if session.config['cookie'] and session.config['game_id'] and session.config['Login'] and session.config['Password']:
         launch_session(session, bot, chat_id)
     else:
         bot.send_message(chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
