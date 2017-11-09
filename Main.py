@@ -225,7 +225,7 @@ while True:
                 chat_id = task['additional_chat_id']
                 session = main_vars.sessions_dict[main_vars.additional_ids[task['additional_chat_id']]]
             try:
-                send_all_bonuses(chat_id, main_vars.bot, session)
+                send_all_bonuses(chat_id, main_vars.bot, session, task['storm_level'])
             except Exception:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду send_all_bonuses')
@@ -249,7 +249,7 @@ while True:
                 chat_id = task['additional_chat_id']
                 session = main_vars.sessions_dict[main_vars.additional_ids[task['additional_chat_id']]]
             try:
-                send_unclosed_bonuses(chat_id, main_vars.bot, session)
+                send_unclosed_bonuses(chat_id, main_vars.bot, session, task['storm_level'])
             except Exception:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду send_unclosed_bonuses')
@@ -273,7 +273,7 @@ while True:
                 chat_id = task['additional_chat_id']
                 session = main_vars.sessions_dict[main_vars.additional_ids[task['additional_chat_id']]]
             try:
-                send_auth_messages(chat_id, main_vars.bot, session)
+                send_auth_messages(chat_id, main_vars.bot, session, task['storm_level'])
             except Exception:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду send_auth_messages')

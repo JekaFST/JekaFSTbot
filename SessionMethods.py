@@ -270,6 +270,13 @@ def send_all_bonuses_to_chat(bot, chat_id, session):
     send_bonuses(level, bot, chat_id)
 
 
+def send_all_bonuses_to_chat_storm(bot, chat_id, session, storm_level_number):
+    storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
+    if not storm_level:
+        return
+    send_bonuses(storm_level, bot, chat_id)
+
+
 def send_unclosed_bonuses_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
@@ -277,11 +284,25 @@ def send_unclosed_bonuses_to_chat(bot, chat_id, session):
     send_unclosed_bonuses(level, bot, chat_id)
 
 
+def send_unclosed_bonuses_to_chat_storm(bot, chat_id, session, storm_level_number):
+    storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
+    if not storm_level:
+        return
+    send_unclosed_bonuses(storm_level, bot, chat_id)
+
+
 def send_auth_messages_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
     send_auth_messages(level, bot, chat_id)
+
+
+def send_auth_messages_to_chat_storm(bot, chat_id, session, storm_level_number):
+    storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
+    if not storm_level:
+        return
+    send_auth_messages(storm_level, bot, chat_id)
 
 
 def check_repeat_code(level, code, is_repeat_code=False):

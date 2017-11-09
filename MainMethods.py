@@ -6,7 +6,8 @@ from BotSession import BotSession
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
     send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session, \
     send_auth_messages_to_chat, send_unclosed_bonuses_to_chat, send_code_to_storm_level, send_task_to_chat_storm, \
-    drop_session_vars, send_all_helps_to_chat_storm, send_last_help_to_chat_storm, send_all_sectors_to_chat_storm
+    drop_session_vars, send_all_helps_to_chat_storm, send_last_help_to_chat_storm, send_all_sectors_to_chat_storm, \
+    send_all_bonuses_to_chat_storm, send_unclosed_bonuses_to_chat_storm, send_auth_messages_to_chat_storm
 
 
 def start(chat_id, bot, sessions_dict):
@@ -158,25 +159,43 @@ def send_last_help(chat_id, bot, session, storm_level_number):
         send_last_help_to_chat_storm(bot, chat_id, session, storm_level_number)
 
 
-def send_all_bonuses(chat_id, bot, session):
-    if session.active:
+def send_all_bonuses(chat_id, bot, session, storm_level_number):
+    if not session.active:
+        bot.send_message(chat_id, 'Нельзя запросить бонусы при неактивной сессии')
+        return
+    if not session.storm_game:
         send_all_bonuses_to_chat(bot, chat_id, session)
     else:
-        bot.send_message(chat_id, 'Нельзя запросить бонусы при неактивной сессии')
+        if not storm_level_number:
+            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/bonuses номер уровня</b>', parse_mode='HTML')
+            return
+        send_all_bonuses_to_chat_storm(bot, chat_id, session, storm_level_number)
 
 
-def send_unclosed_bonuses(chat_id, bot, session):
-    if session.active:
+def send_unclosed_bonuses(chat_id, bot, session, storm_level_number):
+    if not session.active:
+        bot.send_message(chat_id, 'Нельзя запросить не закрытые бонусы при неактивной сессии')
+        return
+    if not session.storm_game:
         send_unclosed_bonuses_to_chat(bot, chat_id, session)
     else:
-        bot.send_message(chat_id, 'Нельзя запросить не закрытые бонусы при неактивной сессии')
+        if not storm_level_number:
+            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/unclosed_bonuses номер уровня</b>', parse_mode='HTML')
+            return
+        send_unclosed_bonuses_to_chat_storm(bot, chat_id, session, storm_level_number)
 
 
-def send_auth_messages(chat_id, bot, session):
-    if session.active:
+def send_auth_messages(chat_id, bot, session, storm_level_number):
+    if not session.active:
+        bot.send_message(chat_id, 'Нельзя запросить сообщения от авторов при неактивной сессии')
+        return
+    if not session.storm_game:
         send_auth_messages_to_chat(bot, chat_id, session)
     else:
-        bot.send_message(chat_id, 'Нельзя запросить сообщения от авторов при неактивной сессии')
+        if not storm_level_number:
+            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/messages номер уровня</b>', parse_mode='HTML')
+            return
+        send_auth_messages_to_chat_storm(bot, chat_id, session, storm_level_number)
 
 
 def start_updater(chat_id, bot, main_vars):

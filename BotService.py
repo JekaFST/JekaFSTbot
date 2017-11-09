@@ -352,11 +352,14 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(commands=['bonuses'])
     def send_all_bonuses(message):
+        storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
+            re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
         if message.chat.id in main_vars.allowed_chat_ids:
             send_all_bonuses_task = {
                 'task_type': 'send_bonuses',
                 'chat_id': message.chat.id,
-                'additional_chat_id': None
+                'additional_chat_id': None,
+                'storm_level': storm_level
             }
             main_vars.task_queue.append(send_all_bonuses_task)
             return
@@ -376,11 +379,14 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(commands=['unclosed_bonuses'])
     def send_unclosed_bonuses(message):
+        storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
+            re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
         if message.chat.id in main_vars.allowed_chat_ids:
             send_unclosed_bonuses_task = {
                 'task_type': 'unclosed_bonuses',
                 'chat_id': message.chat.id,
-                'additional_chat_id': None
+                'additional_chat_id': None,
+                'storm_level': storm_level
             }
             main_vars.task_queue.append(send_unclosed_bonuses_task)
             return
@@ -388,7 +394,8 @@ def run_app(bot, main_vars):
             send_unclosed_bonuses_task = {
                 'task_type': 'unclosed_bonuses',
                 'chat_id': None,
-                'additional_chat_id': message.chat.id
+                'additional_chat_id': message.chat.id,
+                'storm_level': storm_level
             }
             main_vars.task_queue.append(send_unclosed_bonuses_task)
             return
@@ -400,6 +407,8 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(commands=['messages'])
     def send_auth_messages(message):
+        storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
+            re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
         if message.chat.id in main_vars.allowed_chat_ids:
             send_auth_messages_task = {
                 'task_type': 'send_messages',
@@ -412,7 +421,8 @@ def run_app(bot, main_vars):
             send_auth_messages_task = {
                 'task_type': 'send_messages',
                 'chat_id': None,
-                'additional_chat_id': message.chat.id
+                'additional_chat_id': message.chat.id,
+                'storm_level': storm_level
             }
             main_vars.task_queue.append(send_auth_messages_task)
             return
