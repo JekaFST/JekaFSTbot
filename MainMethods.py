@@ -6,7 +6,7 @@ from BotSession import BotSession
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
     send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session, \
     send_auth_messages_to_chat, send_unclosed_bonuses_to_chat, send_code_to_storm_level, send_task_to_chat_storm, \
-    drop_session_vars, send_all_helps_to_chat_storm, send_last_help_to_chat_storm
+    drop_session_vars, send_all_helps_to_chat_storm, send_last_help_to_chat_storm, send_all_sectors_to_chat_storm
 
 
 def start(chat_id, bot, sessions_dict):
@@ -119,11 +119,17 @@ def send_task_images(chat_id, bot, session):
         bot.send_message(chat_id, 'Нельзя запросить задание при неактивной сессии')
 
 
-def send_all_sectors(chat_id, bot, session):
-    if session.active:
+def send_all_sectors(chat_id, bot, session, storm_level_number):
+    if not session.active:
+        bot.send_message(chat_id, 'Нельзя запросить сектора при неактивной сессии')
+        return
+    if not session.storm_game:
         send_all_sectors_to_chat(bot, chat_id, session)
     else:
-        bot.send_message(chat_id, 'Нельзя запросить сектора при неактивной сессии')
+        if not storm_level_number:
+            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/sectors номер уровня</b>', parse_mode='HTML')
+            return
+        send_all_sectors_to_chat_storm(bot, chat_id, session, storm_level_number)
 
 
 def send_all_helps(chat_id, bot, session, storm_level_number):
