@@ -1,20 +1,30 @@
 # -*- coding: utf-8 -*-
+import threading
 from SessionMethods import get_current_level, get_storm_level, get_storm_levels, get_current_game_model
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
     send_bonus_award_answer, send_adm_message
 
 
-def updater(chat_id, bot, session):
+def updater(chat_id, bot, session, updaters_dict):
     if not session.storm_game:
-        linear_updater(chat_id, bot, session)
+        name = 'upd_thread_%s' % chat_id
+        updaters_dict[chat_id] = threading.Thread(name=name, target=linear_updater, args=(chat_id, bot, session))
+        updaters_dict[chat_id].start()
+        # linear_updater(chat_id, bot, session)
+        return
     else:
-        storm_updater(chat_id, bot, session)
+        name = 'upd_thread_%s' % chat_id
+        updaters_dict[chat_id] = threading.Thread(name=name, target=storm_updater, args=(chat_id, bot, session))
+        updaters_dict[chat_id].start()
+        # storm_updater(chat_id, bot, session)
+        return
 
 
 def linear_updater(chat_id, bot, session):
     loaded_level, levels = get_current_level(session, bot, chat_id, from_updater=True)
 
     if not loaded_level:
+        session.put_updater_task = True
         return
 
     loaded_helps = loaded_level['Helps']
@@ -36,6 +46,7 @@ def linear_updater(chat_id, bot, session):
                                                      session.bonus_statuses)
         session.sector_statuses = fill_sector_statuses(loaded_sectors, session.sector_statuses)
         session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
+        session.put_updater_task = True
         return
 
     if loaded_level['LevelId'] != session.current_level['LevelId']:
@@ -52,6 +63,7 @@ def linear_updater(chat_id, bot, session):
                                                      session.bonus_statuses)
         session.sector_statuses = fill_sector_statuses(loaded_sectors, session.sector_statuses)
         session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
+        session.put_updater_task = True
         return
 
     session.current_level = loaded_level
@@ -81,6 +93,7 @@ def linear_updater(chat_id, bot, session):
         session.sectors_to_close = channel_sectors_editor(loaded_level, session.sectors_to_close,
                                                           bot, session.channel_name, session.sectors_message_id)
     levels_parcer(levels, session, bot, chat_id)
+    session.put_updater_task = True
 
 
 def storm_updater(chat_id, bot, session):
@@ -88,6 +101,7 @@ def storm_updater(chat_id, bot, session):
         game_model = get_current_game_model(session, bot, chat_id, from_updater=True)
         levels = game_model['Levels']
         session.storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater=True)
+        session.put_updater_task = True
         return
 
     if not session.help_statuses or not session.bonus_statuses or not session.sector_statuses or not session.message_statuses:
@@ -95,6 +109,7 @@ def storm_updater(chat_id, bot, session):
 
     for level in session.storm_levels:
         if session.stop_updater:
+            session.put_updater_task = True
             return
         if level['IsPassed'] or level['Dismissed']:
             continue
@@ -128,6 +143,7 @@ def storm_updater(chat_id, bot, session):
         if loaded_bonuses:
             bonus_parcer(loaded_bonuses, session.bonus_statuses[loaded_storm_level['LevelId']],
                          session.game_answered_bonus_ids, bot, chat_id, levelmark=levelmark, storm=True)
+        session.put_updater_task = True
 
 
 def reset_level_vars():
@@ -254,9 +270,6 @@ def help_parcer(loaded_helps, help_statuses, bot, chat_id, channel_name, use_cha
 
 def bonus_parcer(loaded_bonuses, bonus_statuses, game_answered_bonus_ids, bot, chat_id, levelmark=None, storm=False):
     if loaded_bonuses:
-        # if not len(loaded_bonuses) <= 100:
-        #     bot.send_message(chat_id, 'Слежение за бонусами пропущено, чтобы не снижеть производительность')
-        # Аналогично с секторами
 
         for bonus in loaded_bonuses:
             if not bonus['BonusId'] in bonus_statuses.keys():

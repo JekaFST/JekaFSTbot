@@ -9,3 +9,4 @@ class MainVars(object):
         self.sessions_dict = dict()
         self.additional_ids = dict()
         self.updater_schedulers_dict = dict()
+        self.updaters_dict = dict()

@@ -27,11 +27,12 @@ while True:
                 main_vars.task_queue.remove(task)
                 continue
             try:
-                updater(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']])
+                updater(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']], main_vars.updaters_dict)
+                main_vars.task_queue.remove(task)
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду updater')
-            main_vars.task_queue.remove(task)
-            main_vars.sessions_dict[task['chat_id']].put_updater_task = True
+                main_vars.task_queue.remove(task)
+                main_vars.sessions_dict[task['chat_id']].put_updater_task = True
             continue
 
         # Tasks to send codes & coords
@@ -84,11 +85,6 @@ while True:
             continue
 
         if task['task_type'] == 'send_coords':
-            if not task['chat_id'] in main_vars.sessions_dict.keys():
-                main_vars.bot.send_message(task['chat_id'],
-                                           'Для данного чата не создана сессия. Для создания введите команду /start')
-                main_vars.task_queue.remove(task)
-                continue
             try:
                 send_coords(task['chat_id'], main_vars.bot, main_vars.sessions_dict[task['chat_id']],
                             task['coords'])
