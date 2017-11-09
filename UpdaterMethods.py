@@ -254,6 +254,10 @@ def help_parcer(loaded_helps, help_statuses, bot, chat_id, channel_name, use_cha
 
 def bonus_parcer(loaded_bonuses, bonus_statuses, game_answered_bonus_ids, bot, chat_id, levelmark=None, storm=False):
     if loaded_bonuses:
+        # if not len(loaded_bonuses) <= 100:
+        #     bot.send_message(chat_id, 'Слежение за бонусами пропущено, чтобы не снижеть производительность')
+        # Аналогично с секторами
+
         for bonus in loaded_bonuses:
             if not bonus['BonusId'] in bonus_statuses.keys():
                 bonus_statuses[bonus['BonusId']] = {'info_not_sent': True, 'award_not_sent': True}

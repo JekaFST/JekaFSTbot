@@ -201,7 +201,7 @@ while True:
                 chat_id = task['additional_chat_id']
                 session = main_vars.sessions_dict[main_vars.additional_ids[task['additional_chat_id']]]
             try:
-                send_last_help(chat_id, main_vars.bot, session)
+                send_last_help(chat_id, main_vars.bot, session, task['storm_level'])
             except Exception:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду send_last_helps')

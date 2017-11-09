@@ -249,6 +249,13 @@ def send_last_help_to_chat(bot, chat_id, session):
     send_last_help(level, bot, chat_id)
 
 
+def send_last_help_to_chat_storm(bot, chat_id, session, storm_level_number):
+    storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
+    if not storm_level:
+        return
+    send_last_help(storm_level, bot, chat_id)
+
+
 def send_all_bonuses_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
