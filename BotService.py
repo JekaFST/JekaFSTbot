@@ -545,8 +545,7 @@ def run_app(bot, main_vars):
                     'code': code
                 }
                 main_vars.task_queue.append(send_code_main_task)
-                return
-            elif message.chat.id in main_vars.additional_ids.keys():
+            else:
                 send_code_main_task = {
                     'task_type': 'send_code_main',
                     'chat_id': None,
@@ -555,7 +554,7 @@ def run_app(bot, main_vars):
                     'code': code
                 }
                 main_vars.task_queue.append(send_code_main_task)
-                return
+            return
         if message.text[0] == '?':
             code = re.findall(r'\?\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
             if message.chat.id in main_vars.allowed_chat_ids:
@@ -567,8 +566,7 @@ def run_app(bot, main_vars):
                     'code': code
                 }
                 main_vars.task_queue.append(send_code_bonus_task)
-                return
-            elif message.chat.id in main_vars.additional_ids.keys():
+            else:
                 send_code_bonus_task = {
                     'task_type': 'send_code_bonus',
                     'chat_id': None,
@@ -577,7 +575,7 @@ def run_app(bot, main_vars):
                     'code': code
                 }
                 main_vars.task_queue.append(send_code_bonus_task)
-                return
+            return
         if coords and message.chat.id in main_vars.allowed_chat_ids:
             send_coords_task = {
                 'task_type': 'send_coords',
@@ -585,7 +583,6 @@ def run_app(bot, main_vars):
                 'coords': coords
             }
             main_vars.task_queue.append(send_coords_task)
-            return
 
     # Remove webhook, it fails sometimes the set if there is a previous webhook
     bot.remove_webhook()
