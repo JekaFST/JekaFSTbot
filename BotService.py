@@ -54,7 +54,6 @@ def run_app(bot, main_vars):
                 'message_id': message.message_id
             }
             main_vars.task_queue.append(reset_join_task)
-            return
         elif message.chat.id in main_vars.additional_ids.keys():
             reset_join_task = {
                 'task_type': 'reset_join',
@@ -63,12 +62,10 @@ def run_app(bot, main_vars):
                 'message_id': message.message_id
             }
             main_vars.task_queue.append(reset_join_task)
-            return
         else:
             bot.send_message(message.chat.id,
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
 
     @bot.message_handler(commands=['add'])
     def add_chat_to_allowed(message):
@@ -85,15 +82,18 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(commands=['start'])
     def start(message):
-        if message.chat.id not in main_vars.allowed_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
-                                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
-        start_task = {
-            'task_type': 'start',
-            'chat_id': message.chat.id
-        }
-        main_vars.task_queue.append(start_task)
+        if message.chat.id in main_vars.allowed_chat_ids:
+            start_task = {
+                'task_type': 'start',
+                'chat_id': message.chat.id
+            }
+            main_vars.task_queue.append(start_task)
+        elif message.chat.id in main_vars.additional_ids.keys():
+            bot.send_message(message.chat.id, 'Теперь вы можете работать с ботом через этот чат')
+        else:
+            bot.send_message(message.chat.id,
+                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
+                             'Для отправки запроса на разрешение введите /ask_for_permission')
 
     @bot.message_handler(commands=['help'])
     def help(message):
@@ -238,7 +238,6 @@ def run_app(bot, main_vars):
                 'storm_level': storm_level
             }
             main_vars.task_queue.append(send_task_task)
-            return
         elif message.chat.id in main_vars.additional_ids.keys():
             send_task_task = {
                 'task_type': 'send_task',
@@ -247,12 +246,10 @@ def run_app(bot, main_vars):
                 'storm_level': storm_level
             }
             main_vars.task_queue.append(send_task_task)
-            return
         else:
             bot.send_message(message.chat.id,
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
 
     @bot.message_handler(commands=['task_images'])
     def send_task_images(message):
@@ -278,7 +275,6 @@ def run_app(bot, main_vars):
                 'storm_level': storm_level
             }
             main_vars.task_queue.append(send_all_sectors_task)
-            return
         elif message.chat.id in main_vars.additional_ids.keys():
             send_all_sectors_task = {
                 'task_type': 'send_sectors',
@@ -287,12 +283,10 @@ def run_app(bot, main_vars):
                 'storm_level': storm_level
             }
             main_vars.task_queue.append(send_all_sectors_task)
-            return
         else:
             bot.send_message(message.chat.id,
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
 
     @bot.message_handler(commands=['helps'])
     def send_all_helps(message):
@@ -306,7 +300,6 @@ def run_app(bot, main_vars):
                 'storm_level': storm_level
             }
             main_vars.task_queue.append(send_all_helps_task)
-            return
         elif message.chat.id in main_vars.additional_ids.keys():
             send_all_helps_task = {
                 'task_type': 'send_helps',
@@ -315,12 +308,10 @@ def run_app(bot, main_vars):
                 'storm_level': storm_level
             }
             main_vars.task_queue.append(send_all_helps_task)
-            return
         else:
             bot.send_message(message.chat.id,
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
 
     @bot.message_handler(commands=['last_help'])
     def send_last_help(message):
@@ -334,7 +325,6 @@ def run_app(bot, main_vars):
                 'storm_level': storm_level
             }
             main_vars.task_queue.append(send_last_help_task)
-            return
         elif message.chat.id in main_vars.additional_ids.keys():
             send_last_help_task = {
                 'task_type': 'send_last_help',
@@ -343,12 +333,10 @@ def run_app(bot, main_vars):
                 'storm_level': storm_level
             }
             main_vars.task_queue.append(send_last_help_task)
-            return
         else:
             bot.send_message(message.chat.id,
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
 
     @bot.message_handler(commands=['bonuses'])
     def send_all_bonuses(message):
@@ -362,20 +350,18 @@ def run_app(bot, main_vars):
                 'storm_level': storm_level
             }
             main_vars.task_queue.append(send_all_bonuses_task)
-            return
         elif message.chat.id in main_vars.additional_ids.keys():
             send_all_bonuses_task = {
                 'task_type': 'send_bonuses',
                 'chat_id': None,
-                'additional_chat_id': message.chat.id
+                'additional_chat_id': message.chat.id,
+                'storm_level': storm_level
             }
             main_vars.task_queue.append(send_all_bonuses_task)
-            return
-        if message.chat.id not in main_vars.allowed_chat_ids:
+        else:
             bot.send_message(message.chat.id,
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
 
     @bot.message_handler(commands=['unclosed_bonuses'])
     def send_unclosed_bonuses(message):
@@ -389,7 +375,6 @@ def run_app(bot, main_vars):
                 'storm_level': storm_level
             }
             main_vars.task_queue.append(send_unclosed_bonuses_task)
-            return
         elif message.chat.id in main_vars.additional_ids.keys():
             send_unclosed_bonuses_task = {
                 'task_type': 'unclosed_bonuses',
@@ -398,12 +383,10 @@ def run_app(bot, main_vars):
                 'storm_level': storm_level
             }
             main_vars.task_queue.append(send_unclosed_bonuses_task)
-            return
-        if message.chat.id not in main_vars.allowed_chat_ids:
+        else:
             bot.send_message(message.chat.id,
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
 
     @bot.message_handler(commands=['messages'])
     def send_auth_messages(message):
@@ -416,7 +399,6 @@ def run_app(bot, main_vars):
                 'additional_chat_id': None
             }
             main_vars.task_queue.append(send_auth_messages_task)
-            return
         elif message.chat.id in main_vars.additional_ids.keys():
             send_auth_messages_task = {
                 'task_type': 'send_messages',
@@ -425,12 +407,10 @@ def run_app(bot, main_vars):
                 'storm_level': storm_level
             }
             main_vars.task_queue.append(send_auth_messages_task)
-            return
-        if message.chat.id not in main_vars.allowed_chat_ids:
+        else:
             bot.send_message(message.chat.id,
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
 
     @bot.message_handler(commands=['start_updater'])
     def start_updater(message):
