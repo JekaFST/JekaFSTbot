@@ -2,7 +2,7 @@
 import re
 from bs4 import BeautifulSoup
 
-text = ''
+text = '<span id="LevelsScenarioRepeater_ctl06_LevelTasksRepeater_ctl00_lblLevelTask" class="white"><audio controls="controls" src="http://d1.endata.cx/data/games/59970/логика3 аудио.mp3"></audio><br><br><a href="http://d1.endata.cx/data/games/59970/логика3 аудио.mp3">http://d1.endata.cx/data/games/59970/логика3 аудио.mp3</a><br><br><table border="0"><tr><td id="a3"><img src="http://d1.endata.cx/data/games/59970/логика3тллвоалп.jpg" width="900" height="550"></td></tr></table></span><span id="LevelsScenarioRepeater_ctl09_LevelTasksRepeater_ctl00_lblLevelTask" class="white"><audio src="http://d1.endata.cx/data/games/59970/логика3+аудио.mp3"></audio><table border="0"><tr><td id="a4"><img src="http://d1.endata.cx/data/games/59970/логика4_ssqwe.jpg" width="900" height="550"></td></table></span>'
 tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr', 'object', 'param', 'audio', 'source', 'embed']
 
 
@@ -151,7 +151,7 @@ def cut_tags(text, tags_list):
     for tag in tags_list:
         tag_reps = re.findall(r'<%s[^>]*>' % tag, text)
         for tag_rep in tag_reps:
-            text = text.replace(tag_rep.encode('utf-8'), '')
+            text = text.replace(tag_rep, '')
 
         text = text.replace('</%s>' % tag, '')
         text = text.replace('</ %s>' % tag, '')

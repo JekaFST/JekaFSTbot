@@ -203,7 +203,7 @@ def cut_tags(text, tags_list, bot, chat_id):
         try:
             tag_reps = re.findall(r'<%s[^>]*>' % tag, text)
             for tag_rep in tag_reps:
-                text = text.replace(tag_rep.encode('utf-8'), '')
+                text = text.replace(tag_rep, '')
 
             text = text.replace('</%s>' % tag, '')
         except Exception:
