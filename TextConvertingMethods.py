@@ -248,15 +248,24 @@ def cut_tags(text, tags_list, bot, chat_id):
                 for k, v in rep.attrs.items():
                     if isinstance(v, list):
                         attr = ' %s=%s' % (k, v[0])
+                        attr_2 = ' %s = %s' % (k, v[0])
                         attr2 = ' %s="%s"' % (k, v[0])
+                        attr2_2 = ' %s = "%s"' % (k, v[0])
                         attr3 = " %s='%s'" % (k, v[0])
+                        attr3_2 = " %s = '%s'" % (k, v[0])
                     else:
                         attr = ' %s=%s' % (k, v)
+                        attr_2 = ' %s = %s' % (k, v)
                         attr2 = ' %s="%s"' % (k, v)
+                        attr2_2 = ' %s = "%s"' % (k, v)
                         attr3 = " %s='%s'" % (k, v)
+                        attr3_2 = " %s = '%s'" % (k, v)
                     text = text.replace(str(attr.encode('utf-8')), '')
+                    text = text.replace(str(attr_2.encode('utf-8')), '')
                     text = text.replace(str(attr2.encode('utf-8')), '')
+                    text = text.replace(str(attr2_2.encode('utf-8')), '')
                     text = text.replace(str(attr3.encode('utf-8')), '')
+                    text = text.replace(str(attr3_2.encode('utf-8')), '')
 
                 tag_rests = ['<%s>' % tag, '<%s >' % tag, '<%s/>' % tag, '<%s />' % tag, '<%s"">' % tag, '</%s>' % tag, '<%s  />' % tag, '<%s"" />' % tag]
                 for tag_rest in tag_rests:
