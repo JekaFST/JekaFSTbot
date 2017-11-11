@@ -86,10 +86,11 @@ def handle_coords(text):
 
     soup = BeautifulSoup(text)
     for ahref in soup.find_all('a'):
-        coord_links = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
-                                 r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
-                                 r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
-                                 r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', ahref.text.encode('utf-8'))
+        coord_links = find_coords(ahref.text.encode('utf-8'))
+        # coord_links = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
+        #                          r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+        #                          r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+        #                          r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', ahref.text.encode('utf-8'))
         if coord_links:
             str_ahref = str(ahref)
             str_ahref = str_ahref.replace('&amp;', '&')
@@ -97,18 +98,20 @@ def handle_coords(text):
 
     links = re.findall(r'<a[^>]+>', text)
     for i, link in enumerate(links):
-        coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', link)
+        coords = find_coords(link)
+        # coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
+        #                     r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+        #                     r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+        #                     r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', link)
         if coords:
             replacement = '(link%s)' % i
             text = text.replace(link, replacement)
 
-    coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
-                        r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
-                        r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
-                        r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', text)
+    coords = find_coords(text)
+    # coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
+    #                     r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+    #                     r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+    #                     r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', text)
     for i, coord in enumerate(coords):
         coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(i+1) + '</b>'
         text = text.replace(coord, coord_Y_G)
@@ -232,3 +235,11 @@ def cut_script(text):
         text = text.replace(str(script), '')
 
     return text
+
+
+def find_coords(text):
+    coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', text)
+    return coords
