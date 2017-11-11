@@ -79,27 +79,42 @@ def cut_images(text):
         for k, v in img.attrs.items():
             attr = ' %s=%s' % (k, v)
             attr = attr.encode('utf-8')
+            attr_2 = ' %s = %s' % (k, v)
+            attr_2 = attr_2.encode('utf-8')
             attr2 = ' %s="%s"' % (k, v)
             attr2 = attr2.encode('utf-8')
+            attr2_2 = ' %s = "%s"' % (k, v)
+            attr2_2 = attr2_2.encode('utf-8')
             attr3 = " %s='%s'" % (k, v)
             attr3 = attr3.encode('utf-8')
+            attr3_2 = " %s = '%s'" % (k, v)
+            attr3_2 = attr3_2.encode('utf-8')
             if links:
                 for j, link in enumerate(links):
                     if v.encode('utf-8') in link:
                         replacement = '(link%s)' % j
                         text = text.replace(link, replacement)
                         text = text.replace(attr, '')
+                        text = text.replace(attr_2, '')
                         text = text.replace(attr2, '')
+                        text = text.replace(attr2_2, '')
                         text = text.replace(attr3, '')
+                        text = text.replace(attr3_2, '')
                         text = text.replace(replacement, link)
                     else:
-                        text = text.replace(attr2, '')
                         text = text.replace(attr, '')
+                        text = text.replace(attr_2, '')
+                        text = text.replace(attr2, '')
+                        text = text.replace(attr2_2, '')
                         text = text.replace(attr3, '')
+                        text = text.replace(attr3_2, '')
             else:
-                text = text.replace(attr2, '')
                 text = text.replace(attr, '')
+                text = text.replace(attr_2, '')
+                text = text.replace(attr2, '')
+                text = text.replace(attr2_2, '')
                 text = text.replace(attr3, '')
+                text = text.replace(attr3_2, '')
         image = '(img%s)' % i
         images.append(img.get('src').encode('utf-8'))
         img_rests = ['<img>', '<img >', '<img/>', '<img />', '<img"">', '<img  />', '<img"" />']
