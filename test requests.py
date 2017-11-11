@@ -2,7 +2,10 @@
 import re
 from bs4 import BeautifulSoup
 
-text = ''
+text = '<font color = grey>Проснись, </font>  <font>Нео...Ты увяз в матрице...Следуй за белым кроликом.\r\n' \
+       'Зона игры: <img src = "http://d1.endata.cx/data/games/60097/%d0%97%d0%be%d0%bd%d0%b0.png">\r\n' \
+       'Метка игры: <img src = "http://d1.endata.cx/data/games/60097/%d0%9c%d0%b5%d1%82%d0%ba%d0%b0.jpg">' \
+       '<a href="http://maps.yandex.ru/?text=59.7816,30.67787"><img src = "http://d1.endata.cx/data/games/60097/%d0%9c%d0%b5%d1%82%d0%ba%d0%b0.jpg"></a>'
 tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr', 'object', 'param', 'audio', 'source', 'embed']
 
 
@@ -88,27 +91,42 @@ def cut_images(text):
         for k, v in img.attrs.items():
             attr = ' %s=%s' % (k, v)
             attr = attr.encode('utf-8')
+            attr_2 = ' %s = %s' % (k, v)
+            attr_2 = attr_2.encode('utf-8')
             attr2 = ' %s="%s"' % (k, v)
             attr2 = attr2.encode('utf-8')
+            attr2_2 = ' %s = "%s"' % (k, v)
+            attr2_2 = attr2_2.encode('utf-8')
             attr3 = " %s='%s'" % (k, v)
             attr3 = attr3.encode('utf-8')
+            attr3_2 = " %s = '%s'" % (k, v)
+            attr3_2 = attr3_2.encode('utf-8')
             if links:
                 for j, link in enumerate(links):
-                    if v in link:
+                    if v.encode('utf-8') in link:
                         replacement = '(link%s)' % j
                         text = text.replace(link, replacement)
                         text = text.replace(attr, '')
+                        text = text.replace(attr_2, '')
                         text = text.replace(attr2, '')
+                        text = text.replace(attr2_2, '')
                         text = text.replace(attr3, '')
+                        text = text.replace(attr3_2, '')
                         text = text.replace(replacement, link)
                     else:
-                        text = text.replace(attr2, '')
                         text = text.replace(attr, '')
+                        text = text.replace(attr_2, '')
+                        text = text.replace(attr2, '')
+                        text = text.replace(attr2_2, '')
                         text = text.replace(attr3, '')
+                        text = text.replace(attr3_2, '')
             else:
-                text = text.replace(attr2, '')
                 text = text.replace(attr, '')
+                text = text.replace(attr_2, '')
+                text = text.replace(attr2, '')
+                text = text.replace(attr2_2, '')
                 text = text.replace(attr3, '')
+                text = text.replace(attr3_2, '')
         image = '(img%s)' % i
         images.append(img.get('src').encode('utf-8'))
         img_rests = ['<img>', '<img >', '<img/>', '<img />', '<img"">', '<img  />', '<img"" />']
@@ -267,20 +285,24 @@ def cut_rare_tags(text):
 
 def cut_tags(text, tags_list):
     for tag in tags_list:
-        soup = BeautifulSoup(text)
-        for rep in soup.find_all(tag):
-            for k, v in rep.attrs.items():
-                if isinstance(v, list):
-                    attr = ' %s=%s' % (k, v[0])
-                    attr2 = ' %s="%s"' % (k, v[0])
-                    attr3 = " %s='%s'" % (k, v[0])
-                else:
-                    attr = ' %s=%s' % (k, v)
-                    attr2 = ' %s="%s"' % (k, v)
-                    attr3 = " %s='%s'" % (k, v)
-                text = text.replace(str(attr), '')
-                text = text.replace(str(attr2), '')
-                text = text.replace(str(attr3), '')
+        # soup = BeautifulSoup(text)
+        tag_pattern = '<%s[^>]*>' % tag
+        tag_reps = re.findall(tag_pattern, text)
+        for tag_rep in tag_reps:
+            text = text.replace(tag_rep.encode('utf-8'), '')
+        # for rep in soup.find_all(tag):
+        #     for k, v in rep.attrs.items():
+        #         if isinstance(v, list):
+        #             attr = ' %s=%s' % (k, v[0])
+        #             attr2 = ' %s="%s"' % (k, v[0])
+        #             attr3 = " %s='%s'" % (k, v[0])
+        #         else:
+        #             attr = ' %s=%s' % (k, v)
+        #             attr2 = ' %s="%s"' % (k, v)
+        #             attr3 = " %s='%s'" % (k, v)
+        #         text = text.replace(str(attr), '')
+        #         text = text.replace(str(attr2), '')
+        #         text = text.replace(str(attr3), '')
 
             tag_rests = ['<%s>' % tag, '<%s >' % tag, '<%s/>' % tag, '<%s />' % tag, '<%s"">' % tag, '</%s>' % tag, '<%s  />' % tag, '<%s"" />' % tag]
             for tag_rest in tag_rests:

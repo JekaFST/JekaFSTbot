@@ -242,8 +242,11 @@ def cut_links(text, cut=False):
 
 def cut_tags(text, tags_list, bot, chat_id):
     for tag in tags_list:
-        soup = BeautifulSoup(text)
+        # soup = BeautifulSoup(text)
         try:
+            tag_pattern = r'<%s[^>]*>'
+            tag_reps = re.findall(tag_pattern, text)
+
             for rep in soup.find_all(tag):
                 for k, v in rep.attrs.items():
                     if isinstance(v, list):
