@@ -11,40 +11,67 @@ def send_object_text(text, header, bot, chat_id, parse=True):
     if 'table' in text or 'script' in text or 'object' in text or 'audio' in text:
         text = 'В тексте найдены и вырезаны скрипты таблицы, аудию и/или иные объекты\r\n' \
                '\xE2\x9D\x97<b>Информация в чате может отличаться от движка</b>\xE2\x9D\x97\r\n' + text
-    text = cut_script(text)
-    text = cut_formatting(text, tags_list, bot, chat_id)
-    text, images = cut_images(text)
-    text, links = cut_links(text)
-    text, coords = handle_coords(text)
+    try:
+        text = cut_script(text)
+    except Exception:
+        bot.send_message(chat_id, header + '\r\nException - скрипт не вырезан')
+    try:
+        text = cut_formatting(text, tags_list, bot, chat_id)
+    except Exception:
+        bot.send_message(chat_id, header + '\r\nException - форматирование не вырезано')
+    try:
+        text, images = cut_images(text)
+    except Exception:
+        bot.send_message(chat_id, header + '\r\nException - картинки не вырезаны')
+        images = list()
+    try:
+        text, links = cut_links(text)
+    except Exception:
+        bot.send_message(chat_id, header + '\r\nException - ссылки не вырезаны')
+        links = list()
+    try:
+        text, coords = handle_coords(text)
+    except Exception:
+        bot.send_message(chat_id, header + '\r\nException - координаты не обработаны')
+        coords = list()
 
     if len(text) > 7000:
         text_pieces = cut_long_text_on_pieces(text, text_pieces)
 
     if text_pieces:
         for text in text_pieces:
-            send_text(text, header, bot, chat_id, parse, raw_text, tags_list)
+            send_text(text, header, bot, chat_id, parse, raw_text)
     else:
-        send_text(text, header, bot, chat_id, parse, raw_text, tags_list)
+        send_text(text, header, bot, chat_id, parse, raw_text)
 
     if images:
-        if len(images) <= 10:
-            for i, image in enumerate(images):
-                message = '(img%s)' % i
-                bot.send_photo(chat_id, image, caption=message)
-        else:
-            text = 'Найдено %s изображений. Их отправка заблокирована\r\n' \
-                   'Для отправки всех изображений из задания введите /task_images' % str(len(images))
-            bot.send_message(chat_id, text)
+        try:
+            if len(images) <= 10:
+                for i, image in enumerate(images):
+                    message = '(img%s)' % i
+                    bot.send_photo(chat_id, image, caption=message)
+            else:
+                text = 'Найдено %s изображений. Их отправка заблокирована\r\n' \
+                       'Для отправки всех изображений из задания введите /task_images' % str(len(images))
+                bot.send_message(chat_id, text)
+        except Exception:
+            bot.send_message(chat_id, 'Exceprion - бот не смог отправить картинки')
     if links:
-        for i, link in enumerate(links):
-            message = '(link%s)' % i
-            bot.send_message(chat_id, message + '\r\n' + link)
+        try:
+            for i, link in enumerate(links):
+                message = '(link%s)' % i
+                bot.send_message(chat_id, message + '\r\n' + link)
+        except Exception:
+            bot.send_message(chat_id, 'Exceprion - бот не смог отправить ссылки')
     if coords:
-        for i, coord in enumerate(coords):
-            latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
-            longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-            bot.send_message(chat_id, coord + ' - <b>' + str(i+1) + '</b>', parse_mode='HTML')
-            bot.send_location(chat_id, latitude, longitude)
+        try:
+            for i, coord in enumerate(coords):
+                latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
+                longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
+                bot.send_message(chat_id, coord + ' - <b>' + str(i+1) + '</b>', parse_mode='HTML')
+                bot.send_location(chat_id, latitude, longitude)
+        except Exception:
+            bot.send_message(chat_id, 'Exceprion - бот не смог отправить координаты')
 
 
 def cut_formatting(text, tags_list, bot, chat_id):
@@ -143,11 +170,7 @@ def cut_long_text_on_pieces(text, text_pieces):
     return text_pieces
 
 
-def send_text(text, header, bot, chat_id, parse, raw_text, tags_list):
-    tags_list = tags_list
-    for tag in tags_list:
-        tag_ending = '</%s>' % tag
-        text = text.replace(tag_ending, '')
+def send_text(text, header, bot, chat_id, parse, raw_text):
     while '\r\n\r\n\r\n' in text:
         text = text.replace('\r\n\r\n\r\n', '\r\n\r\n')
     links = re.findall(r'<a[^>]+>', text)
@@ -169,11 +192,8 @@ def send_text(text, header, bot, chat_id, parse, raw_text, tags_list):
                 raw_text_file.write('Unparsed text:\r\n' + raw_text + '\r\n\r\n')
     except Exception:
         bot.send_message(chat_id, header + '\r\nТекст не отправлен', parse_mode='HTML')
-        try:
-            with open("Exceptions_%s.txt" % str(chat_id), "a+") as raw_text_file:
-                raw_text_file.write('Exception on send_object_text:\r\n' + raw_text + '\r\n\r\n')
-        except Exception:
-            return
+        with open("Exceptions_%s.txt" % str(chat_id), "a+") as raw_text_file:
+            raw_text_file.write('Exception on send_object_text:\r\n' + raw_text + '\r\n\r\n')
 
 
 def cut_links(text, cut=False):
