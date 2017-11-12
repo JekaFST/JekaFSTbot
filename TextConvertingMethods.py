@@ -174,11 +174,11 @@ def send_text(text, header, bot, chat_id, parse, raw_text):
     while '\r\n\r\n\r\n' in text:
         text = text.replace('\r\n\r\n\r\n', '\r\n\r\n')
     links = re.findall(r'<a[^>]+>', text)
+    links_endings = [re.search(r'..>', link).group(0) for link in links]
     tags = re.findall(r'<..|..>|..>$|<$', text)
 
     for tag in tags:
-        if tag not in ['<b>', '</b', '<i>', '</i', '/b>', '/i>', '<a ', '</a', '/a>']\
-                + [re.search(r'..>', link).group(0) for link in links]:
+        if tag not in ['<b>', '</b', '<i>', '</i', '/b>', '/i>', '<a ', '</a', '/a>'] + links_endings:
             parse = False
             break
 
