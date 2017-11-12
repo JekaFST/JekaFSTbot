@@ -3,19 +3,20 @@ class BotSession(object):
     def __init__(self):
         self.stop_updater = None
         self.use_channel = False
-        self.channel_name = '@nnm_channel'
+        # self.channel_name = '@nnm_channel'
+        self.channel_name = None
         self.active = False
         self.config = {
-                    'game_url_ending': '/gameengines/encounter/play/',
-                    'login_url_ending': '/Login.aspx',
-                    'json': '?json=1',
-                    'Login': 'oneanotherbot',
-                    'Password': 'ljcneg12',
-                    'code_request': {},
-                    'en_domain': 'http://deadline.en.cx',
-                    'game_id': '60097',
-                    'cookie': ''
-                   }
+                        'game_url_ending': '/gameengines/encounter/play/',
+                        'login_url_ending': '/Login.aspx',
+                        'json': '?json=1',
+                        'Login': 'jekafst_bot',
+                        'Password': 'jekabot_1412',
+                        'code_request': {},
+                        'en_domain': 'http://demo.en.cx',
+                        'game_id': '26991',
+                        'cookie': ''
+                    }
         self.current_level = None
         self.storm_levels = None
         self.urls = {

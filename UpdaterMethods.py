@@ -21,61 +21,84 @@ def updater(chat_id, bot, session, updaters_dict):
 
 
 def linear_updater(chat_id, bot, session):
-    try:
-        loaded_level, levels = get_current_level(session, bot, chat_id, from_updater=True)
-
-        if not loaded_level:
+    for i in xrange(2):
+        try:
+            loaded_level, levels = get_current_level(session, bot, chat_id, from_updater=True)
+            break
+        except Exception:
+            if i == 0:
+                continue
+            bot.send_message(chat_id, 'Exception - updater не смог загрузить уровень(-вни)')
             session.put_updater_task = True
             return
 
+    if not loaded_level:
+        session.put_updater_task = True
+        return
 
+    try:
         loaded_helps = loaded_level['Helps']
         loaded_bonuses = loaded_level['Bonuses']
         loaded_sectors = loaded_level['Sectors']
         loaded_messages = loaded_level['Messages']
+    except Exception:
+        bot.send_message(chat_id, 'Exception - updater не смог вытащить элементы '
+                                  '(сектора|бонусы|подсказки) загруженного уровня')
+        session.put_updater_task = True
+        return
 
-        if not session.current_level:
-            session.current_level = loaded_level
-            session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
-                                                                            session.message_statuses = reset_level_vars()
-            session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
-                                                    session.channel_name, session.use_channel)
-            if session.channel_name and session.use_channel:
-                session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
-                                                                              session.channel_name)
-            session.help_statuses = fill_help_statuses(loaded_helps, session.help_statuses)
-            session.bonus_statuses = fill_bonus_statuses(loaded_bonuses, session.game_answered_bonus_ids,
-                                                         session.bonus_statuses)
-            session.sector_statuses = fill_sector_statuses(loaded_sectors, session.sector_statuses)
-            session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
-            session.put_updater_task = True
-            return
-
-        if loaded_level['LevelId'] != session.current_level['LevelId']:
-            session.current_level = loaded_level
-            session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
-                                                                            session.message_statuses = reset_level_vars()
-            session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
-                                                    session.channel_name, session.use_channel)
-            if session.channel_name and session.use_channel:
-                session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
-                                                                              session.channel_name)
-            session.help_statuses = fill_help_statuses(loaded_helps, session.help_statuses)
-            session.bonus_statuses = fill_bonus_statuses(loaded_bonuses, session.game_answered_bonus_ids,
-                                                         session.bonus_statuses)
-            session.sector_statuses = fill_sector_statuses(loaded_sectors, session.sector_statuses)
-            session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
-            session.put_updater_task = True
-            return
-
+    if not session.current_level:
         session.current_level = loaded_level
+        session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
+                                                                        session.message_statuses = reset_level_vars()
+        session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
+                                                session.channel_name, session.use_channel)
+        if session.channel_name and session.use_channel:
+            session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
+                                                                          session.channel_name)
+        try:
+            session.help_statuses = fill_help_statuses(loaded_helps, session.help_statuses)
+            session.bonus_statuses = fill_bonus_statuses(loaded_bonuses, session.game_answered_bonus_ids,
+                                                         session.bonus_statuses)
+            session.sector_statuses = fill_sector_statuses(loaded_sectors, session.sector_statuses)
+            session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
+        except Exception:
+            bot.send_message(chat_id, 'Exception - updater не смог заполнить статусы элементов')
+        session.put_updater_task = True
+        return
 
+    if loaded_level['LevelId'] != session.current_level['LevelId']:
+        session.current_level = loaded_level
+        session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
+                                                                        session.message_statuses = reset_level_vars()
+        session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
+                                                session.channel_name, session.use_channel)
+        if session.channel_name and session.use_channel:
+            session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
+                                                                          session.channel_name)
+        try:
+            session.help_statuses = fill_help_statuses(loaded_helps, session.help_statuses)
+            session.bonus_statuses = fill_bonus_statuses(loaded_bonuses, session.game_answered_bonus_ids,
+                                                         session.bonus_statuses)
+            session.sector_statuses = fill_sector_statuses(loaded_sectors, session.sector_statuses)
+            session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
+        except Exception:
+            bot.send_message(chat_id, 'Exception - updater не смог заполнить статусы элементов')
+        session.put_updater_task = True
+        return
+
+    session.current_level = loaded_level
+
+    try:
         if not loaded_level['Timeout'] == 0 and not session.time_to_up_sent\
                 and loaded_level['TimeoutSecondsRemain'] <= 300:
             message = 'До автоперехода < 5 мин'
             bot.send_message(chat_id, message)
             session.time_to_up_sent = True
+    except Exception:
+        bot.send_message(chat_id, 'Exception - updater не смог проанализировать время до автоперехода')
 
+    try:
         if loaded_messages:
             message_parcer(loaded_messages, session.message_statuses, session.sent_messages, bot, chat_id,
                            session.channel_name, session.use_channel)
@@ -96,20 +119,27 @@ def linear_updater(chat_id, bot, session):
                                                               bot, session.channel_name, session.sectors_message_id)
         levels_parcer(levels, session, bot, chat_id)
     except Exception:
-        bot.send_message(chat_id, 'Exception - не удалось выполнить команду updater до конца')
+        bot.send_message(chat_id, 'Exception - не удалось выполнить слежение')
 
     session.put_updater_task = True
 
 
 def storm_updater(chat_id, bot, session):
-    try:
-        if not session.storm_levels:
-            game_model = get_current_game_model(session, bot, chat_id, from_updater=True)
-            levels = game_model['Levels']
-            session.storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater=True)
-            session.put_updater_task = True
-            return
+    if not session.storm_levels:
+        for i in xrange(2):
+            try:
+                game_model = get_current_game_model(session, bot, chat_id, from_updater=True)
+                levels = game_model['Levels']
+                session.storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater=True)
+                break
+            except Exception:
+                if i == 0:
+                    continue
+                bot.send_message(chat_id, 'Exception - updater не смог загрузить уровень(-вни)')
+        session.put_updater_task = True
+        return
 
+    try:
         if not session.help_statuses or not session.bonus_statuses or not session.sector_statuses or not session.message_statuses:
             fill_all_statuses_storm(session, bot, chat_id)
 
@@ -166,44 +196,60 @@ def reset_level_vars():
 
 def send_up_info(loaded_level, number_of_levels, loaded_helps, loaded_bonuses, bot, chat_id, channel_name, use_channel,
                  block=''):
-    up = '\xE2\x9D\x97#АП'
-    name = loaded_level['Name'].encode('utf-8') if loaded_level['Name'] else 'без названия'
-    level = '\r\n<b>Уровень %s из %s: %s</b>' % (str(loaded_level['Number']), str(number_of_levels),
-                                                 name)
-    time_to_up = '\r\nБез автоперехода' if loaded_level['Timeout'] == 0 else '\r\nАвтопереход: %s' %\
-                                                                             time_converter(loaded_level['Timeout'])
-    codes_all = 1 if not loaded_level['Sectors'] else len(loaded_level['Sectors'])
-    codes_to_find = 1 if not loaded_level['Sectors'] else loaded_level['RequiredSectorsCount']
-    codes = '\r\nЗакрыть секторов: %s из %s' % (str(codes_to_find), str(codes_all))
+    try:
+        up = '\xE2\x9D\x97#АП'
+        name = loaded_level['Name'].encode('utf-8') if loaded_level['Name'] else 'без названия'
+        level = '\r\n<b>Уровень %s из %s: %s</b>' % (str(loaded_level['Number']), str(number_of_levels),
+                                                     name)
+        time_to_up = '\r\nБез автоперехода' if loaded_level['Timeout'] == 0 else '\r\nАвтопереход: %s' %\
+                                                                                 time_converter(loaded_level['Timeout'])
+        codes_all = 1 if not loaded_level['Sectors'] else len(loaded_level['Sectors'])
+        codes_to_find = 1 if not loaded_level['Sectors'] else loaded_level['RequiredSectorsCount']
+        codes = '\r\nЗакрыть секторов: %s из %s' % (str(codes_to_find), str(codes_all))
 
-    if loaded_level['HasAnswerBlockRule']:
-        att_number = loaded_level['AttemtsNumber']
-        att_period = time_converter(loaded_level['AttemtsPeriod'])
-        att_object = 'команда' if loaded_level['BlockTargetId'] == 2 else 'игрок'
-        block = '\r\n<b>БЛОКИРОВКА: %s / %s|%s</b>' % (str(att_number), att_period, att_object)
+        if loaded_level['HasAnswerBlockRule']:
+            att_number = loaded_level['AttemtsNumber']
+            att_period = time_converter(loaded_level['AttemtsPeriod'])
+            att_object = 'команда' if loaded_level['BlockTargetId'] == 2 else 'игрок'
+            block = '\r\n<b>БЛОКИРОВКА: %s / %s|%s</b>' % (str(att_number), att_period, att_object)
 
-    helps = '\r\nПодсказок: %s, первая через %s' % (str(len(loaded_helps)),
-                                                    time_converter(loaded_helps[0]['RemainSeconds'])) if loaded_helps\
-        else '\r\nБез подсказок'
-    bonuses = '\r\nБонусов: %s' % len(loaded_bonuses) if loaded_bonuses else '\r\nБез бонусов'
+        helps = '\r\nПодсказок: %s, первая через %s' % (str(len(loaded_helps)),
+                                                        time_converter(loaded_helps[0]['RemainSeconds'])) if loaded_helps\
+            else '\r\nБез подсказок'
+        bonuses = '\r\nБонусов: %s' % len(loaded_bonuses) if loaded_bonuses else '\r\nБез бонусов'
 
-    up_message = up + level + time_to_up + codes + block + helps + bonuses
+        up_message = up + level + time_to_up + codes + block + helps + bonuses
 
-    bot.send_message(chat_id, up_message, parse_mode='HTML')
+        bot.send_message(chat_id, up_message, parse_mode='HTML')
+    except Exception:
+        bot.send_message(chat_id, up + '\r\nException - updater не смог собрать и отправить информацию об уровне')
+
     send_task(loaded_level, bot, chat_id)
-    if channel_name and use_channel:
-        bot.send_message(channel_name, up_message, parse_mode='HTML')
-        send_task(loaded_level, bot, channel_name)
 
-    sectors_to_close = get_sectors_to_close(loaded_level['Sectors'], get_sector_names=True)
+    try:
+        if channel_name and use_channel:
+            bot.send_message(channel_name, up_message, parse_mode='HTML')
+            send_task(loaded_level, bot, channel_name)
+    except Exception:
+        bot.send_message(chat_id, 'Exception - updater не смог отправить информацию по новому уровню в канал')
+
+    try:
+        sectors_to_close = get_sectors_to_close(loaded_level['Sectors'], get_sector_names=True)
+    except Exception:
+        bot.send_message(chat_id, 'Exception - updater не смог составить список секторов')
+        sectors_to_close = 'Exception - updater не смог составить список секторов'
+
     return sectors_to_close
 
 
 def send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, channel_name):
-    codes_all = 1 if not loaded_level['Sectors'] else len(loaded_level['Sectors'])
-    codes_to_find = 1 if not loaded_level['Sectors'] else loaded_level['SectorsLeftToClose']
-    message = '<b>Осталось закрыть: %s из %s:</b>\r\n%s' % (str(codes_to_find), str(codes_all), sectors_to_close)
-    response = bot.send_message(channel_name, message, parse_mode='HTML')
+    try:
+        codes_all = 1 if not loaded_level['Sectors'] else len(loaded_level['Sectors'])
+        codes_to_find = 1 if not loaded_level['Sectors'] else loaded_level['SectorsLeftToClose']
+        message = '<b>Осталось закрыть: %s из %s:</b>\r\n%s' % (str(codes_to_find), str(codes_all), sectors_to_close)
+        response = bot.send_message(channel_name, message, parse_mode='HTML')
+    except Exception:
+        response = bot.send_message(channel_name, 'Exception - updater не смог прислать не закрытые сектора')
     return response.message_id
 
 
