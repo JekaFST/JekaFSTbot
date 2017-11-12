@@ -93,10 +93,14 @@ def login(chat_id, bot, session):
 
 
 def start_session(chat_id, bot, session):
-    if session.config['cookie'] and session.config['game_id'] and session.config['Login'] and session.config['Password']:
-        launch_session(session, bot, chat_id)
+    if not session.active:
+        if session.config['cookie'] and session.config['game_id'] and session.config['Login'] and session.config['Password']:
+            launch_session(session, bot, chat_id)
+        else:
+            bot.send_message(chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
     else:
-        bot.send_message(chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
+        bot.send_message(chat_id, 'Сессия уже активирована. Если у вас проблемы со слежением - попробуйте '
+                                  '/stop_updater, затем /start_updater')
 
 
 def send_task(chat_id, bot, session, storm_level_number):

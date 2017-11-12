@@ -142,9 +142,11 @@ def check_game_model(game_model, session, bot, chat_id, from_updater=False):
             session.use_channel = False
             session.active = False
             drop_session_vars(session)
-        for k, v in game_wrong_statuses.items():
-            if game_model['Event'] == k:
-                loaded_game_wrong_status = v
+            loaded_game_wrong_status = game_wrong_statuses.keys[17] + '\r\nСессия остановлена, переменные сброшены'
+        else:
+            for k, v in game_wrong_statuses.items():
+                if game_model['Event'] == k:
+                    loaded_game_wrong_status = v
     else:
         loaded_game_wrong_status = 'Состояние игры не соответствует ни одному из ожидаемых. Проверьте настройки бота'
 
