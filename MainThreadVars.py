@@ -21,7 +21,8 @@ class MainVars(object):
         self.allowed_chats = {
             45839899: fst_config_dict,
             -1001145974445: fst_config_dict,
-            -1001126631174: nnm_config_dict,
+            -1001062839624: nnm_config_dict,
+            -1001126631174: None,
             -1001076545820: None,
             -1001116652124: None,
             -169229164: None,
