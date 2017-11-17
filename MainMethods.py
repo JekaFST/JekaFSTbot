@@ -10,18 +10,37 @@ from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_co
     send_all_bonuses_to_chat_storm, send_unclosed_bonuses_to_chat_storm, send_auth_messages_to_chat_storm
 
 
-def start(chat_id, bot, sessions_dict):
-    if chat_id not in sessions_dict.keys():
+def start(chat_id, bot, sessions_dict, config_dict):
+    if chat_id not in sessions_dict.keys() and not config_dict:
         sessions_dict[chat_id] = BotSession()
-
-    bot.send_message(chat_id, 'Чтобы начать использовать бота, необходимо задать конфигурацию игры:\n'
-                              '- ввести домен игры (/domain http://demo.en.cx)\n'
-                              '- ввести game id игры (/gameid 26991 | 27495)\n'
-                              '- ввести логин игрока (/login abc)\n'
-                              '- ввести пароль игрока (/password abc)\n'
-                              '- залогиниться в движок (/login_to_en)\n'
-                              'и активировать сессию (/start_session)\n'
-                              'Краткое описание доступно по команде /help', disable_web_page_preview=True)
+        bot.send_message(chat_id, 'Сессия создана\n'
+                                  'Чтобы начать использовать бота, необходимо задать конфигурацию игры:\n'
+                                  '- ввести домен игры (/domain http://demo.en.cx)\n'
+                                  '- ввести game id игры (/gameid 26991)\n'
+                                  '- ввести логин игрока (/login abc)\n'
+                                  '- ввести пароль игрока (/password abc)\n'
+                                  '- залогиниться в движок (/login_to_en)\n'
+                                  'и активировать сессию (/start_session)\n'
+                                  'Краткое описание доступно по команде /help', disable_web_page_preview=True)
+    elif chat_id not in sessions_dict.keys() and config_dict:
+        sessions_dict[chat_id] = BotSession()
+        sessions_dict[chat_id].config['Login'] = config_dict['Login']
+        sessions_dict[chat_id].config['Password'] = config_dict['Password']
+        sessions_dict[chat_id].config['en_domain'] = config_dict['en_domain']
+        sessions_dict[chat_id].channel_name = config_dict['channel_name']
+        bot.send_message(chat_id, 'Сессия создана\n'
+                                  'Для данного чата найдена конфигурация по умолчанию. Проверить: /config\n'
+                                  'Чтобы начать использовать бота, необходимо:\n'
+                                  '- ввести game id игры (/gameid 26991)\n'
+                                  '- залогиниться в движок (/login_to_en)\n'
+                                  'и активировать сессию (/start_session)\n'
+                                  '- сменить домен игры (/domain http://demo.en.cx)\n'
+                                  '- сменить логин игрока (/login abc)\n'
+                                  '- сменить пароль игрока (/password abc)\n'
+                                  'Краткое описание доступно по команде /help', disable_web_page_preview=True)
+    else:
+        bot.send_message(chat_id, 'Для данного чата уже создана сессия\n'
+                                  'Введите /config для проверки ее состояния')
 
 
 def stop_session(chat_id, bot, session, additional_chat_ids):

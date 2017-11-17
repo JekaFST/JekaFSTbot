@@ -279,7 +279,7 @@ while True:
         # Tasks to start & stop bot, get session config
         if task['task_type'] == 'start':
             try:
-                start(task['chat_id'], main_vars.bot, main_vars.sessions_dict)
+                start(task['chat_id'], main_vars.bot, main_vars.sessions_dict, main_vars.allowed_chats[task['chat_id']])
             except Exception:
                 main_vars.bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду start')
             main_vars.task_queue.remove(task)
