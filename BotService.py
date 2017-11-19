@@ -106,8 +106,8 @@ def run_app(bot, main_vars):
                                           '/task - прислать задание (штурм - /task номер уровня)\n'
                                           '/task_images - прислать все картинки из задания\n'
                                           '/sectors - прислать список секторов (штурм - /sectors номер уровня)\n'
-                                          '/helps - прислать все подсказки (штурм - /helps номер уровня)\n'
-                                          '/last_help - прислать последнюю пришедшую подсказку (штурм - /last_help номер уровня)\n'
+                                          '/hint - прислать все подсказки (штурм - /hints номер уровня)\n'
+                                          '/last_hint - прислать последнюю пришедшую подсказку (штурм - /last_hint номер уровня)\n'
                                           '/bonuses - прислать бонусы(штурм - /bonuses номер уровня)\n'
                                           '/unclosed_bonuses - прислать не закрытые бонусы цифрой (штурм - /unclosed_bonuses номер уровня)\n'
                                           '/messages - прислать сообщения авторов (штурм - /messages номер уровня)\n'
@@ -288,7 +288,7 @@ def run_app(bot, main_vars):
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
 
-    @bot.message_handler(commands=['helps'])
+    @bot.message_handler(commands=['hints'])
     def send_all_helps(message):
         storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
             re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
@@ -313,7 +313,7 @@ def run_app(bot, main_vars):
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
 
-    @bot.message_handler(commands=['last_help'])
+    @bot.message_handler(commands=['last_hint'])
     def send_last_help(message):
         storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
             re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None

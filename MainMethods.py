@@ -13,7 +13,7 @@ from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_co
 def start(chat_id, bot, sessions_dict, config_dict):
     if chat_id not in sessions_dict.keys() and not config_dict:
         sessions_dict[chat_id] = BotSession()
-        bot.send_message(chat_id, 'Сессия создана\n'
+        bot.send_message(chat_id, '<b>Сессия создана</b>\n'
                                   'Чтобы начать использовать бота, необходимо задать конфигурацию игры:\n'
                                   '- ввести домен игры (/domain http://demo.en.cx)\n'
                                   '- ввести game id игры (/gameid 26991)\n'
@@ -21,14 +21,14 @@ def start(chat_id, bot, sessions_dict, config_dict):
                                   '- ввести пароль игрока (/password abc)\n'
                                   '- залогиниться в движок (/login_to_en)\n'
                                   'и активировать сессию (/start_session)\n'
-                                  'Краткое описание доступно по команде /help', disable_web_page_preview=True)
+                                  'Краткое описание доступно по команде /help', disable_web_page_preview=True, parse_mode='HTML')
     elif chat_id not in sessions_dict.keys() and config_dict:
         sessions_dict[chat_id] = BotSession()
         sessions_dict[chat_id].config['Login'] = config_dict['Login']
         sessions_dict[chat_id].config['Password'] = config_dict['Password']
         sessions_dict[chat_id].config['en_domain'] = config_dict['en_domain']
         sessions_dict[chat_id].channel_name = config_dict['channel_name']
-        bot.send_message(chat_id, 'Сессия создана\n'
+        bot.send_message(chat_id, '<b>Сессия создана</b>\n'
                                   'Для данного чата найдена конфигурация по умолчанию. Проверить: /config\n'
                                   'Чтобы начать использовать бота, необходимо:\n'
                                   '- ввести game id игры (/gameid 26991)\n'
@@ -37,7 +37,7 @@ def start(chat_id, bot, sessions_dict, config_dict):
                                   '- сменить домен игры (/domain http://demo.en.cx)\n'
                                   '- сменить логин игрока (/login abc)\n'
                                   '- сменить пароль игрока (/password abc)\n'
-                                  'Краткое описание доступно по команде /help', disable_web_page_preview=True)
+                                  'Краткое описание доступно по команде /help', disable_web_page_preview=True, parse_mode='HTML')
     else:
         bot.send_message(chat_id, 'Для данного чата уже создана сессия\n'
                                   'Введите /config для проверки ее состояния')
