@@ -396,7 +396,8 @@ def run_app(bot, main_vars):
             send_auth_messages_task = {
                 'task_type': 'send_messages',
                 'chat_id': message.chat.id,
-                'additional_chat_id': None
+                'additional_chat_id': None,
+                'storm_level': storm_level
             }
             main_vars.task_queue.append(send_auth_messages_task)
         elif message.chat.id in main_vars.additional_ids.keys():
