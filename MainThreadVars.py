@@ -1,6 +1,14 @@
 import telebot
 
 
+test_config_dict = {
+                    'channel_name': '',
+                    'en_domain': 'http://demo.en.cx',
+                    'Login': 'jekafst_bot',
+                    'Password': 'jekabot_1412'
+                  }
+
+
 fst_config_dict = {
                     'channel_name': '@fst_channel',
                     'en_domain': 'http://deadline.en.cx',
@@ -27,7 +35,7 @@ class MainVars(object):
             -1001116652124: fst_config_dict,
             -169229164: None,
             -1001062839624: None,
-            -1001135150893: fst_config_dict
+            -1001135150893: test_config_dict
         }
         self.bot = telebot.TeleBot('370362982:AAH5ojKT0LSw8jS-vLfDF1bDE8rWWDyTeso')
         self.task_queue = list()

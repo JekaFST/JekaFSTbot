@@ -68,8 +68,9 @@ def send_object_text(text, header, bot, chat_id, parse=True):
             for i, coord in enumerate(coords):
                 latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
                 longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-                bot.send_message(chat_id, coord + ' - <b>' + str(i+1) + '</b>', parse_mode='HTML')
-                bot.send_location(chat_id, latitude, longitude)
+                bot.send_venue(chat_id, latitude, longitude, coord + ' - ' + str(i+1), '')
+                # bot.send_message(chat_id, coord + ' - <b>' + str(i+1) + '</b>', parse_mode='HTML')
+                # bot.send_location(chat_id, latitude, longitude)
         except Exception:
             bot.send_message(chat_id, 'Exceprion - бот не смог отправить координаты')
 

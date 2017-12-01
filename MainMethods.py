@@ -327,7 +327,7 @@ def send_coords(chat_id, bot, session, coords):
         for coord in coords:
             latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
             longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-            bot.send_location(chat_id, latitude, longitude)
+            bot.send_venue(chat_id, latitude, longitude, coord, '')
 
 
 def join(chat_id, bot, message_id, additional_chat_id, additional_chat_ids):
