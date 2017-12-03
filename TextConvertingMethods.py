@@ -200,6 +200,16 @@ def send_text(text, header, bot, chat_id, parse, raw_text):
 def cut_links(text, cut=False):
     links = list()
 
+    links_to_lower = re.findall(r'<A[^>]+>', text)
+    for link in links_to_lower:
+        soup = BeautifulSoup(link)
+        for a in soup.find_all('a'):
+            link_lower = link.replace(a.get('href').encode('utf-8'), 'link')
+            link_lower = link_lower.lower()
+            link_lower = link_lower.replace('link', a.get('href').encode('utf-8'))
+            text = text.replace(link, link_lower)
+    text = text.replace('</A>', '</a>')
+
     links_to_check = re.findall(r'<a[^>]+>', text)
     for link in links_to_check:
         href = re.search(r'href\s*=\s*[^>\s]+', link).group(0)
@@ -222,11 +232,12 @@ def cut_links(text, cut=False):
 def cut_tags(text, tags_list, bot, chat_id):
     for tag in tags_list:
         try:
-            tag_reps = re.findall(r'<%s[^>]*>' % tag, text)
+            tag_reps = re.findall(r'<%s[^>]*>|<%s[^>]*>' % (tag, tag.upper()), text)
             for tag_rep in tag_reps:
                 text = text.replace(tag_rep, '')
 
             text = text.replace('</%s>' % tag, '')
+            text = text.replace('</%s>' % tag.upper(), '')
         except Exception:
             bot.send_message(45839899, 'Unparsed tag "%s" in chat_id: %s\r\n\r\n' % (tag, str(chat_id)) + text,
                              disable_web_page_preview=True)
