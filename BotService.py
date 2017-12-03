@@ -106,7 +106,7 @@ def run_app(bot, main_vars):
                                           '/task - прислать задание (штурм - /task номер уровня)\n'
                                           '/task_images - прислать все картинки из задания\n'
                                           '/sectors - прислать список секторов (штурм - /sectors номер уровня)\n'
-                                          '/hint - прислать все подсказки (штурм - /hints номер уровня)\n'
+                                          '/hints - прислать все подсказки (штурм - /hints номер уровня)\n'
                                           '/last_hint - прислать последнюю пришедшую подсказку (штурм - /last_hint номер уровня)\n'
                                           '/bonuses - прислать бонусы(штурм - /bonuses номер уровня)\n'
                                           '/unclosed_bonuses - прислать не закрытые бонусы цифрой (штурм - /unclosed_bonuses номер уровня)\n'
@@ -589,7 +589,7 @@ def run_app(bot, main_vars):
     bot.remove_webhook()
 
     # Set webhook
-    bot.set_webhook(url='https://10c9926d.ngrok.io/webhook')
+    bot.set_webhook(url='https://8ae0b3f7.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():

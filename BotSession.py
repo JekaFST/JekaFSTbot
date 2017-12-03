@@ -11,7 +11,6 @@ class BotSession(object):
                         'json': '?json=1',
                         'Login': '',
                         'Password': '',
-                        'code_request': {},
                         'en_domain': '',
                         'game_id': '',
                         'cookie': ''

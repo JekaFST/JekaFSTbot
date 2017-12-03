@@ -349,7 +349,7 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
                                   '\r\nБонусы сдавать в виде ?код', reply_to_message_id=message_id, parse_mode='HTML')
         return
 
-    code_request = generate_code_request(session.config['code_request'], level, code, bonus_only)
+    code_request = generate_code_request(level, code, bonus_only)
 
     response = requests.post(session.urls['game_url_js'], data=code_request,
                              headers={'Cookie': session.config['cookie']})
@@ -371,9 +371,11 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
     bot.send_message(chat_id, reply, reply_to_message_id=message_id, parse_mode='HTML')
 
 
-def generate_code_request(code_request, level, code, bonus_only):
-    code_request['LevelId'] = level['LevelId']
-    code_request['LevelNumber'] = level['Number']
+def generate_code_request(level, code, bonus_only):
+    code_request = {
+        'LevelId': level['LevelId'],
+        'LevelNumber': level['Number']
+    }
     if not bonus_only:
         code_request['LevelAction.Answer'] = code
     else:

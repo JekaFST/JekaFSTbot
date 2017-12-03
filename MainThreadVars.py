@@ -23,6 +23,13 @@ nnm_config_dict = {
                     'Password': 'ljcneg12'
                   }
 
+keks_config_dict = {
+                    'channel_name': '',
+                    'en_domain': 'http://felix.en.cx',
+                    'Login': 'jekafst_bot',
+                    'Password': 'jekabot_1412'
+                  }
+
 
 class MainVars(object):
     def __init__(self):
@@ -35,7 +42,8 @@ class MainVars(object):
             -1001116652124: fst_config_dict,
             -169229164: None,
             -1001062839624: None,
-            -1001135150893: test_config_dict
+            -1001135150893: test_config_dict,
+            -1001184863414: keks_config_dict
         }
         self.bot = telebot.TeleBot('370362982:AAH5ojKT0LSw8jS-vLfDF1bDE8rWWDyTeso')
         self.task_queue = list()

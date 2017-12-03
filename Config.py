@@ -1,32 +1,4 @@
 # -*- coding: utf-8 -*-
-game_url_ending = '/gameengines/encounter/play/'
-login_url_ending = '/Login.aspx'
-json = '?json=1'
-config_url = 'http://localhost:443/config'
-urls_url = 'http://localhost:443/urls'
-current_game_model_url = 'http://localhost:443/game_model_current'
-code_request = {
-                'LevelId': '',
-                'LevelNumber': '',
-                'LevelAction.Answer': ''
-                }
-
-# init_config_dict = {
-#                     'bot_token': '370362982:AAH5ojKT0LSw8jS-vLfDF1bDE8rWWDyTeso',
-#                     'en_domain': '',
-#                     'game_url_ending': '/gameengines/encounter/play/',
-#                     'login_url_ending': '/Login.aspx',
-#                     'json': '?json=1',
-#                     'Login': 'jekafst_bot',
-#                     'Password': 'jekabot_1412',
-#                     'game_id': '',
-#                     'cookie': '',
-#                     'code_request': {
-#                                         'LevelId': '',
-#                                         'LevelNumber': '',
-#                                         'LevelAction.Answer': ''
-#                                     }
-#                    }
 
 tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr', 'object', 'param', 'audio', 'source', 'embed']
 
