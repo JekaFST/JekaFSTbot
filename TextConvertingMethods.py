@@ -271,7 +271,7 @@ def cut_script(text):
 
 def find_coords(text):
     coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', text)
+                        r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+                        r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+                        r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', text)
     return coords
