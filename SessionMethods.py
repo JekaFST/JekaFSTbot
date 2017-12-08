@@ -506,12 +506,12 @@ def send_task_images(level, bot, chat_id):
 
 def send_live_locations_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
-    location_to_send = session.location[1]
+    location_to_send = session.locations[1]
     latitude = re.findall(r'\d\d\.\d{4,7}', location_to_send)[0]
     longitude = re.findall(r'\d\d\.\d{4,7}', location_to_send)[1]
     live_period = level['TimeoutSecondsRemain'] if level['TimeoutSecondsRemain'] else 3600
     response = bot.send_location(chat_id, latitude, longitude, live_period=live_period)
-    session.live_location_message_id = response.message.id
+    session.live_location_message_id = response.message_id
 
 
 def drop_session_vars(session):

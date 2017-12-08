@@ -52,8 +52,9 @@ def linear_updater(chat_id, bot, session):
         session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
                                                                         session.message_statuses = reset_level_vars()
         session.locations = dict()
-        bot.stop_message_live_location(chat_id, session.live_location_message_id)
-        session.live_location_message_id = None
+        if session.live_location_message_id:
+            bot.stop_message_live_location(chat_id, session.live_location_message_id)
+            session.live_location_message_id = None
         session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
                                                 session.channel_name, session.use_channel, session.locations,
                                                 session.add_live_locations)
@@ -76,8 +77,9 @@ def linear_updater(chat_id, bot, session):
         session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
                                                                         session.message_statuses = reset_level_vars()
         session.locations = dict()
-        bot.stop_message_live_location(chat_id, session.live_location_message_id)
-        session.live_location_message_id = None
+        if session.live_location_message_id:
+            bot.stop_message_live_location(chat_id, session.live_location_message_id)
+            session.live_location_message_id = None
         session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
                                                 session.channel_name, session.use_channel, session.locations,
                                                 session.add_live_locations)
