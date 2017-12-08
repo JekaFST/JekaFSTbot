@@ -38,3 +38,6 @@ class BotSession(object):
         self.send_codes = True
         self.dismissed_level_ids = list()
         self.storm_game = False
+        self.locations = dict()
+        self.add_live_locations = True
+        self.live_location_message_id = None

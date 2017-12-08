@@ -9,12 +9,13 @@ def time_converter(seconds):
     return h_m_s
 
 
-def send_task(loaded_level, bot, chat_id):
+def send_task(loaded_level, bot, chat_id, locations=None, add_live_locations=False):
     tasks = loaded_level['Tasks']
     if tasks:
         task = tasks[0]['TaskText'].encode('utf-8')
         task_header = '<b>ЗАДАНИЕ</b>'
-        send_object_text(task, task_header, bot, chat_id)
+        send_object_text(task, task_header, bot, chat_id) if not add_live_locations\
+            else send_object_text(task, task_header, bot, chat_id, locations=locations, add_live_locations=add_live_locations)
     else:
         bot.send_message(chat_id, 'Задание не предусмотрено')
 

@@ -524,6 +524,29 @@ def run_app(bot, main_vars):
         else:
             bot.send_message(message.chat.id, 'Тег не добавлен в обработчикб повторите попытку')
 
+    @bot.message_handler(commands=['live_location'])
+    def send_live_location(message):
+        # storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
+        #     re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
+        if message.chat.id in main_vars.allowed_chats.keys():
+            send_live_location_task = {
+                'task_type': 'live_location',
+                'chat_id': message.chat.id,
+                'additional_chat_id': None
+            }
+            main_vars.task_queue.append(send_live_location_task)
+        elif message.chat.id in main_vars.additional_ids.keys():
+            send_live_location_task = {
+                'task_type': 'live_location',
+                'chat_id': None,
+                'additional_chat_id': message.chat.id
+            }
+            main_vars.task_queue.append(send_live_location_task)
+        else:
+            bot.send_message(message.chat.id,
+                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
+                             'Для отправки запроса на разрешение введите /ask_for_permission')
+
     @bot.message_handler(content_types=['text'])
     def text_processor(message):
         if message.chat.id not in main_vars.allowed_chats.keys() and message.chat.id not in main_vars.additional_ids.keys():

@@ -51,8 +51,12 @@ def linear_updater(chat_id, bot, session):
         session.current_level = loaded_level
         session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
                                                                         session.message_statuses = reset_level_vars()
+        session.locations = dict()
+        bot.stop_message_live_location(chat_id, session.live_location_message_id)
+        session.live_location_message_id = None
         session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
-                                                session.channel_name, session.use_channel)
+                                                session.channel_name, session.use_channel, session.locations,
+                                                session.add_live_locations)
         if session.channel_name and session.use_channel:
             session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
                                                                           session.channel_name)
@@ -71,8 +75,12 @@ def linear_updater(chat_id, bot, session):
         session.current_level = loaded_level
         session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
                                                                         session.message_statuses = reset_level_vars()
+        session.locations = dict()
+        bot.stop_message_live_location(chat_id, session.live_location_message_id)
+        session.live_location_message_id = None
         session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
-                                                session.channel_name, session.use_channel)
+                                                session.channel_name, session.use_channel, session.locations,
+                                                session.add_live_locations)
         if session.channel_name and session.use_channel:
             session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
                                                                           session.channel_name)
@@ -195,7 +203,7 @@ def reset_level_vars():
 
 
 def send_up_info(loaded_level, number_of_levels, loaded_helps, loaded_bonuses, bot, chat_id, channel_name, use_channel,
-                 block=''):
+                 locations, add_live_locations, block=''):
     try:
         up = '\xE2\x9D\x97#АП'
         name = loaded_level['Name'].encode('utf-8') if loaded_level['Name'] else 'без названия'
@@ -224,7 +232,7 @@ def send_up_info(loaded_level, number_of_levels, loaded_helps, loaded_bonuses, b
     except Exception:
         bot.send_message(chat_id, up + '\r\nException - updater не смог собрать и отправить информацию об уровне')
 
-    send_task(loaded_level, bot, chat_id)
+    send_task(loaded_level, bot, chat_id, locations=locations, add_live_locations=add_live_locations)
 
     try:
         if channel_name and use_channel:

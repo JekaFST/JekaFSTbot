@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from Config import tags_list
 
 
-def send_object_text(text, header, bot, chat_id, parse=True):
+def send_object_text(text, header, bot, chat_id, parse=True, locations=None, add_live_locations=False):
     text_pieces = list()
     raw_text = text
 
@@ -69,6 +69,8 @@ def send_object_text(text, header, bot, chat_id, parse=True):
                 latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
                 longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
                 bot.send_venue(chat_id, latitude, longitude, coord + ' - ' + str(i+1), '')
+                if add_live_locations:
+                    locations[i+1] = coord
                 # bot.send_message(chat_id, coord + ' - <b>' + str(i+1) + '</b>', parse_mode='HTML')
                 # bot.send_location(chat_id, latitude, longitude)
         except Exception:

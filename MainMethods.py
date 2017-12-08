@@ -7,7 +7,8 @@ from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_co
     send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session, \
     send_auth_messages_to_chat, send_unclosed_bonuses_to_chat, send_code_to_storm_level, send_task_to_chat_storm, \
     drop_session_vars, send_all_helps_to_chat_storm, send_last_help_to_chat_storm, send_all_sectors_to_chat_storm, \
-    send_all_bonuses_to_chat_storm, send_unclosed_bonuses_to_chat_storm, send_auth_messages_to_chat_storm
+    send_all_bonuses_to_chat_storm, send_unclosed_bonuses_to_chat_storm, send_auth_messages_to_chat_storm, \
+    send_live_locations_to_chat
 
 
 def start(chat_id, bot, sessions_dict, config_dict):
@@ -348,3 +349,13 @@ def enable_codes(chat_id, bot, session):
 def disable_codes(chat_id, bot, session):
     session.send_codes = False
     bot.send_message(chat_id, 'Сдача кодов выключена')
+
+
+def send_live_locations(chat_id, bot, session):
+    if not session.active:
+        bot.send_message(chat_id, 'Нельзя отправлять live_location при неактивной сессии')
+        return
+    if not session.locations:
+        bot.send_message(chat_id, 'Нет координат для отправки')
+        return
+    send_live_locations_to_chat(bot, chat_id, session)
