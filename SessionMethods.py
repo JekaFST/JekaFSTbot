@@ -5,7 +5,7 @@ import json
 from bs4 import BeautifulSoup
 from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, \
     send_adm_message
-from Config import game_wrong_statuses
+from Config import game_wrong_statuses, coord_bots
 
 
 def compile_urls(config):
@@ -506,12 +506,26 @@ def send_task_images(level, bot, chat_id):
 
 def send_live_locations_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
-    location_to_send = session.locations[1]
-    latitude = re.findall(r'\d\d\.\d{4,7}', location_to_send)[0]
-    longitude = re.findall(r'\d\d\.\d{4,7}', location_to_send)[1]
-    live_period = level['TimeoutSecondsRemain'] if level['TimeoutSecondsRemain'] else 3600
-    response = bot.send_location(chat_id, latitude, longitude, live_period=live_period)
-    session.live_location_message_id = response.message_id
+    if level['LevelId'] != session.current_level['LevelId']:
+        bot.send_message(chat_id, 'Уровень изменился. '
+                                  'Повторите команду, если хотите поставить live_location для нового уровня')
+        return
+    if len(session.locations.keys()) == 1:
+        location_to_send = session.locations[1]
+        latitude = re.findall(r'\d\d\.\d{4,7}', location_to_send)[0]
+        longitude = re.findall(r'\d\d\.\d{4,7}', location_to_send)[1]
+        live_period = level['TimeoutSecondsRemain'] if level['TimeoutSecondsRemain'] else 3600
+        response = bot.send_location(chat_id, latitude, longitude, live_period=live_period)
+        session.live_location_message_ids[0] = response.message_id
+    else:
+        for k, v in session.locations.items():
+            if k > 20:
+                continue
+            latitude = re.findall(r'\d\d\.\d{4,7}', v)[0]
+            longitude = re.findall(r'\d\d\.\d{4,7}', v)[1]
+            live_period = level['TimeoutSecondsRemain'] if level['TimeoutSecondsRemain'] else 3600
+            response = coord_bots[k].send_location(chat_id, latitude, longitude, live_period=live_period)
+            session.live_location_message_ids[k] = response.message_id
 
 
 def drop_session_vars(session):

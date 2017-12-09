@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import threading
+
+from Config import coord_bots
 from SessionMethods import get_current_level, get_storm_level, get_storm_levels, get_current_game_model
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
     send_bonus_award_answer, send_adm_message
@@ -51,10 +53,7 @@ def linear_updater(chat_id, bot, session):
         session.current_level = loaded_level
         session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
                                                                         session.message_statuses = reset_level_vars()
-        session.locations = dict()
-        if session.live_location_message_id:
-            bot.stop_message_live_location(chat_id, session.live_location_message_id)
-            session.live_location_message_id = None
+        reset_live_locations(chat_id, bot, session)
         session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
                                                 session.channel_name, session.use_channel, session.locations,
                                                 session.add_live_locations)
@@ -76,10 +75,7 @@ def linear_updater(chat_id, bot, session):
         session.current_level = loaded_level
         session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
                                                                         session.message_statuses = reset_level_vars()
-        session.locations = dict()
-        if session.live_location_message_id:
-            bot.stop_message_live_location(chat_id, session.live_location_message_id)
-            session.live_location_message_id = None
+        reset_live_locations(chat_id, bot, session)
         session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
                                                 session.channel_name, session.use_channel, session.locations,
                                                 session.add_live_locations)
@@ -202,6 +198,19 @@ def reset_level_vars():
     message_statuses = dict()
     time_to_up_sent = False
     return help_statuses, bonus_statuses, time_to_up_sent, answer_statuses, message_statuses
+
+
+def reset_live_locations(chat_id, bot, session):
+    session.locations = dict()
+    if session.live_location_message_ids:
+        for k, v in session.live_location_message_ids.items():
+            if k == 0:
+                bot.stop_message_live_location(chat_id, v)
+            elif k > 20:
+                continue
+            else:
+                coord_bots[k].stop_message_live_location(chat_id, v)
+        session.live_location_message_ids = dict()
 
 
 def send_up_info(loaded_level, number_of_levels, loaded_helps, loaded_bonuses, bot, chat_id, channel_name, use_channel,

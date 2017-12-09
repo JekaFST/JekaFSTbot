@@ -125,9 +125,9 @@ def run_app(bot, main_vars):
                                           '/ask_for_permission - отправить запрос на разрешение использования бота\n'
                                           '/codes_off - выключить сдачу кодов\n'
                                           '/codes_on - включить сдачу кодов\n'
-                                          '/live_location - отправить live location (первая координата из задания)\n'
-                                          '/edit_live_location - отредактировать live location (новые координаты через пробел)\n'
-                                          '/stop_live_location - остановить live location\n'
+                                          '/send_ll - отправить live locations (из задания)\n'
+                                          '/edit_ll - отредактировать live location (пробел-номер точки-пробел-новые координаты)\n'
+                                          '/stop_ll - остановить live locations\n'
                                           '\nпри штурмовой игре поддерживается сдача кодов:\n'
                                           '!номер уровня!код | ?номер уровня?код\n'
                                           'и следующие команды:\n'
@@ -532,7 +532,7 @@ def run_app(bot, main_vars):
         else:
             bot.send_message(message.chat.id, 'Тег не добавлен в обработчикб повторите попытку')
 
-    @bot.message_handler(commands=['live_location'])
+    @bot.message_handler(commands=['send_ll'])
     def send_live_location(message):
         if message.chat.id in main_vars.allowed_chats.keys():
             send_live_location_task = {
@@ -553,7 +553,7 @@ def run_app(bot, main_vars):
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
 
-    @bot.message_handler(commands=['stop_live_location'])
+    @bot.message_handler(commands=['stop_ll'])
     def stop_live_location(message):
         if message.chat.id in main_vars.allowed_chats.keys():
             stop_live_location_task = {
@@ -574,7 +574,7 @@ def run_app(bot, main_vars):
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
 
-    @bot.message_handler(commands=['edit_live_location'])
+    @bot.message_handler(commands=['edit_ll'])
     def edit_live_location(message):
         if message.chat.id not in main_vars.allowed_chats.keys() and message.chat.id not in main_vars.additional_ids.keys():
             bot.send_message(message.chat.id,
@@ -585,11 +585,13 @@ def run_app(bot, main_vars):
                             r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
                             r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
                             r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
+        point_number = int(re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8'))).group(0))
         if message.chat.id in main_vars.allowed_chats.keys():
             edit_live_location_task = {
                 'task_type': 'edit_live_location',
                 'chat_id': message.chat.id,
                 'additional_chat_id': None,
+                'point': point_number if point_number else None,
                 'coords': coords
             }
             main_vars.task_queue.append(edit_live_location_task)
@@ -598,6 +600,7 @@ def run_app(bot, main_vars):
                 'task_type': 'edit_live_location',
                 'chat_id': None,
                 'additional_chat_id': message.chat.id,
+                'point': point_number if point_number else None,
                 'coords': coords
             }
             main_vars.task_queue.append(edit_live_location_task)

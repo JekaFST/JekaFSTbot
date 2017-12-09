@@ -3,6 +3,7 @@ import threading
 import time
 import re
 from BotSession import BotSession
+from Config import coord_bots
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
     send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session, \
     send_auth_messages_to_chat, send_unclosed_bonuses_to_chat, send_code_to_storm_level, send_task_to_chat_storm, \
@@ -353,33 +354,57 @@ def disable_codes(chat_id, bot, session):
 
 def send_live_locations(chat_id, bot, session):
     if not session.active:
-        bot.send_message(chat_id, 'Нельзя отправлять live_location при неактивной сессии')
+        bot.send_message(chat_id, 'Нельзя отправлять live location при неактивной сессии')
         return
     if not session.locations:
         bot.send_message(chat_id, 'Нет координат для отправки')
+        return
+    if session.live_location_message_ids:
+        bot.send_message(chat_id, 'Live_location уже отправлена(-ы)')
         return
     send_live_locations_to_chat(bot, chat_id, session)
 
 
 def stop_live_locations(chat_id, bot, session):
     if not session.active:
-        bot.send_message(chat_id, 'Нельзя остановить live_location при неактивной сессии')
+        bot.send_message(chat_id, 'Нельзя остановить live location при неактивной сессии')
         return
-    if not session.live_location_message_id:
-        bot.send_message(chat_id, 'Live location не отправлен')
+    if not session.live_location_message_ids:
+        bot.send_message(chat_id, 'Live location не отправлена')
         return
-    bot.stop_message_live_location(chat_id, session.live_location_message_id)
-    session.live_location_message_id = None
+    for k, v in session.live_location_message_ids.items():
+        if k == 0:
+            bot.stop_message_live_location(chat_id, v)
+        elif k > 20:
+            continue
+        else:
+            coord_bots[k].stop_message_live_location(chat_id, v)
+    session.live_location_message_ids = dict()
 
 
-def edit_live_locations(chat_id, bot, session, coords):
+def edit_live_locations(chat_id, bot, session, point, coords):
     if not session.active:
-        bot.send_message(chat_id, 'Нельзя редактировать live_location при неактивной сессии')
+        bot.send_message(chat_id, 'Нельзя редактировать live location при неактивной сессии')
         return
-    if not session.live_location_message_id:
-        bot.send_message(chat_id, 'Live location не отправлен')
+    if not session.live_location_message_ids:
+        bot.send_message(chat_id, 'Live location не отправлена')
         return
-    for coord in coords:
-        latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
-        longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-        bot.edit_message_live_location(latitude, longitude, chat_id, session.live_location_message_id)
+    if not point:
+        if 0 in session.live_location_message_ids.keys():
+            for coord in coords:
+                latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
+                longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
+                bot.edit_message_live_location(latitude, longitude, chat_id, session.live_location_message_ids[0])
+        else:
+            bot.send_message(chat_id, 'Live location основного бота не отправлена. Чтобы изменить координаты точки, '
+                                      'надо указать ее номер перед координатами '
+                                      '(/edit_ll-пробел-номер-пробел-новые координаты)')
+    else:
+        if point in session.live_location_message_ids.keys():
+            for coord in coords:
+                latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
+                longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
+                coord_bots[point].edit_message_live_location(latitude, longitude, chat_id,
+                                                             session.live_location_message_ids[point])
+        else:
+            bot.send_message(chat_id, 'Проверьте номер точки - соответствующая live location не найдена)')

@@ -161,7 +161,7 @@ while True:
                 chat_id = main_vars.additional_ids[task['additional_chat_id']]
                 session = main_vars.sessions_dict[main_vars.additional_ids[task['additional_chat_id']]]
             try:
-                edit_live_locations(chat_id, main_vars.bot, session, task['coords'])
+                edit_live_locations(chat_id, main_vars.bot, session, task['point'], task['coords'])
             except Exception:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду edit_live_location')

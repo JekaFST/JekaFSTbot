@@ -40,4 +40,4 @@ class BotSession(object):
         self.storm_game = False
         self.locations = dict()
         self.add_live_locations = True
-        self.live_location_message_id = None
+        self.live_location_message_ids = dict()
