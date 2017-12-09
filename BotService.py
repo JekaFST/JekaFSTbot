@@ -585,13 +585,13 @@ def run_app(bot, main_vars):
                             r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
                             r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
                             r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
-        point_number = int(re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8'))).group(0))
+        point_number = re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
         if message.chat.id in main_vars.allowed_chats.keys():
             edit_live_location_task = {
                 'task_type': 'edit_live_location',
                 'chat_id': message.chat.id,
                 'additional_chat_id': None,
-                'point': point_number if point_number else None,
+                'point': int(point_number.group(0)) if point_number else None,
                 'coords': coords
             }
             main_vars.task_queue.append(edit_live_location_task)
@@ -600,7 +600,7 @@ def run_app(bot, main_vars):
                 'task_type': 'edit_live_location',
                 'chat_id': None,
                 'additional_chat_id': message.chat.id,
-                'point': point_number if point_number else None,
+                'point': int(point_number.group(0)) if point_number else None,
                 'coords': coords
             }
             main_vars.task_queue.append(edit_live_location_task)
