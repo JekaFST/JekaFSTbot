@@ -41,7 +41,6 @@ class MainVars(object):
             -1001076545820: fst_config_dict,
             -1001116652124: fst_config_dict,
             -169229164: None,
-            -1001062839624: None,
             -1001135150893: test_config_dict,
             -1001184863414: keks_config_dict
         }
