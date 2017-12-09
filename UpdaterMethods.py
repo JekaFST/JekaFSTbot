@@ -53,10 +53,16 @@ def linear_updater(chat_id, bot, session):
         session.current_level = loaded_level
         session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
                                                                         session.message_statuses = reset_level_vars()
-        reset_live_locations(chat_id, bot, session)
-        session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
+        try:
+            reset_live_locations(chat_id, bot, session)
+        except Exception:
+            bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
+        try:
+            session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
                                                 session.channel_name, session.use_channel, session.locations,
                                                 session.add_live_locations)
+        except Exception:
+            bot.send_message(chat_id, 'Exception - updater не смог прислать информацию об АПе')
         if session.channel_name and session.use_channel:
             session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
                                                                           session.channel_name)
@@ -75,10 +81,16 @@ def linear_updater(chat_id, bot, session):
         session.current_level = loaded_level
         session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
                                                                         session.message_statuses = reset_level_vars()
-        reset_live_locations(chat_id, bot, session)
-        session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
-                                                session.channel_name, session.use_channel, session.locations,
-                                                session.add_live_locations)
+        try:
+            reset_live_locations(chat_id, bot, session)
+        except Exception:
+            bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
+        try:
+            session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
+                                                    session.channel_name, session.use_channel, session.locations,
+                                                    session.add_live_locations)
+        except Exception:
+            bot.send_message(chat_id, 'Exception - updater не смог прислать информацию об АПе')
         if session.channel_name and session.use_channel:
             session.sectors_message_id = send_unclosed_sectors_to_channel(loaded_level, session.sectors_to_close, bot,
                                                                           session.channel_name)
