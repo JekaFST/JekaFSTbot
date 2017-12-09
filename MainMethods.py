@@ -359,3 +359,14 @@ def send_live_locations(chat_id, bot, session):
         bot.send_message(chat_id, 'Нет координат для отправки')
         return
     send_live_locations_to_chat(bot, chat_id, session)
+
+
+def stop_live_locations(chat_id, bot, session):
+    if not session.active:
+        bot.send_message(chat_id, 'Нельзя остановить live_location при неактивной сессии')
+        return
+    if not session.live_location_message_id:
+        bot.send_message(chat_id, 'Live location не отправлен')
+        return
+    bot.stop_message_live_location(chat_id, session.live_location_message_id)
+    session.live_location_message_id = None
