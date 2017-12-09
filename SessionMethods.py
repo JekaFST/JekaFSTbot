@@ -519,7 +519,7 @@ def send_live_locations_to_chat(bot, chat_id, session):
         session.live_location_message_ids[0] = response.message_id
     else:
         for k, v in session.locations.items():
-            if k > 20:
+            if k > 10:
                 continue
             latitude = re.findall(r'\d\d\.\d{4,7}', v)[0]
             longitude = re.findall(r'\d\d\.\d{4,7}', v)[1]

@@ -375,7 +375,7 @@ def stop_live_locations(chat_id, bot, session):
     for k, v in session.live_location_message_ids.items():
         if k == 0:
             bot.stop_message_live_location(chat_id, v)
-        elif k > 20:
+        elif k > 10:
             continue
         else:
             coord_bots[k].stop_message_live_location(chat_id, v)
