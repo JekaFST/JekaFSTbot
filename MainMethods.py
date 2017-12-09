@@ -370,3 +370,16 @@ def stop_live_locations(chat_id, bot, session):
         return
     bot.stop_message_live_location(chat_id, session.live_location_message_id)
     session.live_location_message_id = None
+
+
+def edit_live_locations(chat_id, bot, session, coords):
+    if not session.active:
+        bot.send_message(chat_id, 'Нельзя редактировать live_location при неактивной сессии')
+        return
+    if not session.live_location_message_id:
+        bot.send_message(chat_id, 'Live location не отправлен')
+        return
+    for coord in coords:
+        latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
+        longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
+        bot.edit_message_live_location(latitude, longitude, chat_id, session.live_location_message_id)

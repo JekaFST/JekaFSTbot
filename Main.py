@@ -5,7 +5,7 @@ from MainMethods import start, stop_session, login, send_task, start_updater, st
     set_game_id, send_code_main, send_code_bonus, send_coords, set_login, set_password, set_channel_name, start_channel, \
     stop_channel, set_updater_delay, send_all_sectors, send_all_helps, send_last_help, send_all_bonuses, join, \
     reset_join, send_task_images, enable_codes, disable_codes, start_session, send_auth_messages, send_unclosed_bonuses, \
-    send_live_locations, stop_live_locations
+    send_live_locations, stop_live_locations, edit_live_locations
 from MainThreadVars import MainVars
 from UpdaterMethods import updater
 
@@ -141,6 +141,30 @@ while True:
             except Exception:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду stop_live_location')
+            main_vars.task_queue.remove(task)
+            continue
+
+        if task['task_type'] == 'edit_live_location':
+            if task['chat_id']:
+                if not task['chat_id'] in main_vars.sessions_dict.keys():
+                    main_vars.bot.send_message(task['chat_id'],
+                                               'Для данного чата не создана сессия. Для создания введите команду /start')
+                    main_vars.task_queue.remove(task)
+                    continue
+                chat_id = task['chat_id']
+                session = main_vars.sessions_dict[task['chat_id']]
+            else:
+                if not main_vars.additional_ids[task['additional_chat_id']] in main_vars.sessions_dict.keys():
+                    main_vars.bot.send_message(task['chat_id'],
+                                               'Для данного дополнительного чата не создана (или удалена) сессия')
+                    continue
+                chat_id = main_vars.additional_ids[task['additional_chat_id']]
+                session = main_vars.sessions_dict[main_vars.additional_ids[task['additional_chat_id']]]
+            try:
+                edit_live_locations(chat_id, main_vars.bot, session, task['coords'])
+            except Exception:
+                main_vars.bot.send_message(task['chat_id'],
+                                           'Exception в main - не удалось обработать команду edit_live_location')
             main_vars.task_queue.remove(task)
             continue
 

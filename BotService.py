@@ -566,6 +566,34 @@ def run_app(bot, main_vars):
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
 
+    @bot.message_handler(commands=['edit_live_location'])
+    def edit_live_location(message):
+        if message.chat.id not in main_vars.allowed_chats.keys() and message.chat.id not in main_vars.additional_ids.keys():
+            bot.send_message(message.chat.id,
+                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
+                             'Для отправки запроса на разрешение введите /ask_for_permission')
+            return
+        coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
+        if message.chat.id in main_vars.allowed_chats.keys():
+            edit_live_location_task = {
+                'task_type': 'edit_live_location',
+                'chat_id': message.chat.id,
+                'additional_chat_id': None,
+                'coords': coords
+            }
+            main_vars.task_queue.append(edit_live_location_task)
+        if message.chat.id in main_vars.additional_ids.keys():
+            edit_live_location_task = {
+                'task_type': 'edit_live_location',
+                'chat_id': None,
+                'additional_chat_id': message.chat.id,
+                'coords': coords
+            }
+            main_vars.task_queue.append(edit_live_location_task)
+
     @bot.message_handler(content_types=['text'])
     def text_processor(message):
         if message.chat.id not in main_vars.allowed_chats.keys() and message.chat.id not in main_vars.additional_ids.keys():
