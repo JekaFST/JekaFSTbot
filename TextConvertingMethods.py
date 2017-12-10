@@ -63,16 +63,22 @@ def send_object_text(text, header, bot, chat_id, parse=True, locations=None, add
                 bot.send_message(chat_id, message + '\r\n' + link)
         except Exception:
             bot.send_message(chat_id, 'Exceprion - бот не смог отправить ссылки')
-    if coords:
+    if coords and not add_live_locations:
         try:
             for i, coord in enumerate(coords):
                 latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
                 longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
                 bot.send_venue(chat_id, latitude, longitude, coord + ' - ' + str(i+1), '')
-                if add_live_locations:
-                    locations[i+1] = coord
-                # bot.send_message(chat_id, coord + ' - <b>' + str(i+1) + '</b>', parse_mode='HTML')
-                # bot.send_location(chat_id, latitude, longitude)
+        except Exception:
+            bot.send_message(chat_id, 'Exceprion - бот не смог отправить координаты')
+    if coords and add_live_locations:
+        try:
+            for coord in coords:
+                latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
+                longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
+                i = 1 if not locations else len(locations.keys())+1
+                bot.send_venue(chat_id, latitude, longitude, coord + ' - ' + i, '')
+                locations[i] = coord
         except Exception:
             bot.send_message(chat_id, 'Exceprion - бот не смог отправить координаты')
 
