@@ -534,18 +534,27 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(commands=['send_ll'])
     def send_live_location(message):
+        coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+                            r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
+        duration = re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
         if message.chat.id in main_vars.allowed_chats.keys():
             send_live_location_task = {
                 'task_type': 'live_location',
                 'chat_id': message.chat.id,
-                'additional_chat_id': None
+                'additional_chat_id': None,
+                'coords': coords,
+                'duration': int(duration.group(0)) if duration else None
             }
             main_vars.task_queue.append(send_live_location_task)
         elif message.chat.id in main_vars.additional_ids.keys():
             send_live_location_task = {
                 'task_type': 'live_location',
                 'chat_id': None,
-                'additional_chat_id': message.chat.id
+                'additional_chat_id': message.chat.id,
+                'coords': coords,
+                'duration': int(duration.group(0)) if duration else None
             }
             main_vars.task_queue.append(send_live_location_task)
         else:
@@ -670,7 +679,7 @@ def run_app(bot, main_vars):
     bot.remove_webhook()
 
     # Set webhook
-    bot.set_webhook(url='https://45d70d5c.ngrok.io/webhook')
+    bot.set_webhook(url='https://ab3a8c72.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():

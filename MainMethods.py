@@ -2,6 +2,7 @@
 import threading
 import time
 import re
+import json
 from BotSession import BotSession
 from Config import coord_bots
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
@@ -352,15 +353,21 @@ def disable_codes(chat_id, bot, session):
     bot.send_message(chat_id, 'Сдача кодов выключена')
 
 
-def send_live_locations(chat_id, bot, session):
+def send_live_locations(chat_id, bot, session, coords, duration):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя отправлять live location при неактивной сессии')
         return
-    if not session.locations:
+    if not session.locations and not coords:
         bot.send_message(chat_id, 'Нет координат для отправки')
         return
+    if coords and 0 in session.live_location_message_ids.keys():
+        bot.send_message(chat_id, 'Live_location основного бота уже отправлена')
+        return
+    if coords:
+        send_live_locations_to_chat(bot, chat_id, session, coords=coords, duration=duration)
+        return
     if session.live_location_message_ids:
-        bot.send_message(chat_id, 'Live_location уже отправлена(-ы)')
+        bot.send_message(chat_id, 'Live_location уровня уже отправлена(-ы)')
         return
     send_live_locations_to_chat(bot, chat_id, session)
 
@@ -374,11 +381,21 @@ def stop_live_locations(chat_id, bot, session):
         return
     for k, v in session.live_location_message_ids.items():
         if k == 0:
-            bot.stop_message_live_location(chat_id, v)
+            try:
+                bot.stop_message_live_location(chat_id, v)
+            except Exception as e:
+                response_text = json.loads(e.result.text)['description'].encode('utf-8')
+                if "message can\\'t be edited" in response_text:
+                    del session.session.live_location_message_ids[k]
         elif k > 10:
             continue
         else:
-            coord_bots[k].stop_message_live_location(chat_id, v)
+            try:
+                coord_bots[k].stop_message_live_location(chat_id, v)
+            except Exception as e:
+                response_text = json.loads(e.result.text)['description'].encode('utf-8')
+                if "message can\\'t be edited" in response_text:
+                    del session.session.live_location_message_ids[k]
     session.live_location_message_ids = dict()
 
 
