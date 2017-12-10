@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import json
 import datetime as datetime
+from Config import coord_bots
 from TextConvertingMethods import send_object_text
 
 
@@ -67,3 +69,24 @@ def send_adm_message(message, bot, chat_id, levelmark=None, storm=False):
     bonus_award_header = '<b>Сообщение от авторов</b>' if not storm else levelmark + '\r\n<b>Сообщение от авторов</b>'
     message_text = message['MessageText'].encode('utf-8')
     send_object_text(message_text, bonus_award_header, bot, chat_id)
+
+
+def close_live_locations(chat_id, bot, session):
+    for k, v in session.live_location_message_ids.items():
+        if k == 0:
+            try:
+                bot.stop_message_live_location(chat_id, v)
+            except Exception as e:
+                response_text = json.loads(e.result.text)['description'].encode('utf-8')
+                if "message can't be edited" in response_text:
+                    del session.live_location_message_ids[k]
+        elif k > 10:
+            continue
+        else:
+            try:
+                coord_bots[k].stop_message_live_location(chat_id, v)
+            except Exception as e:
+                response_text = json.loads(e.result.text)['description'].encode('utf-8')
+                if "message can\\'t be edited" in response_text:
+                    del session.live_location_message_ids[k]
+        session.live_location_message_ids = dict()
