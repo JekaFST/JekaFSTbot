@@ -504,28 +504,28 @@ def send_task_images(level, bot, chat_id):
             bot.send_photo(chat_id, image)
 
 
-def send_live_locations_to_chat(bot, chat_id, session):
+def send_live_locations_to_chat(bot, chat_id, session, coords=None, duration=None):
     level, _ = get_current_level(session, bot, chat_id)
     if level['LevelId'] != session.current_level['LevelId']:
         bot.send_message(chat_id, 'Уровень изменился. '
                                   'Повторите команду, если хотите поставить live_location для нового уровня')
         return
-    if len(session.locations.keys()) == 1:
-        location_to_send = session.locations[1]
-        latitude = re.findall(r'\d\d\.\d{4,7}', location_to_send)[0]
-        longitude = re.findall(r'\d\d\.\d{4,7}', location_to_send)[1]
-        live_period = level['TimeoutSecondsRemain'] + 120 if level['TimeoutSecondsRemain'] else 10800
-        response = bot.send_location(chat_id, latitude, longitude, live_period=live_period)
-        session.live_location_message_ids[0] = response.message_id
-    else:
+    if not coords:
         for k, v in session.locations.items():
             if k > 10:
                 continue
             latitude = re.findall(r'\d\d\.\d{4,7}', v)[0]
             longitude = re.findall(r'\d\d\.\d{4,7}', v)[1]
-            live_period = level['TimeoutSecondsRemain'] if level['TimeoutSecondsRemain'] else 3600
+            live_period = level['TimeoutSecondsRemain'] + 120 if level['TimeoutSecondsRemain'] else 10800
             response = coord_bots[k].send_location(chat_id, latitude, longitude, live_period=live_period)
             session.live_location_message_ids[k] = response.message_id
+    else:
+        latitude = re.findall(r'\d\d\.\d{4,7}', str(coords))[0]
+        longitude = re.findall(r'\d\d\.\d{4,7}', str(coords))[1]
+        live_period = duration if duration else 10800
+        response = bot.send_location(chat_id, latitude, longitude, live_period=live_period)
+        session.live_location_message_ids[0] = response.message_id
+
 
 
 def drop_session_vars(session):

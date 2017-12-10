@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import threading
 
 from Config import coord_bots
@@ -219,11 +220,21 @@ def reset_live_locations(chat_id, bot, session):
     if session.live_location_message_ids:
         for k, v in session.live_location_message_ids.items():
             if k == 0:
-                bot.stop_message_live_location(chat_id, v)
+                try:
+                    bot.stop_message_live_location(chat_id, v)
+                except Exception as e:
+                    response_text = json.loads(e.result.text)['description'].encode('utf-8')
+                    if "message can\\'t be edited" in response_text:
+                        del session.session.live_location_message_ids[k]
             elif k > 10:
                 continue
             else:
-                coord_bots[k].stop_message_live_location(chat_id, v)
+                try:
+                    coord_bots[k].stop_message_live_location(chat_id, v)
+                except Exception as e:
+                    response_text = json.loads(e.result.text)['description'].encode('utf-8')
+                    if "message can\\'t be edited" in response_text:
+                        del session.session.live_location_message_ids[k]
         session.live_location_message_ids = dict()
 
 
