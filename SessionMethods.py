@@ -505,6 +505,7 @@ def send_task_images(level, bot, chat_id):
 
 
 def send_live_locations_to_chat(bot, chat_id, session, coords=None, duration=None):
+    not_in_chat_bots = list()
     level, _ = get_current_level(session, bot, chat_id)
     if level['LevelId'] != session.current_level['LevelId']:
         bot.send_message(chat_id, 'Уровень изменился. '
@@ -517,8 +518,18 @@ def send_live_locations_to_chat(bot, chat_id, session, coords=None, duration=Non
             latitude = re.findall(r'\d\d\.\d{4,7}', v)[0]
             longitude = re.findall(r'\d\d\.\d{4,7}', v)[1]
             live_period = level['TimeoutSecondsRemain'] if level['TimeoutSecondsRemain'] else 10800
-            response = coord_bots[k].send_location(chat_id, latitude, longitude, live_period=live_period)
-            session.live_location_message_ids[k] = response.message_id
+            try:
+                response = coord_bots[k].send_location(chat_id, latitude, longitude, live_period=live_period)
+                session.live_location_message_ids[k] = response.message_id
+            except Exception as e:
+                response_text = json.loads(e.result.text)['description'].encode('utf-8')
+                if "chat not found" in response_text:
+                    not_in_chat_bots.append(k)
+                else:
+                    bot.send_message(chat_id, 'Live location точки %s не отправлена.\r\n%s' % (str(k)), response_text)
+        if not_in_chat_bots:
+            bot.send_message(chat_id, 'Live location для следующих точек не отправлен: %s.\r\n'
+                                      'В чате нет соответствующего(-их) бота(-ов)' % str(not_in_chat_bots))
     else:
         latitude = re.findall(r'\d\d\.\d{4,7}', str(coords))[0]
         longitude = re.findall(r'\d\d\.\d{4,7}', str(coords))[1]

@@ -30,7 +30,7 @@ def send_object_text(text, header, bot, chat_id, parse=True, locations=None, add
         bot.send_message(chat_id, header + '\r\nException - ссылки не вырезаны')
         links = list()
     try:
-        text, coords = handle_coords(text)
+        text, coords, indexes = handle_coords(text, locations, add_live_locations)
     except Exception:
         bot.send_message(chat_id, header + '\r\nException - координаты не обработаны')
         coords = list()
@@ -63,7 +63,7 @@ def send_object_text(text, header, bot, chat_id, parse=True, locations=None, add
                 bot.send_message(chat_id, message + '\r\n' + link)
         except Exception:
             bot.send_message(chat_id, 'Exceprion - бот не смог отправить ссылки')
-    if coords and not add_live_locations:
+    if coords and not indexes:
         try:
             for i, coord in enumerate(coords):
                 latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
@@ -71,14 +71,14 @@ def send_object_text(text, header, bot, chat_id, parse=True, locations=None, add
                 bot.send_venue(chat_id, latitude, longitude, coord + ' - ' + str(i+1), '')
         except Exception:
             bot.send_message(chat_id, 'Exceprion - бот не смог отправить координаты')
-    if coords and add_live_locations:
+    if locations and indexes:
         try:
-            for coord in coords:
-                latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
-                longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-                i = 1 if not locations else len(locations.keys())+1
-                bot.send_venue(chat_id, latitude, longitude, coord + ' - ' + i, '')
-                locations[i] = coord
+            for i in indexes:
+                latitude = re.findall(r'\d\d\.\d{4,7}', locations[i])[0]
+                longitude = re.findall(r'\d\d\.\d{4,7}', locations[i])[1]
+                # i = 1 if not locations else len(locations.keys())+1
+                bot.send_venue(chat_id, latitude, longitude, locations[i] + ' - ' + str(i), '')
+                # locations[i] = coord
         except Exception:
             bot.send_message(chat_id, 'Exceprion - бот не смог отправить координаты')
 
@@ -118,15 +118,12 @@ def cut_images(text):
     return text, images
 
 
-def handle_coords(text):
+def handle_coords(text, locations, add_live_locations):
+    indexes = list()
 
     soup = BeautifulSoup(text)
     for ahref in soup.find_all('a'):
         coord_links = find_coords(ahref.text.encode('utf-8'))
-        # coord_links = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
-        #                          r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
-        #                          r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
-        #                          r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', ahref.text.encode('utf-8'))
         if coord_links:
             str_ahref = str(ahref)
             str_ahref = str_ahref.replace('&amp;', '&')
@@ -135,28 +132,29 @@ def handle_coords(text):
     links = re.findall(r'<a[^>]+>', text)
     for i, link in enumerate(links):
         coords = find_coords(link)
-        # coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
-        #                     r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
-        #                     r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
-        #                     r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', link)
         if coords:
             replacement = '(link%s)' % i
             text = text.replace(link, replacement)
 
     coords = find_coords(text)
-    # coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
-    #                     r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
-    #                     r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
-    #                     r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', text)
-    for i, coord in enumerate(coords):
-        coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(i+1) + '</b>'
-        text = text.replace(coord, coord_Y_G)
+    if coords and not add_live_locations:
+        for i, coord in enumerate(coords):
+            coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(i+1) + '</b>'
+            text = text.replace(coord, coord_Y_G)
+
+    if coords and add_live_locations:
+        for coord in coords:
+            i = 1 if not locations else len(locations.keys()) + 1
+            coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(i) + '</b>'
+            text = text.replace(coord, coord_Y_G)
+            locations[i] = coord
+            indexes.append(i)
 
     for rep in re.findall(r'\(link\d+\)', text):
         j = re.findall(r'\d+', rep)
         text = text.replace(rep, links[int(j[0])])
 
-    return text, coords
+    return (text, None, indexes) if indexes else (text, coords, None)
 
 
 def make_Y_G_links(coord):
