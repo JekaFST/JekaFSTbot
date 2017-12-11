@@ -2,8 +2,8 @@
 import threading
 import time
 import re
-import json
 from BotSession import BotSession
+from CommonMethods import close_live_locations
 from Config import coord_bots
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
     send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session, \
@@ -379,24 +379,7 @@ def stop_live_locations(chat_id, bot, session):
     if not session.live_location_message_ids:
         bot.send_message(chat_id, 'Live location не отправлена')
         return
-    for k, v in session.live_location_message_ids.items():
-        if k == 0:
-            try:
-                bot.stop_message_live_location(chat_id, v)
-            except Exception as e:
-                response_text = json.loads(e.result.text)['description'].encode('utf-8')
-                if "message can\\'t be edited" in response_text:
-                    del session.session.live_location_message_ids[k]
-        elif k > 10:
-            continue
-        else:
-            try:
-                coord_bots[k].stop_message_live_location(chat_id, v)
-            except Exception as e:
-                response_text = json.loads(e.result.text)['description'].encode('utf-8')
-                if "message can\\'t be edited" in response_text:
-                    del session.session.live_location_message_ids[k]
-    session.live_location_message_ids = dict()
+    close_live_locations(chat_id, bot, session)
 
 
 def edit_live_locations(chat_id, bot, session, point, coords):

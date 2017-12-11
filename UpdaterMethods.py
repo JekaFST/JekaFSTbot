@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
-import json
 import threading
-
-from Config import coord_bots
 from SessionMethods import get_current_level, get_storm_level, get_storm_levels, get_current_game_model
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
-    send_bonus_award_answer, send_adm_message
+    send_bonus_award_answer, send_adm_message, close_live_locations
 
 
 def updater(chat_id, bot, session, updaters_dict):
@@ -218,24 +215,25 @@ def reset_level_vars():
 def reset_live_locations(chat_id, bot, session):
     session.locations = dict()
     if session.live_location_message_ids:
-        for k, v in session.live_location_message_ids.items():
-            if k == 0:
-                try:
-                    bot.stop_message_live_location(chat_id, v)
-                except Exception as e:
-                    response_text = json.loads(e.result.text)['description'].encode('utf-8')
-                    if "message can\\'t be edited" in response_text:
-                        del session.session.live_location_message_ids[k]
-            elif k > 10:
-                continue
-            else:
-                try:
-                    coord_bots[k].stop_message_live_location(chat_id, v)
-                except Exception as e:
-                    response_text = json.loads(e.result.text)['description'].encode('utf-8')
-                    if "message can\\'t be edited" in response_text:
-                        del session.session.live_location_message_ids[k]
-        session.live_location_message_ids = dict()
+        close_live_locations(chat_id, bot, session)
+        # for k, v in session.live_location_message_ids.items():
+        #     if k == 0:
+        #         try:
+        #             bot.stop_message_live_location(chat_id, v)
+        #         except Exception as e:
+        #             response_text = json.loads(e.result.text)['description'].encode('utf-8')
+        #             if "message can\\'t be edited" in response_text:
+        #                 del session.live_location_message_ids[k]
+        #     elif k > 10:
+        #         continue
+        #     else:
+        #         try:
+        #             coord_bots[k].stop_message_live_location(chat_id, v)
+        #         except Exception as e:
+        #             response_text = json.loads(e.result.text)['description'].encode('utf-8')
+        #             if "message can\\'t be edited" in response_text:
+        #                 del session.live_location_message_ids[k]
+        # session.live_location_message_ids = dict()
 
 
 def send_up_info(loaded_level, number_of_levels, loaded_helps, loaded_bonuses, bot, chat_id, channel_name, use_channel,
