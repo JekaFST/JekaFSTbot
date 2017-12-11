@@ -512,11 +512,11 @@ def send_live_locations_to_chat(bot, chat_id, session, coords=None, duration=Non
         return
     if not coords:
         for k, v in session.locations.items():
-            if k > 10:
+            if k > 15:
                 continue
             latitude = re.findall(r'\d\d\.\d{4,7}', v)[0]
             longitude = re.findall(r'\d\d\.\d{4,7}', v)[1]
-            live_period = level['TimeoutSecondsRemain'] + 120 if level['TimeoutSecondsRemain'] else 10800
+            live_period = level['TimeoutSecondsRemain'] if level['TimeoutSecondsRemain'] else 10800
             response = coord_bots[k].send_location(chat_id, latitude, longitude, live_period=live_period)
             session.live_location_message_ids[k] = response.message_id
     else:
