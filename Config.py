@@ -36,16 +36,11 @@ coord_bots = {
     8: telebot.TeleBot('407075101:AAGHKuzITtLG8d6oAIYLmFXqPun0r93knAk'),
     9: telebot.TeleBot('445012402:AAH5hFl4LqcPcO-lgJf7qAoIanovj4Maxvg'),
     10: telebot.TeleBot('492949542:AAFytmZDVOFtl79mqUlKrQAVePUfzI_if5U'),
-    11: telebot.TeleBot(''),
-    12: telebot.TeleBot(''),
-    13: telebot.TeleBot(''),
-    14: telebot.TeleBot(''),
-    15: telebot.TeleBot(''),
-    16: telebot.TeleBot(''),
-    17: telebot.TeleBot(''),
-    18: telebot.TeleBot(''),
-    19: telebot.TeleBot(''),
-    20: telebot.TeleBot('')
+    11: telebot.TeleBot('497172453:AAH2gQFMpCckpR7Sv36MeIozB_O9nwkZKHQ'),
+    12: telebot.TeleBot('508439390:AAFZAfIaxcY47we1z4-2h1SHHOJlpTT-Gvg'),
+    13: telebot.TeleBot('407001876:AAHjYdmkmxHBg3_BxladRE3OF1_iLFpBBFY'),
+    14: telebot.TeleBot('488997375:AAEPfLox1CX5O7B3sR4SfN2qdbmEOgANRMQ'),
+    15: telebot.TeleBot('452195897:AAHDmVUqPc_yKMSLLneAkTqK85xiPvE4tnI')
 }
 
 # game_repeat_statuses = [16, 18, 19, 20, 21, 22]
