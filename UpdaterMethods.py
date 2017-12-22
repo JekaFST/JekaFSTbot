@@ -344,8 +344,8 @@ def help_parcer(loaded_helps, help_statuses, bot, chat_id, channel_name, use_cha
                 send_time_to_help(help, bot, chat_id, levelmark, storm)
 
 
-def bonus_parcer(loaded_bonuses, bonus_statuses, game_answered_bonus_ids, bot, chat_id, levelmark=None, storm=False,
-                 locations=None):
+def bonus_parcer(loaded_bonuses, bonus_statuses, game_answered_bonus_ids, bot, chat_id, locations, levelmark=None,
+                 storm=False):
     if loaded_bonuses:
 
         for bonus in loaded_bonuses:
@@ -356,11 +356,12 @@ def bonus_parcer(loaded_bonuses, bonus_statuses, game_answered_bonus_ids, bot, c
                 bonus_statuses[bonus['BonusId']]['award_not_sent'] = False
                 bonus_statuses[bonus['BonusId']]['info_not_sent'] = False
                 game_answered_bonus_ids.append(bonus['BonusId'])
-                send_bonus_award_answer(bonus, bot, chat_id, levelmark, storm, locations=locations)
+                send_bonus_award_answer(bonus, bot, chat_id, locations, from_updater=True, storm=storm,
+                                        levelmark=levelmark)
                 continue
             if bonus_statuses[bonus['BonusId']]['info_not_sent'] and bonus['Task'] and not bonus['Expired']:
                 bonus_statuses[bonus['BonusId']]['info_not_sent'] = False
-                send_bonus_info(bonus, bot, chat_id, levelmark, storm, locations=locations)
+                send_bonus_info(bonus, bot, chat_id, locations, from_updater=True, storm=storm, levelmark=levelmark)
 
 
 def message_parcer(loaded_messages, message_statuses, sent_messages, bot, chat_id, channel_name, use_channel, locations,

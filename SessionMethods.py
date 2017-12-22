@@ -268,14 +268,14 @@ def send_all_bonuses_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
-    send_bonuses(level, bot, chat_id)
+    send_bonuses(level, bot, chat_id, session.locations)
 
 
 def send_all_bonuses_to_chat_storm(bot, chat_id, session, storm_level_number):
     storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
     if not storm_level:
         return
-    send_bonuses(storm_level, bot, chat_id)
+    send_bonuses(storm_level, bot, chat_id, session.locations, storm=True)
 
 
 def send_unclosed_bonuses_to_chat(bot, chat_id, session):
@@ -441,7 +441,7 @@ def send_last_help(level, bot, chat_id, locations, storm=False):
                                                                                    'Еще нет пришедших подсказок')
 
 
-def send_bonuses(level, bot, chat_id):
+def send_bonuses(level, bot, chat_id, locations, storm=False):
     bonuses = level['Bonuses']
     if bonuses:
         if not isinstance(bonuses, list):
@@ -449,8 +449,8 @@ def send_bonuses(level, bot, chat_id):
             return
 
         for bonus in bonuses:
-            send_bonus_info(bonus, bot, chat_id) if not bonus['IsAnswered'] else send_bonus_award_answer(bonus, bot,
-                                                                                                         chat_id)
+            send_bonus_info(bonus, bot, chat_id, locations, storm=storm) if not bonus['IsAnswered'] else \
+                send_bonus_award_answer(bonus, bot, chat_id, locations, storm=storm)
     else:
         bot.send_message(chat_id, 'Бонусов нет')
 

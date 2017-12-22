@@ -36,7 +36,7 @@ def send_time_to_help(help, bot, chat_id, levelmark=None, storm=False):
     bot.send_message(chat_id, message_text, parse_mode='HTML')
 
 
-def send_bonus_info(bonus, bot, chat_id, levelmark=None, storm=False, locations=None):
+def send_bonus_info(bonus, bot, chat_id, locations, from_updater=False, storm=False, levelmark=None):
     bonus_name = "<b>б-с " + str(bonus['Number']) + ': ' + bonus['Name'].encode('utf-8') + '</b>' if bonus['Name'] \
         else "<b>Бонус " + str(bonus['Number']) + '</b>'
     if storm:
@@ -46,11 +46,10 @@ def send_bonus_info(bonus, bot, chat_id, levelmark=None, storm=False, locations=
         return
     bonus_task = 'Задание:\r\n' + bonus['Task'].encode('utf-8') if bonus['Task'] else 'Бонус без задания'
     bonus_left_time = '\r\nОсталось %s' % time_converter(bonus['SecondsLeft']) if bonus['SecondsLeft'] else ''
-    send_object_text(bonus_task + bonus_left_time, bonus_name, bot, chat_id) if not isinstance(locations, dict) \
-        else send_object_text(bonus_task + bonus_left_time, bonus_name, bot, chat_id, locations=locations)
+    send_object_text(bonus_task + bonus_left_time, bonus_name, bot, chat_id, locations, from_updater, storm)
 
 
-def send_bonus_award_answer(bonus, bot, chat_id, levelmark=None, storm=False, locations=None):
+def send_bonus_award_answer(bonus, bot, chat_id, locations, from_updater=False, storm=False, levelmark=None):
     bonus_name = "<b>б-с " + str(bonus['Number']) + ': ' + bonus['Name'].encode('utf-8') if bonus['Name'] \
         else "<b>Бонус " + str(bonus['Number'])
     code = bonus['Answer']['Answer'].encode('utf-8')
@@ -62,8 +61,7 @@ def send_bonus_award_answer(bonus, bot, chat_id, levelmark=None, storm=False, lo
     bonus_award = '\r\n<b>Награда: ' + time_converter(bonus['AwardTime']) + '</b>' if bonus['AwardTime'] != 0 \
         else '\n<b>Без награды</b>'
     bonus_award_text = bonus_help + bonus_award
-    send_object_text(bonus_award_text, bonus_award_header, bot, chat_id) if not isinstance(locations, dict) \
-        else send_object_text(bonus_award_text, bonus_award_header, bot, chat_id, locations=locations)
+    send_object_text(bonus_award_text, bonus_award_header, bot, chat_id, locations, from_updater, storm)
 
 
 def send_adm_message(message, bot, chat_id, locations, from_updater=False, storm=False, levelmark=None):
