@@ -212,7 +212,7 @@ def send_task_to_chat_storm(bot, chat_id, session, storm_level_number):
     storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
     if not storm_level:
         return
-    send_task(storm_level, bot, chat_id, session.locations, storm_game=True)
+    send_task(storm_level, bot, chat_id, session.locations, storm=True)
 
 
 def send_task_images_to_chat(bot, chat_id, session):
@@ -240,28 +240,28 @@ def send_all_helps_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
-    send_helps(level, bot, chat_id)
+    send_helps(level, bot, chat_id, session.locations)
 
 
 def send_all_helps_to_chat_storm(bot, chat_id, session, storm_level_number):
     storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
     if not storm_level:
         return
-    send_helps(storm_level, bot, chat_id)
+    send_helps(storm_level, bot, chat_id, session.locations, storm=True)
 
 
 def send_last_help_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
-    send_last_help(level, bot, chat_id)
+    send_last_help(level, bot, chat_id, session.locations)
 
 
 def send_last_help_to_chat_storm(bot, chat_id, session, storm_level_number):
     storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
     if not storm_level:
         return
-    send_last_help(storm_level, bot, chat_id)
+    send_last_help(storm_level, bot, chat_id, session.locations, storm=True)
 
 
 def send_all_bonuses_to_chat(bot, chat_id, session):
@@ -296,14 +296,14 @@ def send_auth_messages_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
-    send_auth_messages(level, bot, chat_id)
+    send_auth_messages(level, bot, chat_id, session.locations)
 
 
 def send_auth_messages_to_chat_storm(bot, chat_id, session, storm_level_number):
     storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
     if not storm_level:
         return
-    send_auth_messages(storm_level, bot, chat_id)
+    send_auth_messages(storm_level, bot, chat_id, session.locations, storm=True)
 
 
 def check_repeat_code(level, code, is_repeat_code=False):
@@ -413,7 +413,7 @@ def send_sectors(level, bot, chat_id):
         bot.send_message(chat_id, message, parse_mode='HTML')
 
 
-def send_helps(level, bot, chat_id):
+def send_helps(level, bot, chat_id, locations, storm=False):
     helps = level['Helps']
     if helps:
         if not isinstance(helps, list):
@@ -421,12 +421,12 @@ def send_helps(level, bot, chat_id):
             return
 
         for help in helps:
-            send_help(help, bot, chat_id) if help['HelpText'] is not None else send_time_to_help(help, bot, chat_id)
+            send_help(help, bot, chat_id, locations, storm=storm) if help['HelpText'] is not None else send_time_to_help(help, bot, chat_id)
     else:
         bot.send_message(chat_id, 'Подсказок нет')
 
 
-def send_last_help(level, bot, chat_id):
+def send_last_help(level, bot, chat_id, locations, storm=False):
     helps = level['Helps']
     if helps:
         if not isinstance(helps, list):
@@ -437,7 +437,7 @@ def send_last_help(level, bot, chat_id):
             if not help['HelpText']:
                 helps.remove(help)
 
-        send_help(helps[-1], bot, chat_id) if len(helps) > 0 else bot.send_message(chat_id,
+        send_help(helps[-1], bot, chat_id, locations, storm=storm) if len(helps) > 0 else bot.send_message(chat_id,
                                                                                    'Еще нет пришедших подсказок')
 
 
@@ -475,7 +475,7 @@ def send_unclosed_bonuses(level, bot, chat_id):
         bot.send_message(chat_id, 'Не закрытых бонусов нет')
 
 
-def send_auth_messages(level, bot, chat_id):
+def send_auth_messages(level, bot, chat_id, locations, storm=False):
     messages = level['Messages']
     if messages:
         if not isinstance(messages, list):
@@ -483,7 +483,7 @@ def send_auth_messages(level, bot, chat_id):
             return
 
         for message in messages:
-            send_adm_message(message, bot, chat_id)
+            send_adm_message(message, bot, chat_id, locations, storm=storm)
     else:
         bot.send_message(chat_id, 'Сообщений от авторов нет')
 

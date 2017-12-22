@@ -11,22 +11,21 @@ def time_converter(seconds):
     return h_m_s
 
 
-def send_task(loaded_level, bot, chat_id, locations, from_updater=False, storm_game=False):
+def send_task(loaded_level, bot, chat_id, locations, from_updater=False, storm=False):
     tasks = loaded_level['Tasks']
     if tasks:
         task = tasks[0]['TaskText'].encode('utf-8')
         task_header = '<b>ЗАДАНИЕ</b>'
-        send_object_text(task, task_header, bot, chat_id, locations, from_updater, storm_game)
+        send_object_text(task, task_header, bot, chat_id, locations, from_updater, storm)
     else:
         bot.send_message(chat_id, 'Задание не предусмотрено')
 
 
-def send_help(help, bot, chat_id, levelmark=None, storm=False, locations=None):
+def send_help(help, bot, chat_id, locations, from_updater=False, storm=False, levelmark=None):
     help_number = str(help['Number'])
     help_text = help['HelpText'].encode('utf-8')
     help_header = '<b>Подсказка ' + help_number + '</b>' if not storm else levelmark + '\r\n<b>Подсказка ' + help_number + '</b>'
-    send_object_text(help_text, help_header, bot, chat_id) if not isinstance(locations, dict) \
-        else send_object_text(help_text, help_header, bot, chat_id, locations=locations)
+    send_object_text(help_text, help_header, bot, chat_id, locations, from_updater, storm)
 
 
 def send_time_to_help(help, bot, chat_id, levelmark=None, storm=False):
@@ -67,11 +66,10 @@ def send_bonus_award_answer(bonus, bot, chat_id, levelmark=None, storm=False, lo
         else send_object_text(bonus_award_text, bonus_award_header, bot, chat_id, locations=locations)
 
 
-def send_adm_message(message, bot, chat_id, levelmark=None, storm=False, locations=None):
-    bonus_award_header = '<b>Сообщение от авторов</b>' if not storm else levelmark + '\r\n<b>Сообщение от авторов</b>'
+def send_adm_message(message, bot, chat_id, locations, from_updater=False, storm=False, levelmark=None):
+    message_header = '<b>Сообщение от авторов</b>' if not storm else levelmark + '\r\n<b>Сообщение от авторов</b>'
     message_text = message['MessageText'].encode('utf-8')
-    send_object_text(message_text, bonus_award_header, bot, chat_id) if not isinstance(locations, dict) \
-        else send_object_text(message_text, bonus_award_header, bot, chat_id, locations=locations)
+    send_object_text(message_text, message_header, bot, chat_id, locations, from_updater, storm)
 
 
 def close_live_locations(chat_id, bot, session):

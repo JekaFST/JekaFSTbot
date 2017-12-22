@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from Config import tags_list
 
 
-def send_object_text(text, header, bot, chat_id, locations, from_updater, storm_game, parse=True):
+def send_object_text(text, header, bot, chat_id, locations, from_updater, storm, parse=True):
     text_pieces = list()
     raw_text = text
 
@@ -30,7 +30,7 @@ def send_object_text(text, header, bot, chat_id, locations, from_updater, storm_
         bot.send_message(chat_id, header + '\r\nException - ссылки не вырезаны')
         links = list()
     try:
-        text, indexes, incommon_coords = handle_coords(text, locations, from_updater, storm_game)
+        text, indexes, incommon_coords = handle_coords(text, locations, from_updater, storm)
     except Exception:
         bot.send_message(chat_id, header + '\r\nException - координаты не обработаны')
 
@@ -73,7 +73,7 @@ def send_object_text(text, header, bot, chat_id, locations, from_updater, storm_
             bot.send_message(chat_id, 'Exceprion - бот не смог отправить координаты')
 
     if incommon_coords:
-        if not storm_game:
+        if not storm:
             try:
                 for coord in incommon_coords:
                     latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
@@ -126,7 +126,7 @@ def cut_images(text):
     return text, images
 
 
-def handle_coords(text, locations, from_udater, storm_game, incommon_coords=list()):
+def handle_coords(text, locations, from_udater, storm, incommon_coords=list()):
     indexes = list()
 
     soup = BeautifulSoup(text)
@@ -146,7 +146,7 @@ def handle_coords(text, locations, from_udater, storm_game, incommon_coords=list
 
     coords = find_coords(text)
     if coords:
-        if from_udater and not storm_game:
+        if from_udater and not storm:
             for coord in coords:
                 i = 1 if not locations else len(locations.keys()) + 1
                 coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(i) + '</b>'
@@ -155,7 +155,7 @@ def handle_coords(text, locations, from_udater, storm_game, incommon_coords=list
                     indexes.append(i)
                 locations[i] = coord
 
-        elif not from_udater and not storm_game:
+        elif not from_udater and not storm:
             for coord in coords:
                 if coord in locations.values():
                     for k, v in locations.items():

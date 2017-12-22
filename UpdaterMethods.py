@@ -325,8 +325,8 @@ def sectors_parcer(loaded_sectors, codes_to_find, sector_statuses, bot, chat_id,
                 sector_statuses[sector['SectorId']]['answer_info_not_sent'] = False
 
 
-def help_parcer(loaded_helps, help_statuses, bot, chat_id, channel_name, use_channel, levelmark=None, storm=False,
-                locations=None):
+def help_parcer(loaded_helps, help_statuses, bot, chat_id, channel_name, use_channel, locations, levelmark=None,
+                storm=False):
     if loaded_helps:
         for help in loaded_helps:
             if not help['HelpId'] in help_statuses.keys():
@@ -335,9 +335,9 @@ def help_parcer(loaded_helps, help_statuses, bot, chat_id, channel_name, use_cha
             if help_statuses[help['HelpId']]['not_sent'] and help['HelpText'] is not None:
                 help_statuses[help['HelpId']]['not_sent'] = False
                 help_statuses[help['HelpId']]['time_not_sent'] = False
-                send_help(help, bot, chat_id, levelmark, storm, locations=locations)
+                send_help(help, bot, chat_id, locations, from_updater=True, storm=storm, levelmark=levelmark)
                 if channel_name and use_channel:
-                    send_help(help, bot, channel_name, levelmark, storm)
+                    send_help(help, bot, channel_name, locations, storm=storm, levelmark=levelmark)
                 continue
             if help_statuses[help['HelpId']]['time_not_sent'] and help['RemainSeconds'] <= 180:
                 help_statuses[help['HelpId']]['time_not_sent'] = False
@@ -363,8 +363,8 @@ def bonus_parcer(loaded_bonuses, bonus_statuses, game_answered_bonus_ids, bot, c
                 send_bonus_info(bonus, bot, chat_id, levelmark, storm, locations=locations)
 
 
-def message_parcer(loaded_messages, message_statuses, sent_messages, bot, chat_id, channel_name, use_channel,
-                   levelmark=None, storm=False, locations=None):
+def message_parcer(loaded_messages, message_statuses, sent_messages, bot, chat_id, channel_name, use_channel, locations,
+                   levelmark=None, storm=False):
     if loaded_messages:
         for message in loaded_messages:
             if not message['MessageId'] in message_statuses.keys():
@@ -373,9 +373,9 @@ def message_parcer(loaded_messages, message_statuses, sent_messages, bot, chat_i
             if message_statuses[message['MessageId']]['message_not_sent']:
                 message_statuses[message['MessageId']]['message_not_sent'] = False
                 sent_messages.append(message['MessageId'])
-                send_adm_message(message, bot, chat_id, levelmark, storm, locations=locations)
+                send_adm_message(message, bot, chat_id, locations, from_updater=True, storm=storm, levelmark=levelmark)
                 if channel_name and use_channel:
-                    send_adm_message(message, bot, channel_name, levelmark, storm)
+                    send_adm_message(message, bot, channel_name, locations, storm=storm, levelmark=levelmark)
 
 
 def levels_parcer(levels, session, bot, chat_id):
