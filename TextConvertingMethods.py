@@ -126,7 +126,8 @@ def cut_images(text):
     return text, images
 
 
-def handle_coords(text, locations, from_udater, storm, incommon_coords=list()):
+def handle_coords(text, locations, from_udater, storm):
+    incommon_coords = list()
     indexes = list()
 
     soup = BeautifulSoup(text)
@@ -160,6 +161,8 @@ def handle_coords(text, locations, from_udater, storm, incommon_coords=list()):
                 if coord in locations.values():
                     for k, v in locations.items():
                         if coord == v:
+                            coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(k) + '</b>'
+                            text = text.replace(coord, coord_Y_G)
                             indexes.append(k)
                             break
                 else:
