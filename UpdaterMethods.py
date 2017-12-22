@@ -10,13 +10,11 @@ def updater(chat_id, bot, session, updaters_dict):
         name = 'upd_thread_%s' % chat_id
         updaters_dict[chat_id] = threading.Thread(name=name, target=linear_updater, args=(chat_id, bot, session))
         updaters_dict[chat_id].start()
-        # linear_updater(chat_id, bot, session)
         return
     else:
         name = 'upd_thread_%s' % chat_id
         updaters_dict[chat_id] = threading.Thread(name=name, target=storm_updater, args=(chat_id, bot, session))
         updaters_dict[chat_id].start()
-        # storm_updater(chat_id, bot, session)
         return
 
 
@@ -57,8 +55,7 @@ def linear_updater(chat_id, bot, session):
             bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
         try:
             session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
-                                                session.channel_name, session.use_channel, session.locations,
-                                                session.add_live_locations)
+                                                session.channel_name, session.use_channel, session.locations)
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог прислать информацию об АПе')
         if session.channel_name and session.use_channel:
@@ -85,8 +82,7 @@ def linear_updater(chat_id, bot, session):
             bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
         try:
             session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
-                                                    session.channel_name, session.use_channel, session.locations,
-                                                    session.add_live_locations)
+                                                    session.channel_name, session.use_channel, session.locations)
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог прислать информацию об АПе')
         if session.channel_name and session.use_channel:
@@ -117,7 +113,7 @@ def linear_updater(chat_id, bot, session):
     try:
         if loaded_messages:
             message_parcer(loaded_messages, session.message_statuses, session.sent_messages, bot, chat_id,
-                           session.channel_name, session.use_channel, locations=session.locations, add_live_locations=session.add_live_locations)
+                           session.channel_name, session.use_channel, locations=session.locations)
 
         if loaded_sectors:
             codes_to_find = loaded_level['SectorsLeftToClose']
@@ -125,11 +121,11 @@ def linear_updater(chat_id, bot, session):
 
         if loaded_helps:
             help_parcer(loaded_helps, session.help_statuses, bot, chat_id, session.channel_name, session.use_channel,
-                        locations=session.locations, add_live_locations=session.add_live_locations)
+                        locations=session.locations)
 
         if loaded_bonuses:
             bonus_parcer(loaded_bonuses, session.bonus_statuses, session.game_answered_bonus_ids, bot, chat_id,
-                         locations=session.locations, add_live_locations=session.add_live_locations)
+                         locations=session.locations)
 
         if session.channel_name and session.use_channel and session.sectors_to_close and session.sectors_to_close != '1'\
                 and session.sectors_message_id:
@@ -216,28 +212,10 @@ def reset_live_locations(chat_id, bot, session):
     session.locations = dict()
     if session.live_location_message_ids:
         close_live_locations(chat_id, bot, session)
-        # for k, v in session.live_location_message_ids.items():
-        #     if k == 0:
-        #         try:
-        #             bot.stop_message_live_location(chat_id, v)
-        #         except Exception as e:
-        #             response_text = json.loads(e.result.text)['description'].encode('utf-8')
-        #             if "message can\\'t be edited" in response_text:
-        #                 del session.live_location_message_ids[k]
-        #     elif k > 10:
-        #         continue
-        #     else:
-        #         try:
-        #             coord_bots[k].stop_message_live_location(chat_id, v)
-        #         except Exception as e:
-        #             response_text = json.loads(e.result.text)['description'].encode('utf-8')
-        #             if "message can\\'t be edited" in response_text:
-        #                 del session.live_location_message_ids[k]
-        # session.live_location_message_ids = dict()
 
 
 def send_up_info(loaded_level, number_of_levels, loaded_helps, loaded_bonuses, bot, chat_id, channel_name, use_channel,
-                 locations, add_live_locations, block=''):
+                 locations, block=''):
     try:
         up = '\xE2\x9D\x97#АП'
         name = loaded_level['Name'].encode('utf-8') if loaded_level['Name'] else 'без названия'
@@ -266,12 +244,12 @@ def send_up_info(loaded_level, number_of_levels, loaded_helps, loaded_bonuses, b
     except Exception:
         bot.send_message(chat_id, up + '\r\nException - updater не смог собрать и отправить информацию об уровне')
 
-    send_task(loaded_level, bot, chat_id, locations=locations, add_live_locations=add_live_locations)
+    send_task(loaded_level, bot, chat_id, locations, from_updater=True)
 
     try:
         if channel_name and use_channel:
             bot.send_message(channel_name, up_message, parse_mode='HTML')
-            send_task(loaded_level, bot, channel_name)
+            send_task(loaded_level, bot, channel_name, locations)
     except Exception:
         bot.send_message(chat_id, 'Exception - updater не смог отправить информацию по новому уровню в канал')
 
@@ -348,7 +326,7 @@ def sectors_parcer(loaded_sectors, codes_to_find, sector_statuses, bot, chat_id,
 
 
 def help_parcer(loaded_helps, help_statuses, bot, chat_id, channel_name, use_channel, levelmark=None, storm=False,
-                locations=None, add_live_locations=False):
+                locations=None):
     if loaded_helps:
         for help in loaded_helps:
             if not help['HelpId'] in help_statuses.keys():
@@ -357,7 +335,7 @@ def help_parcer(loaded_helps, help_statuses, bot, chat_id, channel_name, use_cha
             if help_statuses[help['HelpId']]['not_sent'] and help['HelpText'] is not None:
                 help_statuses[help['HelpId']]['not_sent'] = False
                 help_statuses[help['HelpId']]['time_not_sent'] = False
-                send_help(help, bot, chat_id, levelmark, storm, locations=locations, add_live_locations=add_live_locations)
+                send_help(help, bot, chat_id, levelmark, storm, locations=locations)
                 if channel_name and use_channel:
                     send_help(help, bot, channel_name, levelmark, storm)
                 continue
@@ -367,7 +345,7 @@ def help_parcer(loaded_helps, help_statuses, bot, chat_id, channel_name, use_cha
 
 
 def bonus_parcer(loaded_bonuses, bonus_statuses, game_answered_bonus_ids, bot, chat_id, levelmark=None, storm=False,
-                 locations=None, add_live_locations=False):
+                 locations=None):
     if loaded_bonuses:
 
         for bonus in loaded_bonuses:
@@ -378,15 +356,15 @@ def bonus_parcer(loaded_bonuses, bonus_statuses, game_answered_bonus_ids, bot, c
                 bonus_statuses[bonus['BonusId']]['award_not_sent'] = False
                 bonus_statuses[bonus['BonusId']]['info_not_sent'] = False
                 game_answered_bonus_ids.append(bonus['BonusId'])
-                send_bonus_award_answer(bonus, bot, chat_id, levelmark, storm, locations=locations, add_live_locations=add_live_locations)
+                send_bonus_award_answer(bonus, bot, chat_id, levelmark, storm, locations=locations)
                 continue
             if bonus_statuses[bonus['BonusId']]['info_not_sent'] and bonus['Task'] and not bonus['Expired']:
                 bonus_statuses[bonus['BonusId']]['info_not_sent'] = False
-                send_bonus_info(bonus, bot, chat_id, levelmark, storm, locations=locations, add_live_locations=add_live_locations)
+                send_bonus_info(bonus, bot, chat_id, levelmark, storm, locations=locations)
 
 
 def message_parcer(loaded_messages, message_statuses, sent_messages, bot, chat_id, channel_name, use_channel,
-                   levelmark=None, storm=False, locations=None, add_live_locations=False):
+                   levelmark=None, storm=False, locations=None):
     if loaded_messages:
         for message in loaded_messages:
             if not message['MessageId'] in message_statuses.keys():
@@ -395,7 +373,7 @@ def message_parcer(loaded_messages, message_statuses, sent_messages, bot, chat_i
             if message_statuses[message['MessageId']]['message_not_sent']:
                 message_statuses[message['MessageId']]['message_not_sent'] = False
                 sent_messages.append(message['MessageId'])
-                send_adm_message(message, bot, chat_id, levelmark, storm, locations=locations, add_live_locations=add_live_locations)
+                send_adm_message(message, bot, chat_id, levelmark, storm, locations=locations)
                 if channel_name and use_channel:
                     send_adm_message(message, bot, channel_name, levelmark, storm)
 
