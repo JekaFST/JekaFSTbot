@@ -178,7 +178,8 @@ def storm_updater(chat_id, bot, session):
 
             if loaded_messages:
                 message_parcer(loaded_messages, session.message_statuses, session.sent_messages, bot, chat_id,
-                               session.channel_name, session.use_channel, levelmark=levelmark, storm=True)
+                               session.channel_name, session.use_channel, session.locations,
+                               levelmark=levelmark, storm=True)
 
             if loaded_sectors:
                 codes_to_find = loaded_storm_level['SectorsLeftToClose']
@@ -188,11 +189,13 @@ def storm_updater(chat_id, bot, session):
 
             if loaded_helps:
                 help_parcer(loaded_helps, session.help_statuses[loaded_storm_level['LevelId']],
-                            bot, chat_id, session.channel_name, session.use_channel, levelmark=levelmark, storm=True)
+                            bot, chat_id, session.channel_name, session.use_channel, session.locations,
+                            levelmark=levelmark, storm=True)
 
             if loaded_bonuses:
                 bonus_parcer(loaded_bonuses, session.bonus_statuses[loaded_storm_level['LevelId']],
-                             session.game_answered_bonus_ids, bot, chat_id, levelmark=levelmark, storm=True)
+                             session.game_answered_bonus_ids, bot, chat_id, session.locations,
+                             levelmark=levelmark, storm=True)
     except Exception:
         bot.send_message(chat_id, 'Exception - не удалось выполнить команду updater до конца')
 
