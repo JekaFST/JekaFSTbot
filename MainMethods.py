@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import threading
 import time
 import re
@@ -372,14 +373,14 @@ def send_live_locations(chat_id, bot, session, coords, duration):
     send_live_locations_to_chat(bot, chat_id, session)
 
 
-def stop_live_locations(chat_id, bot, session):
+def stop_live_locations(chat_id, bot, session, point):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя остановить live location при неактивной сессии')
         return
     if not session.live_location_message_ids:
         bot.send_message(chat_id, 'Live location не отправлена')
         return
-    close_live_locations(chat_id, bot, session)
+    close_live_locations(chat_id, bot, session, point=point)
 
 
 def edit_live_locations(chat_id, bot, session, point, coords):
@@ -408,3 +409,12 @@ def edit_live_locations(chat_id, bot, session, point, coords):
                                                              session.live_location_message_ids[point])
         else:
             bot.send_message(chat_id, 'Проверьте номер точки - соответствующая live location не найдена)')
+
+
+def add_custom_live_locations(chat_id, bot, session, points_dict, duration):
+    if not session.active:
+        bot.send_message(chat_id, 'Нельзя отправлять live location при неактивной сессии')
+        return
+    if session.live_location_message_ids:
+        close_live_locations(chat_id, bot, session)
+    send_live_locations_to_chat(bot, chat_id, session, custom_points=points_dict, duration=duration)
