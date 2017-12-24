@@ -125,9 +125,12 @@ def run_app(bot, main_vars):
                                           '/ask_for_permission - отправить запрос на разрешение использования бота\n'
                                           '/codes_off - выключить сдачу кодов\n'
                                           '/codes_on - включить сдачу кодов\n'
-                                          '/send_ll - отправить live locations из задания (из чата: пробел-длительность-пробел-координаты)\n'
+                                          '/send_ll - отправить live locations из задания (из чата (основной бот): пробел-sдлительность-пробел-координаты)\n'
                                           '/edit_ll - отредактировать live location (пробел-номер точки-пробел-новые координаты)\n'
                                           '/stop_ll - остановить live locations (пробел-номер точки, чтобы остановить конкретный location)\n'
+                                          'add_points_ll - отправить live locations из чата (цифрами):\n'
+                                          'пробел-sдлительность-пробел-координаты в формате:\n'
+                                          '1 - корды\n2 - корды\n...\nn - корды'
                                           '\nпри штурмовой игре поддерживается сдача кодов:\n'
                                           '!номер уровня!код | ?номер уровня?код\n'
                                           'и следующие команды:\n'
@@ -538,14 +541,14 @@ def run_app(bot, main_vars):
                             r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
                             r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
                             r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
-        duration = re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
+        seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))[0]
         if message.chat.id in main_vars.allowed_chats.keys():
             send_live_location_task = {
                 'task_type': 'live_location',
                 'chat_id': message.chat.id,
                 'additional_chat_id': None,
                 'coords': coords,
-                'duration': int(duration.group(0)) if duration else None
+                'duration': int(seconds) if seconds else None
             }
             main_vars.task_queue.append(send_live_location_task)
         elif message.chat.id in main_vars.additional_ids.keys():
@@ -554,7 +557,7 @@ def run_app(bot, main_vars):
                 'chat_id': None,
                 'additional_chat_id': message.chat.id,
                 'coords': coords,
-                'duration': int(duration.group(0)) if duration else None
+                'duration': int(seconds) if seconds else None
             }
             main_vars.task_queue.append(send_live_location_task)
         else:
@@ -616,6 +619,42 @@ def run_app(bot, main_vars):
                 'coords': coords
             }
             main_vars.task_queue.append(edit_live_location_task)
+
+    @bot.message_handler(commands=['add_points_ll'])
+    def send_live_location(message):
+        points_dict = dict()
+        points = re.findall(r'\d{1,2}\s*-\s*\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}|'
+                            r'\d{1,2}\s*-\s*\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}', str(message.text.encode('utf-8')))
+        for point in points:
+            i = int(re.findall(r'(\d{1,2})\s*-', point)[0])
+            points_dict[i] = re.findall(r'\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}|'
+                                        r'\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}', point)[0]
+        if not points_dict:
+            bot.send_message(message.chat.id, 'Нет точек, для отправки live_locations. Верный формат:\n'
+                                              '1 - корды\n2 - корды\n...\nn - корды')
+        seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))[0]
+        if message.chat.id in main_vars.allowed_chats.keys():
+            add_points_ll_task = {
+                'task_type': 'add_points_ll',
+                'chat_id': message.chat.id,
+                'additional_chat_id': None,
+                'points_dict': points_dict,
+                'duration': int(seconds) if seconds else None
+            }
+            main_vars.task_queue.append(add_points_ll_task)
+        elif message.chat.id in main_vars.additional_ids.keys():
+            add_points_ll_task = {
+                'task_type': 'add_points_ll',
+                'chat_id': None,
+                'additional_chat_id': message.chat.id,
+                'points_dict': points_dict,
+                'duration': int(seconds) if seconds else None
+            }
+            main_vars.task_queue.append(add_points_ll_task)
+        else:
+            bot.send_message(message.chat.id,
+                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
+                             'Для отправки запроса на разрешение введите /ask_for_permission')
 
     @bot.message_handler(content_types=['text'])
     def text_processor(message):
