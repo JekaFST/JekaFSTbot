@@ -506,12 +506,12 @@ def send_task_images(level, bot, chat_id):
 
 def send_live_locations_to_chat(bot, chat_id, session, coords=None, duration=None, custom_points=None):
     if not custom_points:
-        level, _ = get_current_level(session, bot, chat_id)
-        if level['LevelId'] != session.current_level['LevelId']:
-            bot.send_message(chat_id, 'Уровень изменился. '
-                                      'Повторите команду, если хотите поставить live_location для нового уровня')
-            return
         if not coords:
+            level, _ = get_current_level(session, bot, chat_id)
+            if level['LevelId'] != session.current_level['LevelId']:
+                bot.send_message(chat_id, 'Уровень изменился. '
+                                          'Повторите команду, если хотите поставить live_location для нового уровня')
+                return
             for k, v in session.locations.items():
                 if k > 15:
                     continue
