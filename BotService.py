@@ -127,7 +127,7 @@ def run_app(bot, main_vars):
                                           '/codes_on - включить сдачу кодов\n'
                                           '/send_ll - отправить live locations из задания (из чата: пробел-длительность-пробел-координаты)\n'
                                           '/edit_ll - отредактировать live location (пробел-номер точки-пробел-новые координаты)\n'
-                                          '/stop_ll - остановить live locations\n'
+                                          '/stop_ll - остановить live locations (пробел-номер точки, чтобы остановить конкретный location)\n'
                                           '\nпри штурмовой игре поддерживается сдача кодов:\n'
                                           '!номер уровня!код | ?номер уровня?код\n'
                                           'и следующие команды:\n'
@@ -564,18 +564,21 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(commands=['stop_ll'])
     def stop_live_location(message):
+        point_number = re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
         if message.chat.id in main_vars.allowed_chats.keys():
             stop_live_location_task = {
                 'task_type': 'stop_live_location',
                 'chat_id': message.chat.id,
-                'additional_chat_id': None
+                'additional_chat_id': None,
+                'point': int(point_number.group(0)) if point_number else None
             }
             main_vars.task_queue.append(stop_live_location_task)
         elif message.chat.id in main_vars.additional_ids.keys():
             stop_live_location_task = {
                 'task_type': 'stop_live_location',
                 'chat_id': None,
-                'additional_chat_id': message.chat.id
+                'additional_chat_id': message.chat.id,
+                'point': int(point_number.group(0)) if point_number else None,
             }
             main_vars.task_queue.append(stop_live_location_task)
         else:
@@ -679,7 +682,7 @@ def run_app(bot, main_vars):
     bot.remove_webhook()
 
     # Set webhook
-    bot.set_webhook(url='https://ab3a8c72.ngrok.io/webhook')
+    bot.set_webhook(url='https://0db18cce.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():

@@ -137,7 +137,7 @@ while True:
                 chat_id = main_vars.additional_ids[task['additional_chat_id']]
                 session = main_vars.sessions_dict[main_vars.additional_ids[task['additional_chat_id']]]
             try:
-                stop_live_locations(chat_id, main_vars.bot, session)
+                stop_live_locations(chat_id, main_vars.bot, session, task['point'])
             except Exception:
                 main_vars.bot.send_message(task['chat_id'],
                                            'Exception в main - не удалось обработать команду stop_live_location')

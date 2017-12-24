@@ -372,14 +372,14 @@ def send_live_locations(chat_id, bot, session, coords, duration):
     send_live_locations_to_chat(bot, chat_id, session)
 
 
-def stop_live_locations(chat_id, bot, session):
+def stop_live_locations(chat_id, bot, session, point):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя остановить live location при неактивной сессии')
         return
     if not session.live_location_message_ids:
         bot.send_message(chat_id, 'Live location не отправлена')
         return
-    close_live_locations(chat_id, bot, session)
+    close_live_locations(chat_id, bot, session, point=point)
 
 
 def edit_live_locations(chat_id, bot, session, point, coords):

@@ -71,22 +71,33 @@ def send_adm_message(message, bot, chat_id, levelmark=None, storm=False):
     send_object_text(message_text, bonus_award_header, bot, chat_id)
 
 
-def close_live_locations(chat_id, bot, session):
-    for k, v in session.live_location_message_ids.items():
-        if k == 0:
+def close_live_locations(chat_id, bot, session, point=None):
+    if not point:
+        for k, v in session.live_location_message_ids.items():
+            if k == 0:
+                try:
+                    bot.stop_message_live_location(chat_id, v)
+                except Exception as e:
+                    response_text = json.loads(e.result.text)['description'].encode('utf-8')
+                    if "message can't be edited" in response_text:
+                        del session.live_location_message_ids[k]
+            elif k > 15:
+                continue
+            else:
+                try:
+                    coord_bots[k].stop_message_live_location(chat_id, v)
+                except Exception as e:
+                    response_text = json.loads(e.result.text)['description'].encode('utf-8')
+                    if "message can't be edited" in response_text:
+                        del session.live_location_message_ids[k]
+            session.live_location_message_ids = dict()
+    else:
+        if point in session.live_location_message_ids.keys():
             try:
-                bot.stop_message_live_location(chat_id, v)
+                bot.stop_message_live_location(chat_id, session.live_location_message_ids[point])
             except Exception as e:
                 response_text = json.loads(e.result.text)['description'].encode('utf-8')
                 if "message can't be edited" in response_text:
-                    del session.live_location_message_ids[k]
-        elif k > 15:
-            continue
+                    del session.live_location_message_ids[point]
         else:
-            try:
-                coord_bots[k].stop_message_live_location(chat_id, v)
-            except Exception as e:
-                response_text = json.loads(e.result.text)['description'].encode('utf-8')
-                if "message can\\'t be edited" in response_text:
-                    del session.live_location_message_ids[k]
-        session.live_location_message_ids = dict()
+            bot.send_message(chat_id, 'Live location с таким номером не поставлен')
