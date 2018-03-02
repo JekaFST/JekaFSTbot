@@ -23,6 +23,13 @@ nnm_config_dict = {
                     'Password': 'ljcneg12'
                   }
 
+rch_config_dict = {
+                    'channel_name': '@r4channel',
+                    'en_domain': 'http://deadline.en.cx',
+                    'Login': 'oneanotherbot',
+                    'Password': 'ljcneg12'
+                  }
+
 keks_config_dict = {
                     'channel_name': '',
                     'en_domain': 'http://felix.en.cx',
@@ -37,7 +44,7 @@ class MainVars(object):
             45839899: fst_config_dict,
             -1001145974445: fst_config_dict,
             -1001062839624: nnm_config_dict,
-            -1001126631174: None, #P4
+            -1001126631174: rch_config_dict, #P4
             -1001076545820: fst_config_dict,
             -1001116652124: fst_config_dict,
             -169229164: None,
