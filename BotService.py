@@ -728,7 +728,7 @@ def run_app(bot, main_vars):
     bot.remove_webhook()
 
     # Set webhook
-    bot.set_webhook(url='https://04ed0847.ngrok.io/webhook')
+    bot.set_webhook(url='https://ec374396.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():

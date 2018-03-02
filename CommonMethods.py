@@ -32,7 +32,7 @@ def send_time_to_help(help, bot, chat_id, levelmark=None, storm=False):
     help_number = str(help['Number'])
     time_to_help = time_converter(help['RemainSeconds'])
     message_text = '<b>Подсказка ' + help_number + '</b>\r\nпридет через %s' % time_to_help if not storm else \
-        levelmark + '\r\n<b>Подсказка ' + help_number + '</b>\r\nпридет через %s'
+        levelmark + '\r\n<b>Подсказка ' + help_number + '</b>\r\nпридет через %s' % time_to_help
     bot.send_message(chat_id, message_text, parse_mode='HTML')
 
 

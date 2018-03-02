@@ -364,7 +364,7 @@ def bonus_parcer(loaded_bonuses, bonus_statuses, game_answered_bonus_ids, bot, c
                 continue
             if bonus_statuses[bonus['BonusId']]['info_not_sent'] and bonus['Task'] and not bonus['Expired']:
                 bonus_statuses[bonus['BonusId']]['info_not_sent'] = False
-                send_bonus_info(bonus, bot, chat_id, locations, from_updater=True, storm=storm, levelmark=levelmark)
+                # send_bonus_info(bonus, bot, chat_id, locations, from_updater=True, storm=storm, levelmark=levelmark)
 
 
 def message_parcer(loaded_messages, message_statuses, sent_messages, bot, chat_id, channel_name, use_channel, locations,
