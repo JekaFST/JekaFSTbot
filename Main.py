@@ -12,7 +12,7 @@ from UpdaterMethods import updater
 main_vars = MainVars()
 
 try:
-    th_flask = threading.Thread(name='th_flask', target=run_app(main_vars.bot, main_vars).run, args=('0.0.0.0', 443))
+    th_flask = threading.Thread(name='th_flask', target=run_app, args=(main_vars.bot, main_vars))
     th_flask.start()
 except Exception:
     main_vars.bot.send_message(45839899, 'Exception в main - не удалось запустить Flask')
