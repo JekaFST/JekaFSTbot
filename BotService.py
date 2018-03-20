@@ -628,7 +628,7 @@ def run_app(bot, main_vars):
             main_vars.task_queue.append(edit_live_location_task)
 
     @bot.message_handler(commands=['add_points_ll'])
-    def send_live_location(message):
+    def add_points_live_location(message):
         points_dict = dict()
         points = re.findall(r'\d{1,2}\s*-\s*\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}|'
                             r'\d{1,2}\s*-\s*\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}', str(message.text.encode('utf-8')))
