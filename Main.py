@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import threading
 from BotService import run_app
 from MainMethods import start, stop_session, login, send_task, start_updater, stop_updater, config, set_domain, \
@@ -10,9 +11,11 @@ from MainThreadVars import MainVars
 from UpdaterMethods import updater
 
 main_vars = MainVars()
+# Bind to PORT if defined, otherwise default to 5000.
+port = int(os.environ.get('PORT', 5000))
 
 try:
-    th_flask = threading.Thread(name='th_flask', target=run_app(main_vars.bot, main_vars).run, args=('0.0.0.0', 443))
+    th_flask = threading.Thread(name='th_flask', target=run_app(main_vars.bot, main_vars).run, args=('0.0.0.0', port))
     th_flask.start()
 except Exception:
     main_vars.bot.send_message(45839899, 'Exception в main - не удалось запустить Flask')
