@@ -3,9 +3,10 @@ import json
 import threading
 import time
 import re
+import telebot
 from BotSession import BotSession
 from CommonMethods import close_live_locations
-from Config import coord_bots
+from DBMethods import DB
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
     send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session, \
     send_auth_messages_to_chat, send_unclosed_bonuses_to_chat, send_code_to_storm_level, send_task_to_chat_storm, \
@@ -404,8 +405,8 @@ def edit_live_locations(chat_id, bot, session, point, coords):
             for coord in coords:
                 latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
                 longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-                coord_bots[point].edit_message_live_location(latitude, longitude, chat_id,
-                                                             session.live_location_message_ids[point])
+                telebot.TeleBot(DB.get_location_bot_token_by_number(point)).edit_message_live_location(
+                    latitude, longitude, chat_id, session.live_location_message_ids[point])
         else:
             bot.send_message(chat_id, 'Проверьте номер точки - соответствующая live location не найдена)')
 

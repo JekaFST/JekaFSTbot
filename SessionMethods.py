@@ -2,10 +2,12 @@
 import re
 import requests
 import json
+import telebot
 from bs4 import BeautifulSoup
 from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, \
     send_adm_message
-from Config import game_wrong_statuses, coord_bots
+from Config import game_wrong_statuses
+from DBMethods import DB
 
 
 def compile_urls(config):
@@ -520,7 +522,8 @@ def send_live_locations_to_chat(bot, chat_id, session, coords=None, duration=Non
                 longitude = re.findall(r'\d\d\.\d{4,7}', v)[1]
                 live_period = level['TimeoutSecondsRemain'] if level['TimeoutSecondsRemain'] else 10800
                 try:
-                    response = coord_bots[k].send_location(chat_id, latitude, longitude, live_period=live_period)
+                    response = telebot.TeleBot(DB.get_location_bot_token_by_number(k)).send_location(
+                        chat_id, latitude, longitude, live_period=live_period)
                     session.live_location_message_ids[k] = response.message_id
                 except Exception as e:
                     response_text = json.loads(e.result.text)['description'].encode('utf-8')
@@ -547,7 +550,8 @@ def send_live_locations_to_chat(bot, chat_id, session, coords=None, duration=Non
             longitude = re.findall(r'\d\d\.\d{4,7}', v)[1]
             live_period = duration if duration else 10800
             try:
-                response = coord_bots[k].send_location(chat_id, latitude, longitude, live_period=live_period)
+                response = telebot.TeleBot(DB.get_location_bot_token_by_number(k)).send_location(
+                    chat_id, latitude, longitude, live_period=live_period)
                 session.live_location_message_ids[k] = response.message_id
             except Exception as e:
                 response_text = json.loads(e.result.text)['description'].encode('utf-8')

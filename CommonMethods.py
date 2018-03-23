@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 import datetime as datetime
-from Config import coord_bots
+import telebot
+from DBMethods import DB
 from TextConvertingMethods import send_object_text
 
 
@@ -84,7 +85,7 @@ def close_live_locations(chat_id, bot, session, point=None):
                 continue
             else:
                 try:
-                    coord_bots[k].stop_message_live_location(chat_id, v)
+                    telebot.TeleBot(DB.get_location_bot_token_by_number(k)).stop_message_live_location(chat_id, v)
                 except Exception as e:
                     response_text = json.loads(e.result.text)['description'].encode('utf-8')
                     if "message can't be edited" in response_text:

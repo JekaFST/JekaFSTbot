@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import re
 from bs4 import BeautifulSoup
+from DBMethods import DB
 
 text = ''
-tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr', 'object', 'param', 'audio', 'source', 'embed']
+tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr', 'object', 'param', 'audio', 'source', 'embed', 'list']
 
 
 def send_object_text(text):

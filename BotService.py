@@ -3,7 +3,8 @@ import flask
 import re
 import telebot
 from flask import Flask
-from Config import tags_list
+
+from DBMethods import DB
 
 
 def run_app(bot, main_vars):
@@ -536,8 +537,8 @@ def run_app(bot, main_vars):
             bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
             return
         tag_to_add = re.findall(r'/add_tag\s*(.+)', str(message.text.encode('utf-8')))[0]
-        tags_list.append(tag_to_add)
-        if tag_to_add in tags_list:
+        DB.insert_tag_in_tags_list(tag_to_add)
+        if tag_to_add in DB.get_tags_list():
             bot.send_message(message.chat.id, 'Тег успешно добавлен в обработчик')
         else:
             bot.send_message(message.chat.id, 'Тег не добавлен в обработчикб повторите попытку')
