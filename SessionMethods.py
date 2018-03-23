@@ -580,7 +580,6 @@ def drop_session_vars(session):
     session.sectors_to_close = None
     session.sectors_message_id = None
     session.game_model_status = None
-    session.send_coords_active = True
     session.put_updater_task = None
     session.send_codes = True
     session.dismissed_level_ids = list()

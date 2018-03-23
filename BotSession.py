@@ -33,7 +33,6 @@ class BotSession(object):
         self.sectors_message_id = None
         self.game_model_status = None
         self.delay = 2
-        self.send_coords_active = True
         self.put_updater_task = None
         self.send_codes = True
         self.dismissed_level_ids = list()

@@ -15,7 +15,7 @@ main_vars = MainVars()
 port = int(os.environ.get('PORT', 5000))
 
 try:
-    th_flask = threading.Thread(name='th_flask', target=run_app(main_vars.bot, main_vars).run, args=('0.0.0.0', port))
+    th_flask = threading.Thread(name='th_flask', target=run_app(main_vars.bot, main_vars).run, args=('0.0.0.0', 443, False))
     th_flask.start()
 except Exception:
     main_vars.bot.send_message(45839899, 'Exception в main - не удалось запустить Flask')

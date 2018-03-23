@@ -326,12 +326,11 @@ def send_code_bonus(chat_id, bot, session, message_id, code):
         send_code_to_storm_level(code, level_number, bot, chat_id, message_id, session, bonus_only=True)
 
 
-def send_coords(chat_id, bot, session, coords):
-    if session.active and session.send_coords_active:
-        for coord in coords:
-            latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
-            longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-            bot.send_venue(chat_id, latitude, longitude, coord, '')
+def send_coords(chat_id, bot, coords):
+    for coord in coords:
+        latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
+        longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
+        bot.send_venue(chat_id, latitude, longitude, coord, '')
 
 
 def join(chat_id, bot, message_id, additional_chat_id, additional_chat_ids):
