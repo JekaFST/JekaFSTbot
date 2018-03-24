@@ -29,10 +29,11 @@ def start(chat_id, bot, sessions_dict, config_dict):
                                   'Краткое описание доступно по команде /help', disable_web_page_preview=True, parse_mode='HTML')
     elif chat_id not in sessions_dict.keys() and config_dict:
         sessions_dict[chat_id] = BotSession()
-        sessions_dict[chat_id].config['Login'] = config_dict['Login']
-        sessions_dict[chat_id].config['Password'] = config_dict['Password']
-        sessions_dict[chat_id].config['en_domain'] = config_dict['en_domain']
-        sessions_dict[chat_id].channel_name = config_dict['channel_name']
+        config = DB.get_config_by_chat_id(chat_id)
+        sessions_dict[chat_id].config['Login'] = config['login']
+        sessions_dict[chat_id].config['Password'] = config['password']
+        sessions_dict[chat_id].config['en_domain'] = config['endomain']
+        sessions_dict[chat_id].channel_name = config['channelname']
         bot.send_message(chat_id, '<b>Сессия создана</b>\n'
                                   'Для данного чата найдена конфигурация по умолчанию. Проверить: /config\n'
                                   'Чтобы начать использовать бота, необходимо:\n'

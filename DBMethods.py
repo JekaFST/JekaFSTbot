@@ -1,9 +1,9 @@
 import os
-import psycopg2
+import psycopg2.extras
 
 DATABASE_URL = os.environ['DATABASE_URL']
-# DATABASE_URL = 'jdbc:postgresql://localhost:5432/JekaFSTbot_base'
 db_conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+# DATABASE_URL = 'jdbc:postgresql://localhost:5432/JekaFSTbot_base'
 # db_conn = psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
 
 
@@ -39,3 +39,11 @@ class DB(object):
         cur.execute(sql)
         rows = cur.fetchall()
         return rows[0][0]
+
+    @staticmethod
+    def get_config_by_chat_id(chat_id):
+        sql = "SELECT Login, Password, ENdomain, ChannelName FROM ChatConfigs WHERE ChatId = %s" % chat_id
+        cur = db_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur.execute(sql)
+        rows = cur.fetchall()
+        return rows[0]
