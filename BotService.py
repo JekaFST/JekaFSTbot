@@ -3,7 +3,7 @@ import flask
 import re
 import telebot
 from flask import Flask
-from Const import helptext
+from Const import helptext, html
 from DBMethods import DB
 
 
@@ -692,7 +692,7 @@ def run_app(bot, main_vars):
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():
-        return "Hello World!"
+        return html
 
     @app.route("/develop/DB/connectorcheck", methods=['GET', 'POST'])
     def db_conn_check():
