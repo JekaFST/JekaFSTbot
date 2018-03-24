@@ -15,8 +15,9 @@ from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_co
     send_live_locations_to_chat
 
 
-def start(chat_id, bot, sessions_dict, config_dict):
-    if chat_id not in sessions_dict.keys() and not config_dict:
+def start(chat_id, bot, sessions_dict):
+    config = DB.get_config_by_chat_id(chat_id)
+    if chat_id not in sessions_dict.keys() and not config:
         sessions_dict[chat_id] = BotSession()
         bot.send_message(chat_id, '<b>Сессия создана</b>\n'
                                   'Чтобы начать использовать бота, необходимо задать конфигурацию игры:\n'
@@ -27,9 +28,8 @@ def start(chat_id, bot, sessions_dict, config_dict):
                                   '- залогиниться в движок (/login_to_en)\n'
                                   'и активировать сессию (/start_session)\n'
                                   'Краткое описание доступно по команде /help', disable_web_page_preview=True, parse_mode='HTML')
-    elif chat_id not in sessions_dict.keys() and config_dict:
+    elif chat_id not in sessions_dict.keys() and config:
         sessions_dict[chat_id] = BotSession()
-        config = DB.get_config_by_chat_id(chat_id)
         sessions_dict[chat_id].config['Login'] = config['login']
         sessions_dict[chat_id].config['Password'] = config['password']
         sessions_dict[chat_id].config['en_domain'] = config['endomain']
@@ -335,13 +335,13 @@ def send_coords(chat_id, bot, coords):
         bot.send_venue(chat_id, latitude, longitude, coord, '')
 
 
-def join(chat_id, bot, message_id, additional_chat_id, additional_chat_ids):
-    additional_chat_ids[additional_chat_id] = chat_id
+def join(chat_id, bot, message_id, add_chat_id):
+    DB.insert_add_chat_id(chat_id, add_chat_id)
     bot.send_message(chat_id, 'Теперь вы можете работать с ботом через личный чат', reply_to_message_id=message_id)
 
 
-def reset_join(chat_id, bot, message_id, additional_chat_id, additional_chat_ids):
-    del additional_chat_ids[additional_chat_id]
+def reset_join(chat_id, bot, message_id, add_chat_id):
+    DB.delete_add_chat_id(chat_id, add_chat_id)
     bot.send_message(chat_id, 'Взаимодействие с ботом через личный чат сброшено', reply_to_message_id=message_id)
 
 

@@ -9,13 +9,13 @@ from MainMethods import start, stop_session, login, send_task, start_updater, st
     stop_channel, set_updater_delay, send_all_sectors, send_all_helps, send_last_help, send_all_bonuses, join, \
     reset_join, send_task_images, enable_codes, disable_codes, start_session, send_auth_messages, send_unclosed_bonuses, \
     send_live_locations, stop_live_locations, edit_live_locations, add_custom_live_locations
-from MainThreadVars import MainVars
+from MainClasses import MainVars
 from UpdaterMethods import updater
 
 main_vars = MainVars()
 # Bind to PORT if defined, otherwise default to 5000.
-port = int(os.environ.get('PORT', 5000))
-# port = 443
+# port = int(os.environ.get('PORT', 5000))
+port = 443
 bot = telebot.TeleBot(DB.get_main_bot_token())
 
 try:
@@ -383,7 +383,7 @@ while True:
         # Tasks to start & stop bot, get session config
         if task['task_type'] == 'start':
             try:
-                start(task['chat_id'], bot, main_vars.sessions_dict, main_vars.allowed_chats[task['chat_id']])
+                start(task['chat_id'], bot, main_vars.sessions_dict)
             except Exception:
                 bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду start')
             main_vars.task_queue.remove(task)
@@ -588,42 +588,42 @@ while True:
 
         # Additional tasks to make bot more convenient
         if task['task_type'] == 'join':
-            if task['additional_chat_id'] in main_vars.additional_ids.keys():
+            main_chat_ids, add_chat_ids = DB.get_allowed_chat_ids()
+            if task['additional_chat_id'] in add_chat_ids:
                 bot.send_message(task['chat_id'], 'У вас уже есть сессия, в рамках которой взаимодействие с '
                                                             'ботом настроено через личный чат. Для сброса введите /reset_join',
                                            reply_to_message_id=task['message_id'])
                 main_vars.task_queue.remove(task)
                 continue
-            if not task['chat_id'] in main_vars.sessions_dict.keys():
+            if not task['chat_id'] in main_chat_ids:
                 bot.send_message(task['chat_id'],
                                            'Для данного чата не создана сессия. Для создания введите команду /start')
                 main_vars.task_queue.remove(task)
                 continue
             try:
-                join(task['chat_id'], bot, task['message_id'],
-                     task['additional_chat_id'], main_vars.additional_ids)
+                join(task['chat_id'], bot, task['message_id'], task['additional_chat_id'])
             except Exception:
                 bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду join')
             main_vars.task_queue.remove(task)
             continue
 
         if task['task_type'] == 'reset_join':
+            main_chat_ids, add_chat_ids = DB.get_allowed_chat_ids(task['chat_id'])
             if task['chat_id']:
-                if not task['chat_id'] in main_vars.sessions_dict.keys():
+                if not task['chat_id'] in main_chat_ids:
                     bot.send_message(task['chat_id'],
                                                'Для данного чата не создана сессия. Для создания введите команду /start')
                     main_vars.task_queue.remove(task)
                     continue
                 chat_id = task['chat_id']
             else:
-                if not main_vars.additional_ids[task['additional_chat_id']] in main_vars.sessions_dict.keys():
+                if not DB.get_main_chat_id_via_add(task['additional_chat_id']) in main_vars.sessions_dict.keys():
                     bot.send_message(task['chat_id'],
                                                'Для данного дополнительного чата не создана (или удалена) сессия')
                     continue
                 chat_id = task['additional_chat_id']
             try:
-                reset_join(chat_id, bot, task['message_id'],
-                           task['additional_chat_id'], main_vars.additional_ids)
+                reset_join(chat_id, bot, task['message_id'], task['additional_chat_id'])
             except Exception:
                 bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду reset_join')
             main_vars.task_queue.remove(task)
