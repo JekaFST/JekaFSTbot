@@ -3,10 +3,9 @@ import re
 from bs4 import BeautifulSoup
 from DBMethods import DB
 
-tags_list = DB.get_tags_list()
-
 
 def send_object_text(text, header, bot, chat_id, locations, from_updater, storm, parse=True):
+    tags_list = DB.get_tags_list()
     text_pieces = list()
     raw_text = text
 

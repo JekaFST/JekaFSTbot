@@ -6,7 +6,7 @@ import telebot
 from bs4 import BeautifulSoup
 from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, \
     send_adm_message
-from Config import game_wrong_statuses
+from Const import game_wrong_statuses
 from DBMethods import DB
 
 

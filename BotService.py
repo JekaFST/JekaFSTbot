@@ -3,7 +3,6 @@ import flask
 import re
 import telebot
 from flask import Flask
-
 from DBMethods import DB
 
 
@@ -734,5 +733,12 @@ def run_app(bot, main_vars):
     @app.route("/", methods=['GET', 'POST'])
     def hello():
         return "Hello World!"
+
+    @app.route("/develop/DB/connectorcheck", methods=['GET', 'POST'])
+    def db_conn_check():
+        list_of_tags = 'List of tags:'
+        for tag in DB.get_tags_list():
+            list_of_tags += '<br>' + tag
+        return list_of_tags
 
     return app
