@@ -23,6 +23,7 @@ class DB(object):
                 VALUES ('%s')""" % tag_to_add
         cur = db_conn.cursor()
         cur.execute(sql)
+        db_conn.commit()
 
     @staticmethod
     def get_main_bot_token():
