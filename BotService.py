@@ -3,9 +3,9 @@ import flask
 import re
 import telebot
 from flask import Flask
-from Const import helptext, html
+from Const import helptext
 from DBMethods import DB
-from MainClasses import Task
+from MainClasses import Task, Validations
 
 
 def run_app(bot, main_vars):
@@ -37,20 +37,23 @@ def run_app(bot, main_vars):
     # refactored
     @bot.message_handler(commands=['join'])
     def join_session(message):
-        join_task = Task(message.chat.id, bot)
-        allowed = join_task.check_permission()
-        if allowed:
-            task = join_task.create_task_dict('join', message.message_id, message.from_user.id)
-            main_vars.task_queue.append(task)
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed \
+                and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()) \
+                and Validations.check_join_possible(message.chat.id, bot, message.from_user.id, message.message_id, add_chat_ids):
+            # session = Task.get_session(message.chat.id, main_chat_ids, add_chat_ids)
+            join_task = Task(message.chat.id, 'join', message_id=message.message_id, user_id=message.from_user.id)
+            main_vars.task_queue.append(join_task)
 
     # refactored
     @bot.message_handler(commands=['reset_join'])
     def reset_join(message):
-        reset_join_task = Task(message.chat.id, bot)
-        allowed = reset_join_task.check_permission()
-        if allowed:
-            task = reset_join_task.create_task_dict('reset_join', message.message_id, message.from_user.id)
-            main_vars.task_queue.append(task)
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed \
+                and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()) \
+                and Validations.check_reset_join_possible(message.chat.id, bot, message.from_user.id, message.message_id, add_chat_ids):
+            reset_join_task = Task(message.chat.id, 'reset_join', message_id=message.message_id, user_id=message.from_user.id)
+            main_vars.task_queue.append(reset_join_task)
 
     @bot.message_handler(commands=['add'])
     def add_chat_to_allowed(message):
@@ -67,38 +70,23 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(commands=['start'])
     def start(message):
-        if message.chat.id in main_vars.allowed_chats:
-            start_task = {
-                'task_type': 'start',
-                'chat_id': message.chat.id
-            }
+        allowed, _, _ = Validations.check_permission(message.chat.id, bot)
+        if allowed:
+            start_task = Task(message.chat.id, 'start')
             main_vars.task_queue.append(start_task)
-        elif message.chat.id in main_vars.additional_ids.keys():
-            bot.send_message(message.chat.id, 'Теперь вы можете работать с ботом через этот чат')
-        else:
-            bot.send_message(message.chat.id,
-                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission')
 
     @bot.message_handler(commands=['help'])
     def help(message):
-        if message.chat.id not in main_vars.allowed_chats:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
-                                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
-        bot.send_message(message.chat.id, helptext)
+        allowed, _, _ = Validations.check_permission(message.chat.id, bot)
+        if allowed:
+            bot.send_message(message.chat.id, helptext)
 
     @bot.message_handler(commands=['start_session'])
     def start_session(message):
-        if message.chat.id not in main_vars.allowed_chats:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
-                                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
-        start_session_task = {
-            'task_type': 'start_session',
-            'chat_id': message.chat.id
-        }
-        main_vars.task_queue.append(start_session_task)
+        allowed, _, _ = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
+            start_session_task = Task(message.chat.id, 'start_sesion')
+            main_vars.task_queue.append(start_session_task)
 
     @bot.message_handler(commands=['stop_session'])
     def stop_session(message):
@@ -673,11 +661,11 @@ def run_app(bot, main_vars):
 
     # Set webhook
     # bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
-    bot.set_webhook(url='https://5a120295.ngrok.io/webhook')
+    bot.set_webhook(url='https://25286a0a.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():
-        return html
+        return 'Hello world!'
 
     @app.route("/develop/DB/connectorcheck", methods=['GET', 'POST'])
     def db_conn_check():

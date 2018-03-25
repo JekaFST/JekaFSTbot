@@ -341,7 +341,8 @@ def join(chat_id, bot, message_id, add_chat_id):
 
 
 def reset_join(chat_id, bot, message_id, add_chat_id):
-    DB.delete_add_chat_id(chat_id, add_chat_id)
+    main_chat_id = DB.get_main_chat_id_via_add(add_chat_id)
+    DB.delete_add_chat_id(main_chat_id, add_chat_id)
     bot.send_message(chat_id, 'Взаимодействие с ботом через личный чат сброшено', reply_to_message_id=message_id)
 
 

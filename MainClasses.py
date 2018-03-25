@@ -22,35 +22,62 @@ class MainVars(object):
         self.updaters_dict = dict()
 
 
-class Task(object):
-    def __init__(self, chat_id, bot):
-        self.main_chat_ids, self.add_chat_ids = DB.get_allowed_chat_ids()
-        self.chat_id = chat_id
-        self.bot = bot
+class Validations(object):
+    @staticmethod
+    def check_permission(chat_id, bot):
+        main_chat_ids, add_chat_ids = DB.get_allowed_chat_ids()
+        if chat_id in main_chat_ids or chat_id in add_chat_ids:
+            return True, main_chat_ids, add_chat_ids
+        else:
+            bot.send_message(chat_id,
+                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
+                             'Для отправки запроса на разрешение введите /ask_for_permission')
+            return False, _, _
 
-    def check_permission(self):
-        if self.chat_id not in self.main_chat_ids and self.chat_id not in self.add_chat_ids:
-            self.bot.send_message(self.chat_id,
-                                  'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                                  'Для отправки запроса на разрешение введите /ask_for_permission')
+    @staticmethod
+    def check_session_available(chat_id, bot, sessions_chats):
+        if chat_id in sessions_chats or DB.get_main_chat_id_via_add(chat_id) in sessions_chats:
+            return True
+        else:
+            bot.send_message(chat_id, 'Для данного чата нет сессии. Для создания введите команду /start')
+            return False
+
+    @staticmethod
+    def check_join_possible(chat_id, bot, user_id, message_id, add_chat_ids):
+        if user_id == chat_id:
+            bot.send_message(chat_id, 'Нельзя выполнить команду /join из личного чата. '
+                                      'Для сброса взаимодействия из личного чата введите /reset_join',
+                             reply_to_message_id=message_id)
+            return False
+        elif user_id in add_chat_ids:
+            bot.send_message(chat_id, 'У вас уже есть сессия, в рамках которой взаимодействие с ботом '
+                                      'настроено через личный чат. Для сброса введите /reset_join',
+                             reply_to_message_id=message_id)
             return False
         else:
             return True
 
-    def create_task_dict(self, task_type, message_id=None, user_id=None):
-        task_dict = None
-        if self.chat_id in self.main_chat_ids:
-            task_dict = {
-                'task_type': task_type,
-                'chat_id': self.chat_id,
-                'additional_chat_id': None if not user_id else user_id,
-                'message_id': message_id
-            }
-        elif self.chat_id in self.add_chat_ids:
-            task_dict = {
-                'task_type': task_type,
-                'chat_id': None,
-                'additional_chat_id': self.chat_id,
-                'message_id': message_id
-            }
-        return task_dict
+    @staticmethod
+    def check_reset_join_possible(chat_id, bot, user_id, message_id, add_chat_ids):
+        if user_id not in add_chat_ids:
+            bot.send_message(chat_id, 'Нельзя выполнить команду /reset_join, '
+                                      'если взаимодействие с ботом через личный чат не настроено',
+                             reply_to_message_id=message_id)
+            return False
+        else:
+            return True
+
+
+class Task(object):
+    def __init__(self, chat_id, type, session=None, message_id=None, user_id=None):
+        self.chat_id = chat_id
+        self.type = type
+        self.session = session
+        self.message_id = message_id
+        self.user_id = user_id
+
+    @staticmethod
+    def get_session(chat_id, add_chat_ids, sessions_dict):
+        session = sessions_dict[chat_id] if chat_id not in add_chat_ids \
+            else sessions_dict[DB.get_main_chat_id_via_add(chat_id)]
+        return session

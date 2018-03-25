@@ -65,16 +65,3 @@ helptext = 'Коды сдавать в виде !код или ! код\n' \
            'и следующие команды:\n' \
            '/task, /sectors, /hints, /last_hint, /bonuses, /unclosed_bonuses, /messages\n' \
            'номер штурмового уровня вводится после команды, через пробел'
-
-html = '''
-        <!doctype html>
-        <html>
-          <head>
-            <link rel="shortcut icon" href="/favicon.ico">
-            <title>Hello world!</title>
-          </head>
-          <body>
-            <p>Hello world!</p>
-          </body>
-        </html>
-        '''

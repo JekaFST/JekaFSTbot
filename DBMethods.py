@@ -12,9 +12,13 @@ class DB(object):
     def get_tags_list():
         sql = "SELECT DISTINCT * FROM TagsToCut"
         cur = db_conn.cursor()
-        cur.execute(sql)
-        rows = cur.fetchall()
-        return [row[0] for row in rows]
+        try:
+            cur.execute(sql)
+            rows = cur.fetchall()
+            return [row[0] for row in rows]
+        except psycopg2.DatabaseError as err:
+            print err
+            return 'error'
 
     @staticmethod
     def insert_tag_in_tags_list(tag_to_add):
@@ -69,7 +73,8 @@ class DB(object):
 
     @staticmethod
     def delete_add_chat_id(main_chat_id, add_chat_id):
-        sql = "DELETE FROM AllowedChats WHERE ChatId = %s AND AddChatId = %s" % (str(main_chat_id), str(add_chat_id))
+        sql = "DELETE FROM AllowedChats WHERE AddChatId = %s" % str(add_chat_id) if not main_chat_id \
+            else "DELETE FROM AllowedChats WHERE ChatId = %s AND AddChatId = %s" % (str(main_chat_id), str(add_chat_id))
         cur = db_conn.cursor()
         cur.execute(sql)
         db_conn.commit()
@@ -80,4 +85,4 @@ class DB(object):
         cur = db_conn.cursor()
         cur.execute(sql)
         rows = cur.fetchall()
-        return rows[0][0]
+        return rows[0][0] if rows else None
