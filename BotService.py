@@ -22,7 +22,6 @@ def run_app(bot, main_vars):
         else:
             flask.abort(403)
 
-    # refactored
     @bot.message_handler(commands=['ask_for_permission'])
     def ask_for_permission(message):
         main_chat_ids, _ = DB.get_allowed_chat_ids()
@@ -34,7 +33,6 @@ def run_app(bot, main_vars):
                 str(message.chat.id))
         bot.send_message(45839899, text, parse_mode='HTML')
 
-    # refactored
     @bot.message_handler(commands=['join'])
     def join_session(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -44,7 +42,6 @@ def run_app(bot, main_vars):
             join_task = Task(message.chat.id, 'join', message_id=message.message_id, user_id=message.from_user.id)
             main_vars.task_queue.append(join_task)
 
-    # refactored
     @bot.message_handler(commands=['reset_join'])
     def reset_join(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -54,7 +51,6 @@ def run_app(bot, main_vars):
             reset_join_task = Task(message.chat.id, 'reset_join', message_id=message.message_id, user_id=message.from_user.id)
             main_vars.task_queue.append(reset_join_task)
 
-    # refactored
     @bot.message_handler(commands=['add'])
     def add_chat_to_allowed(message):
         if message.chat.id != 45839899:
@@ -69,7 +65,6 @@ def run_app(bot, main_vars):
             bot.send_message(chat_id, 'Этот чат не добавлен в список разрешенных для работы с ботом'
                                       '\r\nДля повторного запроса введите /ask_for_permission')
 
-    # refactored
     @bot.message_handler(commands=['start'])
     def start(message):
         allowed, _, _ = Validations.check_permission(message.chat.id, bot)
@@ -77,14 +72,12 @@ def run_app(bot, main_vars):
             start_task = Task(message.chat.id, 'start', sessions_dict=main_vars.sessions_dict)
             main_vars.task_queue.append(start_task)
 
-    # refactored
     @bot.message_handler(commands=['help'])
     def help(message):
         allowed, _, _ = Validations.check_permission(message.chat.id, bot)
         if allowed:
             bot.send_message(message.chat.id, helptext)
 
-    # refactored
     @bot.message_handler(commands=['start_session'])
     def start_session(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -93,7 +86,6 @@ def run_app(bot, main_vars):
             start_session_task = Task(message.chat.id, 'start_session', session=session)
             main_vars.task_queue.append(start_session_task)
 
-    # refactored
     @bot.message_handler(commands=['stop_session'])
     def stop_session(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -105,7 +97,6 @@ def run_app(bot, main_vars):
                                      add_chat_ids_per_session=DB.get_add_chat_ids_for_main(message.chat.id))
             main_vars.task_queue.append(stop_session_task)
 
-    # refactored
     @bot.message_handler(commands=['config'])
     def config(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -116,7 +107,6 @@ def run_app(bot, main_vars):
             config_task = Task(message.chat.id, 'config', session=session)
             main_vars.task_queue.append(config_task)
 
-    # refactored
     @bot.message_handler(commands=['login'])
     def save_login(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -128,7 +118,6 @@ def run_app(bot, main_vars):
             set_login_task = Task(message.chat.id, 'login', session=session, new_login=new_login)
             main_vars.task_queue.append(set_login_task)
 
-    # refactored
     @bot.message_handler(commands=['password'])
     def save_password(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -140,7 +129,6 @@ def run_app(bot, main_vars):
             set_password_task = Task(message.chat.id, 'password', session=session, new_password=new_password)
             main_vars.task_queue.append(set_password_task)
 
-    # refactored
     @bot.message_handler(commands=['domain'])
     def save_en_domain(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -152,7 +140,6 @@ def run_app(bot, main_vars):
             set_domain_task = Task(message.chat.id, 'domain', session=session, new_domain=new_domain)
             main_vars.task_queue.append(set_domain_task)
 
-    # refactored
     @bot.message_handler(commands=['gameid'])
     def save_game_id(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -164,7 +151,6 @@ def run_app(bot, main_vars):
             set_game_id_task = Task(message.chat.id, 'game_id', session=session, new_game_id=new_game_id)
             main_vars.task_queue.append(set_game_id_task)
 
-    # refactored
     @bot.message_handler(commands=['login_to_en'])
     def login_to_en(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -175,7 +161,6 @@ def run_app(bot, main_vars):
             login_to_en_task = Task(message.chat.id, 'login_to_en', session=session)
             main_vars.task_queue.append(login_to_en_task)
 
-    # refactored
     @bot.message_handler(commands=['task'])
     def send_task(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -187,7 +172,6 @@ def run_app(bot, main_vars):
             send_task_task = Task(message.chat.id, 'send_task', session=session, storm_level_number=storm_level)
             main_vars.task_queue.append(send_task_task)
 
-    # refactored
     @bot.message_handler(commands=['task_images'])
     def send_task_images(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -198,7 +182,6 @@ def run_app(bot, main_vars):
             send_task_images_task = Task(message.chat.id, 'task_images', session=session)
             main_vars.task_queue.append(send_task_images_task)
 
-    # refactored
     @bot.message_handler(commands=['sectors'])
     def send_all_sectors(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -210,7 +193,6 @@ def run_app(bot, main_vars):
             send_all_sectors_task = Task(message.chat.id, 'send_sectors', session=session, storm_level_number=storm_level)
             main_vars.task_queue.append(send_all_sectors_task)
 
-    # refactored
     @bot.message_handler(commands=['hints'])
     def send_all_helps(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -222,7 +204,6 @@ def run_app(bot, main_vars):
             send_all_helps_task = Task(message.chat.id, 'send_helps', session=session, storm_level_number=storm_level)
             main_vars.task_queue.append(send_all_helps_task)
 
-    # refactored
     @bot.message_handler(commands=['last_hint'])
     def send_last_help(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -234,7 +215,6 @@ def run_app(bot, main_vars):
             send_last_help_task = Task(message.chat.id, 'send_last_help', session=session, storm_level_number=storm_level)
             main_vars.task_queue.append(send_last_help_task)
 
-    # refactored
     @bot.message_handler(commands=['bonuses'])
     def send_all_bonuses(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -246,7 +226,6 @@ def run_app(bot, main_vars):
             send_all_bonuses_task = Task(message.chat.id, 'send_bonuses', session=session, storm_level_number=storm_level)
             main_vars.task_queue.append(send_all_bonuses_task)
 
-    # refactored
     @bot.message_handler(commands=['unclosed_bonuses'])
     def send_unclosed_bonuses(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -258,7 +237,6 @@ def run_app(bot, main_vars):
             send_unclosed_bonuses_task = Task(message.chat.id, 'unclosed_bonuses', session=session, storm_level_number=storm_level)
             main_vars.task_queue.append(send_unclosed_bonuses_task)
 
-    # refactored
     @bot.message_handler(commands=['messages'])
     def send_auth_messages(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -270,7 +248,6 @@ def run_app(bot, main_vars):
             send_auth_messages_task = Task(message.chat.id, 'send_messages', session=session, storm_level_number=storm_level)
             main_vars.task_queue.append(send_auth_messages_task)
 
-    # refactored
     @bot.message_handler(commands=['start_updater'])
     def start_updater(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -280,7 +257,6 @@ def run_app(bot, main_vars):
             start_updater_task = Task(message.chat.id, 'start_updater', main_vars=main_vars)
             main_vars.task_queue.append(start_updater_task)
 
-    # refactored
     @bot.message_handler(commands=['delay'])
     def set_updater_delay(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -292,7 +268,6 @@ def run_app(bot, main_vars):
             set_delay_task = Task(message.chat.id, 'delay', session=session, new_delay=new_delay)
             main_vars.task_queue.append(set_delay_task)
 
-    # refactored
     @bot.message_handler(commands=['stop_updater'])
     def stop_updater(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -303,7 +278,6 @@ def run_app(bot, main_vars):
             stop_updater_task = Task(message.chat.id, 'stop_updater', session=session)
             main_vars.task_queue.append(stop_updater_task)
 
-    # refactored
     @bot.message_handler(commands=['set_channel_name'])
     def set_channel_name(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -315,7 +289,6 @@ def run_app(bot, main_vars):
             set_channel_name_task = Task(message.chat.id, 'channel_name', session=session, new_channel_name=new_channel_name)
             main_vars.task_queue.append(set_channel_name_task)
 
-    # refactored
     @bot.message_handler(commands=['start_channel'])
     def start_channel(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -326,7 +299,6 @@ def run_app(bot, main_vars):
             start_channel_task = Task(message.chat.id, 'start_channel', session=session)
             main_vars.task_queue.append(start_channel_task)
 
-    # refactored
     @bot.message_handler(commands=['stop_channel'])
     def stop_channel(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -337,7 +309,6 @@ def run_app(bot, main_vars):
             stop_channel_task = Task(message.chat.id, 'stop_channel', session=session)
             main_vars.task_queue.append(stop_channel_task)
 
-    # refactored
     @bot.message_handler(commands=['codes_on'])
     def enable_codes(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -348,7 +319,6 @@ def run_app(bot, main_vars):
             enable_codes_task = Task(message.chat.id, 'codes_on', session=session)
             main_vars.task_queue.append(enable_codes_task)
 
-    # refactored
     @bot.message_handler(commands=['codes_off'])
     def disable_codes(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -359,7 +329,6 @@ def run_app(bot, main_vars):
             disable_codes_task = Task(message.chat.id, 'codes_off', session=session)
             main_vars.task_queue.append(disable_codes_task)
 
-    # refactored
     @bot.message_handler(commands=['add_tag'])
     def add_tag(message):
         if message.chat.id != 45839899:
@@ -372,7 +341,6 @@ def run_app(bot, main_vars):
         else:
             bot.send_message(message.chat.id, 'Тег не добавлен в обработчикб повторите попытку')
 
-    # refactored
     @bot.message_handler(commands=['send_ll'])
     def send_live_location(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -399,7 +367,6 @@ def run_app(bot, main_vars):
             stop_live_location_task = Task(message.chat.id, 'stop_live_location', session=session, point=point)
             main_vars.task_queue.append(stop_live_location_task)
 
-    # refactored
     @bot.message_handler(commands=['edit_ll'])
     def edit_live_location(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -415,7 +382,6 @@ def run_app(bot, main_vars):
             edit_live_location_task = Task(message.chat.id, 'edit_live_location', session=session, point=point, coords=coords)
             main_vars.task_queue.append(edit_live_location_task)
 
-    # refactored
     @bot.message_handler(commands=['add_points_ll'])
     def add_points_live_location(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -437,7 +403,6 @@ def run_app(bot, main_vars):
             add_points_ll_task = Task(message.chat.id, 'add_points_ll', session=session, points_dict=points_dict, duration=duration)
             main_vars.task_queue.append(add_points_ll_task)
 
-    # refactored
     @bot.message_handler(regexp='!\s*(.+)')
     def main_code_processor(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)

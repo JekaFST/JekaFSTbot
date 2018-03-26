@@ -16,228 +16,234 @@ from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_co
     send_live_locations_to_chat
 
 
-def start(chat_id, bot, sessions_dict, **kwargs):
-    config = DB.get_config_by_chat_id(chat_id)
-    if chat_id not in sessions_dict.keys() and not config:
-        sessions_dict[chat_id] = BotSession()
-        bot.send_message(chat_id, '<b>Сессия создана</b>\n'
-                                  'Чтобы начать использовать бота, необходимо задать конфигурацию игры:\n'
-                                  '- ввести домен игры (/domain http://demo.en.cx)\n'
-                                  '- ввести game id игры (/gameid 26991)\n'
-                                  '- ввести логин игрока (/login abc)\n'
-                                  '- ввести пароль игрока (/password abc)\n'
-                                  '- залогиниться в движок (/login_to_en)\n'
-                                  'и активировать сессию (/start_session)\n'
-                                  'Краткое описание доступно по команде /help', disable_web_page_preview=True, parse_mode='HTML')
-    elif chat_id not in sessions_dict.keys() and config:
-        sessions_dict[chat_id] = BotSession()
-        sessions_dict[chat_id].config['Login'] = config['login']
-        sessions_dict[chat_id].config['Password'] = config['password']
-        sessions_dict[chat_id].config['en_domain'] = config['endomain']
-        sessions_dict[chat_id].channel_name = config['channelname']
-        bot.send_message(chat_id, '<b>Сессия создана</b>\n'
-                                  'Для данного чата найдена конфигурация по умолчанию. Проверить: /config\n'
-                                  'Чтобы начать использовать бота, необходимо:\n'
-                                  '- ввести game id игры (/gameid 26991)\n'
-                                  '- залогиниться в движок (/login_to_en)\n'
-                                  'и активировать сессию (/start_session)\n'
-                                  '- сменить домен игры (/domain http://demo.en.cx)\n'
-                                  '- сменить логин игрока (/login abc)\n'
-                                  '- сменить пароль игрока (/password abc)\n'
-                                  'Краткое описание доступно по команде /help', disable_web_page_preview=True, parse_mode='HTML')
+def start(task, bot):
+    config = DB.get_config_by_chat_id(task.chat_id)
+    if task.chat_id not in task.sessions_dict.keys() and not config:
+        task.sessions_dict[task.chat_id] = BotSession()
+        bot.send_message(task.chat_id, '<b>Сессия создана</b>\n'
+                                       'Чтобы начать использовать бота, необходимо задать конфигурацию игры:\n'
+                                       '- ввести домен игры (/domain http://demo.en.cx)\n'
+                                       '- ввести game id игры (/gameid 26991)\n'
+                                       '- ввести логин игрока (/login abc)\n'
+                                       '- ввести пароль игрока (/password abc)\n'
+                                       '- залогиниться в движок (/login_to_en)\n'
+                                       'и активировать сессию (/start_session)\n'
+                                       'Краткое описание доступно по команде /help',
+                         disable_web_page_preview=True, parse_mode='HTML')
+    elif task.chat_id not in task.sessions_dict.keys() and config:
+        task.sessions_dict[task.chat_id] = BotSession()
+        task.sessions_dict[task.chat_id].config['Login'] = config['login']
+        task.sessions_dict[task.chat_id].config['Password'] = config['password']
+        task.sessions_dict[task.chat_id].config['en_domain'] = config['endomain']
+        task.sessions_dict[task.chat_id].channel_name = config['channelname']
+        bot.send_message(task.chat_id, '<b>Сессия создана</b>\n'
+                                       'Для данного чата найдена конфигурация по умолчанию. Проверить: /config\n'
+                                       'Чтобы начать использовать бота, необходимо:\n'
+                                       '- ввести game id игры (/gameid 26991)\n'
+                                       '- залогиниться в движок (/login_to_en)\n'
+                                       'и активировать сессию (/start_session)\n'
+                                       '- сменить домен игры (/domain http://demo.en.cx)\n'
+                                       '- сменить логин игрока (/login abc)\n'
+                                       '- сменить пароль игрока (/password abc)\n'
+                                       'Краткое описание доступно по команде /help',
+                         disable_web_page_preview=True, parse_mode='HTML')
     else:
-        bot.send_message(chat_id, 'Для данного чата уже создана сессия\n'
-                                  'Введите /config для проверки ее состояния')
+        bot.send_message(task.chat_id, 'Для данного чата уже создана сессия\n'
+                                       'Введите /config для проверки ее состояния')
 
 
-def stop_session(chat_id, bot, session, add_chat_ids_per_session, **kwargs):
-    session.stop_updater = True
-    session.put_updater_task = False
-    session.use_channel = False
-    session.active = False
-    bot.send_message(chat_id, 'Сессия остановлена')
-    for add_chat_id in add_chat_ids_per_session:
+def stop_session(task, bot):
+    task.session.stop_updater = True
+    task.session.put_updater_task = False
+    task.session.use_channel = False
+    task.session.active = False
+    bot.send_message(task.chat_id, 'Сессия остановлена')
+    for add_chat_id in task.add_chat_ids_per_session:
         DB.delete_add_chat_id(add_chat_id)
 
 
-def config(chat_id, bot, session, **kwargs):
-    session_condition = 'Сессия активна' if session.active else 'Сессия не активна'
-    channel_condition = '\r\nИмя канала задано' if session.channel_name else '\r\nИмя канала не задано'
-    reply = session_condition + '\r\nДомен: ' + session.config['en_domain'] + '\r\nID игры: ' + session.config['game_id'] + \
-            '\r\nЛогин: ' + session.config['Login'] + channel_condition + '\r\nИнтервал слежения: ' + str(session.delay)
-    bot.send_message(chat_id, reply, disable_web_page_preview=True)
+def config(task, bot):
+    session_condition = 'Сессия активна' if task.session.active else 'Сессия не активна'
+    channel_condition = '\r\nИмя канала задано' if task.session.channel_name else '\r\nИмя канала не задано'
+    reply = session_condition + '\r\nДомен: ' + task.session.config['en_domain'] + '\r\nID игры: ' + task.session.config['game_id'] + \
+            '\r\nЛогин: ' + task.session.config['Login'] + channel_condition + '\r\nИнтервал слежения: ' + str(task.session.delay)
+    bot.send_message(task.chat_id, reply, disable_web_page_preview=True)
 
 
-def set_login(chat_id, bot, session, new_login, **kwargs):
-    if not session.active:
-        session.config['Login'] = new_login
-        reply = 'Логин успешно задан' if session.config['Login'] == new_login else 'Логин не задан, повторите'
-        bot.send_message(chat_id, reply)
+def set_login(task, bot):
+    if not task.session.active:
+        task.session.config['Login'] = task.new_login
+        reply = 'Логин успешно задан' if task.session.config['Login'] == task.new_login else 'Логин не задан, повторите'
+        bot.send_message(task.chat_id, reply)
     else:
-        bot.send_message(chat_id, 'Нельзя менять логин при активной сессии')
+        bot.send_message(task.chat_id, 'Нельзя менять логин при активной сессии')
 
 
-def set_password(chat_id, bot, session, new_password, **kwargs):
-    if not session.active:
-        session.config['Password'] = new_password
-        reply = 'Пароль успешно задан' if session.config['Password'] == new_password else 'Пароль не задана, повторите'
-        bot.send_message(chat_id, reply)
+def set_password(task, bot):
+    if not task.session.active:
+        task.session.config['Password'] = task.new_password
+        reply = 'Пароль успешно задан' if task.session.config['Password'] == task.new_password else 'Пароль не задана, повторите'
+        bot.send_message(task.chat_id, reply)
     else:
-        bot.send_message(chat_id, 'Нельзя менять пароль при активной сессии')
+        bot.send_message(task.chat_id, 'Нельзя менять пароль при активной сессии')
 
 
-def set_domain(chat_id, bot, session, new_domain, **kwargs):
-    if not session.active:
-        if 'http://' not in new_domain:
-            new_domain = 'http://' + new_domain
-        session.config['en_domain'] = new_domain
-        reply = 'Домен успешно задан' if session.config['en_domain'] == new_domain \
+def set_domain(task, bot):
+    if not task.session.active:
+        if 'http://' not in task.new_domain:
+            new_domain = 'http://' + task.new_domain
+            task.session.config['en_domain'] = new_domain
+        reply = 'Домен успешно задан' if task.session.config['en_domain'] == new_domain \
             else 'Домен не задан, повторите (/domain http://demo.en.cx)'
-        bot.send_message(chat_id, reply)
+        bot.send_message(task.chat_id, reply)
     else:
-        bot.send_message(chat_id, 'Нельзя менять домен при активной сессии')
+        bot.send_message(task.chat_id, 'Нельзя менять домен при активной сессии')
 
 
-def set_game_id(chat_id, bot, session, new_game_id, **kwargs):
-    if not session.active:
-        session.config['game_id'] = new_game_id
-        reply = 'Игра успешно задана' if session.config['game_id'] == new_game_id \
+def set_game_id(task, bot):
+    if not task.session.active:
+        task.session.config['game_id'] = task.new_game_id
+        reply = 'Игра успешно задана' if task.session.config['game_id'] == task.new_game_id \
             else 'Игра не задана, повторите (/gameid 26991)'
-        drop_session_vars(session)
-        bot.send_message(chat_id, reply)
+        drop_session_vars(task.session)
+        bot.send_message(task.chat_id, reply)
     else:
-        bot.send_message(chat_id, 'Нельзя менять игру при активной сессии')
+        bot.send_message(task.chat_id, 'Нельзя менять игру при активной сессии')
 
 
-def login(chat_id, bot, session, **kwargs):
-    if session.config['en_domain'] and session.config['game_id'] and session.config['Login'] and session.config['Password']:
-        session.urls = compile_urls(session.config)
-        login_to_en(session, bot, chat_id)
+def login(task, bot):
+    if task.session.config['en_domain'] and task.session.config['game_id'] and task.session.config['Login'] \
+            and task.session.config['Password']:
+        task.session.urls = compile_urls(task.session.config)
+        login_to_en(task.session, bot, task.chat_id)
     else:
-        bot.send_message(chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
+        bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
 
 
-def start_session(chat_id, bot, session, **kwargs):
-    if not session.active:
-        if session.config['cookie'] and session.config['game_id'] and session.config['Login'] and session.config['Password']:
-            launch_session(session, bot, chat_id)
+def start_session(task, bot):
+    if not task.session.active:
+        if task.session.config['cookie'] and task.session.config['game_id'] and task.session.config['Login'] \
+                and task.session.config['Password']:
+            launch_session(task.session, bot, task.chat_id)
         else:
-            bot.send_message(chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
+            bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана или бот не залогинен. '
+                                           'Проверьте домен, id игры, логин и пароль.\n'
+                                           'Чтобы залогиниться введите /login_to_en')
     else:
-        bot.send_message(chat_id, 'Сессия уже активирована. Если у вас проблемы со слежением - попробуйте '
-                                  '/stop_updater, затем /start_updater')
+        bot.send_message(task.chat_id, 'Сессия уже активирована. Если у вас проблемы со слежением - попробуйте '
+                                       '/stop_updater, затем /start_updater')
 
 
-def send_task(chat_id, bot, session, storm_level_number, **kwargs):
-    if not session.active:
-        bot.send_message(chat_id, 'Нельзя запросить задание при неактивной сессии')
+def send_task(task, bot):
+    if not task.session.active:
+        bot.send_message(task.chat_id, 'Нельзя запросить задание при неактивной сессии')
         return
-    if not session.storm_game:
-        send_task_to_chat(bot, chat_id, session)
+    if not task.session.storm_game:
+        send_task_to_chat(bot, task.chat_id, task.session)
     else:
-        if not storm_level_number:
-            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/task номер уровня</b>', parse_mode='HTML')
+        if not task.storm_level_number:
+            bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/task номер уровня</b>', parse_mode='HTML')
             return
-        send_task_to_chat_storm(bot, chat_id, session, storm_level_number)
+        send_task_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
 
 
-def send_task_images(chat_id, bot, session, **kwargs):
-    if session.active:
-        send_task_images_to_chat(bot, chat_id, session)
+def send_task_images(task, bot):
+    if task.session.active:
+        send_task_images_to_chat(bot, task.chat_id, task.session)
     else:
-        bot.send_message(chat_id, 'Нельзя запросить задание при неактивной сессии')
+        bot.send_message(task.chat_id, 'Нельзя запросить задание при неактивной сессии')
 
 
-def send_all_sectors(chat_id, bot, session, storm_level_number, **kwargs):
-    if not session.active:
-        bot.send_message(chat_id, 'Нельзя запросить сектора при неактивной сессии')
+def send_all_sectors(task, bot):
+    if not task.session.active:
+        bot.send_message(task.chat_id, 'Нельзя запросить сектора при неактивной сессии')
         return
-    if not session.storm_game:
-        send_all_sectors_to_chat(bot, chat_id, session)
+    if not task.session.storm_game:
+        send_all_sectors_to_chat(bot, task.chat_id, task.session)
     else:
-        if not storm_level_number:
-            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/sectors номер уровня</b>', parse_mode='HTML')
+        if not task.storm_level_number:
+            bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/sectors номер уровня</b>', parse_mode='HTML')
             return
-        send_all_sectors_to_chat_storm(bot, chat_id, session, storm_level_number)
+        send_all_sectors_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
 
 
-def send_all_helps(chat_id, bot, session, storm_level_number, **kwargs):
-    if not session.active:
-        bot.send_message(chat_id, 'Нельзя запросить подсказки при неактивной сессии')
+def send_all_helps(task, bot):
+    if not task.session.active:
+        bot.send_message(task.chat_id, 'Нельзя запросить подсказки при неактивной сессии')
         return
-    if not session.storm_game:
-        send_all_helps_to_chat(bot, chat_id, session)
+    if not task.session.storm_game:
+        send_all_helps_to_chat(bot, task.chat_id, task.session)
     else:
-        if not storm_level_number:
-            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/helps номер уровня</b>', parse_mode='HTML')
+        if not task.storm_level_number:
+            bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/helps номер уровня</b>', parse_mode='HTML')
             return
-        send_all_helps_to_chat_storm(bot, chat_id, session, storm_level_number)
+        send_all_helps_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
 
 
-def send_last_help(chat_id, bot, session, storm_level_number, **kwargs):
-    if not session.active:
-        bot.send_message(chat_id, 'Нельзя запросить подсказку при неактивной сессии')
+def send_last_help(task, bot):
+    if not task.session.active:
+        bot.send_message(task.chat_id, 'Нельзя запросить подсказку при неактивной сессии')
         return
-    if not session.storm_game:
-            send_last_help_to_chat(bot, chat_id, session)
+    if not task.session.storm_game:
+            send_last_help_to_chat(bot, task.chat_id, task.session)
     else:
-        if not storm_level_number:
-            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/last_help номер уровня</b>', parse_mode='HTML')
+        if not task.storm_level_number:
+            bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/last_help номер уровня</b>', parse_mode='HTML')
             return
-        send_last_help_to_chat_storm(bot, chat_id, session, storm_level_number)
+        send_last_help_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
 
 
-def send_all_bonuses(chat_id, bot, session, storm_level_number, **kwargs):
-    if not session.active:
-        bot.send_message(chat_id, 'Нельзя запросить бонусы при неактивной сессии')
+def send_all_bonuses(task, bot):
+    if not task.session.active:
+        bot.send_message(task.chat_id, 'Нельзя запросить бонусы при неактивной сессии')
         return
-    if not session.storm_game:
-        send_all_bonuses_to_chat(bot, chat_id, session)
+    if not task.session.storm_game:
+        send_all_bonuses_to_chat(bot, task.chat_id, task.session)
     else:
-        if not storm_level_number:
-            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/bonuses номер уровня</b>', parse_mode='HTML')
+        if not task.storm_level_number:
+            bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/bonuses номер уровня</b>', parse_mode='HTML')
             return
-        send_all_bonuses_to_chat_storm(bot, chat_id, session, storm_level_number)
+        send_all_bonuses_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
 
 
-def send_unclosed_bonuses(chat_id, bot, session, storm_level_number, **kwargs):
-    if not session.active:
-        bot.send_message(chat_id, 'Нельзя запросить не закрытые бонусы при неактивной сессии')
+def send_unclosed_bonuses(task, bot):
+    if not task.session.active:
+        bot.send_message(task.chat_id, 'Нельзя запросить не закрытые бонусы при неактивной сессии')
         return
-    if not session.storm_game:
-        send_unclosed_bonuses_to_chat(bot, chat_id, session)
+    if not task.session.storm_game:
+        send_unclosed_bonuses_to_chat(bot, task.chat_id, task.session)
     else:
-        if not storm_level_number:
-            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/unclosed_bonuses номер уровня</b>', parse_mode='HTML')
+        if not task.storm_level_number:
+            bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/unclosed_bonuses номер уровня</b>', parse_mode='HTML')
             return
-        send_unclosed_bonuses_to_chat_storm(bot, chat_id, session, storm_level_number)
+        send_unclosed_bonuses_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
 
 
-def send_auth_messages(chat_id, bot, session, storm_level_number, **kwargs):
-    if not session.active:
-        bot.send_message(chat_id, 'Нельзя запросить сообщения от авторов при неактивной сессии')
+def send_auth_messages(task, bot):
+    if not task.session.active:
+        bot.send_message(task.chat_id, 'Нельзя запросить сообщения от авторов при неактивной сессии')
         return
-    if not session.storm_game:
-        send_auth_messages_to_chat(bot, chat_id, session)
+    if not task.session.storm_game:
+        send_auth_messages_to_chat(bot, task.chat_id, task.session)
     else:
-        if not storm_level_number:
-            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/messages номер уровня</b>', parse_mode='HTML')
+        if not task.storm_level_number:
+            bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/messages номер уровня</b>', parse_mode='HTML')
             return
-        send_auth_messages_to_chat_storm(bot, chat_id, session, storm_level_number)
+        send_auth_messages_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
 
 
-def start_updater(chat_id, bot, main_vars, **kwargs):
-    session = main_vars.sessions_dict[chat_id]
-    if session.active and chat_id not in main_vars.updater_schedulers_dict.keys():
+def start_updater(task, bot):
+    session = task.main_vars.sessions_dict[task.chat_id]
+    if session.active and task.chat_id not in task.main_vars.updater_schedulers_dict.keys():
         session.stop_updater = False
         session.put_updater_task = True
-        bot.send_message(chat_id, 'Слежение запущено')
-        name = 'updater_%s' % chat_id
-        main_vars.updater_schedulers_dict[chat_id] = threading.Thread(name=name, target=updater_scheduler,
-                                                                      args=(chat_id, bot, main_vars))
-        main_vars.updater_schedulers_dict[chat_id].start()
+        bot.send_message(task.chat_id, 'Слежение запущено')
+        name = 'updater_%s' % task.chat_id
+        task.main_vars.updater_schedulers_dict[task.chat_id] = threading.Thread(name=name, target=updater_scheduler,
+                                                                                args=(task.chat_id, bot, task.main_vars))
+        task.main_vars.updater_schedulers_dict[task.chat_id].start()
     else:
-        bot.send_message(chat_id, 'Нельзя запустить слежение повторно или при неактивной сессии')
+        bot.send_message(task.chat_id, 'Нельзя запустить слежение повторно или при неактивной сессии')
 
 
 def updater_scheduler(chat_id, bot, main_vars):
@@ -255,165 +261,167 @@ def updater_scheduler(chat_id, bot, main_vars):
         return
 
 
-def set_updater_delay(chat_id, bot, session, new_delay, **kwargs):
-    session.delay = new_delay
-    reply = 'Задержка успешно выставлена' if session.delay == new_delay else 'Задержка не обновлена, повторите'
-    bot.send_message(chat_id, reply)
+def set_updater_delay(task, bot):
+    task.session.delay = task.new_delay
+    reply = 'Задержка успешно выставлена' if task.session.delay == task.new_delay else 'Задержка не обновлена, повторите'
+    bot.send_message(task.chat_id, reply)
 
 
-def stop_updater(session, **kwargs):
-    if session.active:
-        session.stop_updater = True
-        session.put_updater_task = False
+def stop_updater(task, bot):
+    if task.session.active:
+        task.session.stop_updater = True
+        task.session.put_updater_task = False
 
 
-def set_channel_name(chat_id, bot, session, new_channel_name, **kwargs):
-    if "@" not in new_channel_name:
-        new_channel_name = "@" + new_channel_name
-    session.channel_name = new_channel_name
-    reply = 'Канал успешно задан' if session.channel_name == new_channel_name else 'Канал не задан, повторите'
-    bot.send_message(chat_id, reply)
+def set_channel_name(task, bot):
+    if "@" not in task.new_channel_name:
+        new_channel_name = "@" + task.new_channel_name
+    task.session.channel_name = new_channel_name
+    reply = 'Канал успешно задан' if task.session.channel_name == new_channel_name else 'Канал не задан, повторите'
+    bot.send_message(task.chat_id, reply)
 
 
-def start_channel(chat_id, bot, session, **kwargs):
-    session.use_channel = True
-    bot.send_message(chat_id, 'Постинг в канал разрешен')
+def start_channel(task, bot):
+    task.session.use_channel = True
+    bot.send_message(task.chat_id, 'Постинг в канал разрешен')
 
 
-def stop_channel(chat_id, bot, session, **kwargs):
-    session.use_channel = False
-    bot.send_message(chat_id, 'Постинг в канал запрещен')
+def stop_channel(task, bot):
+    task.session.use_channel = False
+    bot.send_message(task.chat_id, 'Постинг в канал запрещен')
 
 
-def send_code_main(chat_id, bot, session, message_id, code, **kwargs):
-    if not session.active:
-        bot.send_message(chat_id, 'Нельзя сдавать коды при неактивной сессии')
+def send_code_main(task, bot):
+    if not task.session.active:
+        bot.send_message(task.chat_id, 'Нельзя сдавать коды при неактивной сессии')
         return
-    if not session.send_codes:
-        bot.send_message(chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
+    if not task.session.send_codes:
+        bot.send_message(task.chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
         return
-    if not session.storm_game:
-        send_code_to_level(code, bot, chat_id, message_id, session)
+    if not task.session.storm_game:
+        send_code_to_level(task.code, bot, task.chat_id, task.message_id, task.session)
     else:
         try:
-            level_number = re.findall(r'([\d]+)\s*!', code)[0]
-            code = re.findall(r'!\s*(.+)', code)[0]
+            level_number = re.findall(r'([\d]+)\s*!', task.code)[0]
+            code = re.findall(r'!\s*(.+)', task.code)[0]
         except Exception:
-            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>!номер уровня!код</b>',
-                             reply_to_message_id=message_id, parse_mode='HTML')
+            bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>!номер уровня!код</b>',
+                             reply_to_message_id=task.message_id, parse_mode='HTML')
             return
-        send_code_to_storm_level(code, level_number, bot, chat_id, message_id, session)
+        send_code_to_storm_level(code, level_number, bot, task.chat_id, task.message_id, task.session)
 
 
-def send_code_bonus(chat_id, bot, session, message_id, code, **kwargs):
-    if not session.active:
-        bot.send_message(chat_id, 'Нельзя сдавать коды при неактивной сессии')
+def send_code_bonus(task, bot):
+    if not task.session.active:
+        bot.send_message(task.chat_id, 'Нельзя сдавать коды при неактивной сессии')
         return
-    if not session.send_codes:
-        bot.send_message(chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
+    if not task.session.send_codes:
+        bot.send_message(task.chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
         return
-    if not session.storm_game:
-        send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=True)
+    if not task.session.storm_game:
+        send_code_to_level(task.code, bot, task.chat_id, task.message_id, task.session, bonus_only=True)
     else:
         try:
-            level_number = re.findall(r'([\d]+)\s*\?', code)[0]
-            code = re.findall(r'\?\s*(.+)', code)[0]
+            level_number = re.findall(r'([\d]+)\s*\?', task.code)[0]
+            code = re.findall(r'\?\s*(.+)', task.code)[0]
         except Exception:
-            bot.send_message(chat_id, '\xE2\x9D\x97 Укажите уровень: <b>?номер уровня?код</b>',
-                             reply_to_message_id=message_id, parse_mode='HTML')
+            bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>?номер уровня?код</b>',
+                             reply_to_message_id=task.message_id, parse_mode='HTML')
             return
-        send_code_to_storm_level(code, level_number, bot, chat_id, message_id, session, bonus_only=True)
+        send_code_to_storm_level(code, level_number, bot, task.chat_id, task.message_id, task.session, bonus_only=True)
 
 
-def send_coords(chat_id, bot, coords, **kwargs):
-    for coord in coords:
+def send_coords(task, bot):
+    for coord in task.coords:
         latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
         longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-        bot.send_venue(chat_id, latitude, longitude, coord, '')
+        bot.send_venue(task.chat_id, latitude, longitude, coord, '')
 
 
-def join(bot, message_id, add_chat_id, **kwargs):
-    DB.insert_add_chat_id(kwargs['chat_id'], add_chat_id)
-    bot.send_message(kwargs['chat_id'], 'Теперь вы можете работать с ботом через личный чат', reply_to_message_id=message_id)
+def join(task, bot):
+    DB.insert_add_chat_id(task.chat_id, task.add_chat_id)
+    bot.send_message(task.chat_id, 'Теперь вы можете работать с ботом через личный чат',
+                     reply_to_message_id=task.message_id)
 
 
-def reset_join(chat_id, bot, message_id, add_chat_id, **kwargs):
+def reset_join(task, bot):
     # main_chat_id = DB.get_main_chat_id_via_add(add_chat_id)
-    DB.delete_add_chat_id(add_chat_id)
-    bot.send_message(chat_id, 'Взаимодействие с ботом через личный чат сброшено', reply_to_message_id=message_id)
+    DB.delete_add_chat_id(task.add_chat_id)
+    bot.send_message(task.chat_id, 'Взаимодействие с ботом через личный чат сброшено',
+                     reply_to_message_id=task.message_id)
 
 
-def enable_codes(chat_id, bot, session, **kwargs):
-    session.send_codes = True
-    bot.send_message(chat_id, 'Сдача кодов включена')
+def enable_codes(task, bot):
+    task.session.send_codes = True
+    bot.send_message(task.chat_id, 'Сдача кодов включена')
 
 
-def disable_codes(chat_id, bot, session, **kwargs):
-    session.send_codes = False
-    bot.send_message(chat_id, 'Сдача кодов выключена')
+def disable_codes(task, bot):
+    task.session.send_codes = False
+    bot.send_message(task.chat_id, 'Сдача кодов выключена')
 
 
-def send_live_locations(chat_id, bot, session, coords, duration, **kwargs):
-    if not session.active:
-        bot.send_message(chat_id, 'Нельзя отправлять live location при неактивной сессии')
+def send_live_locations(task, bot):
+    if not task.session.active:
+        bot.send_message(task.chat_id, 'Нельзя отправлять live location при неактивной сессии')
         return
-    if not session.locations and not coords:
-        bot.send_message(chat_id, 'Нет координат для отправки')
+    if not task.session.locations and not task.coords:
+        bot.send_message(task.chat_id, 'Нет координат для отправки')
         return
-    if coords and 0 in session.live_location_message_ids.keys():
-        bot.send_message(chat_id, 'Live_location основного бота уже отправлена')
+    if task.coords and 0 in task.session.live_location_message_ids.keys():
+        bot.send_message(task.chat_id, 'Live_location основного бота уже отправлена')
         return
-    if coords:
-        send_live_locations_to_chat(bot, chat_id, session, coords=coords, duration=duration)
+    if task.coords:
+        send_live_locations_to_chat(bot, task.chat_id, task.session, coords=task.coords, duration=task.duration)
         return
-    if session.live_location_message_ids:
-        bot.send_message(chat_id, 'Live_location уровня уже отправлена(-ы)')
+    if task.session.live_location_message_ids:
+        bot.send_message(task.chat_id, 'Live_location уровня уже отправлена(-ы)')
         return
-    send_live_locations_to_chat(bot, chat_id, session)
+    send_live_locations_to_chat(bot, task.chat_id, task.session)
 
 
-def stop_live_locations(chat_id, bot, session, point, **kwargs):
-    if not session.active:
-        bot.send_message(chat_id, 'Нельзя остановить live location при неактивной сессии')
+def stop_live_locations(task, bot):
+    if not task.session.active:
+        bot.send_message(task.chat_id, 'Нельзя остановить live location при неактивной сессии')
         return
-    if not session.live_location_message_ids:
-        bot.send_message(chat_id, 'Live location не отправлена')
+    if not task.session.live_location_message_ids:
+        bot.send_message(task.chat_id, 'Live location не отправлена')
         return
-    close_live_locations(chat_id, bot, session, point=point)
+    close_live_locations(task.chat_id, bot, task.session, point=task.point)
 
 
-def edit_live_locations(chat_id, bot, session, point, coords, **kwargs):
-    if not session.active:
-        bot.send_message(chat_id, 'Нельзя редактировать live location при неактивной сессии')
+def edit_live_locations(task, bot):
+    if not task.session.active:
+        bot.send_message(task.chat_id, 'Нельзя редактировать live location при неактивной сессии')
         return
-    if not session.live_location_message_ids:
-        bot.send_message(chat_id, 'Live location не отправлена')
+    if not task.session.live_location_message_ids:
+        bot.send_message(task.chat_id, 'Live location не отправлена')
         return
-    if not point:
-        if 0 in session.live_location_message_ids.keys():
-            for coord in coords:
+    if not task.point:
+        if 0 in task.session.live_location_message_ids.keys():
+            for coord in task.coords:
                 latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
                 longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-                bot.edit_message_live_location(latitude, longitude, chat_id, session.live_location_message_ids[0])
+                bot.edit_message_live_location(latitude, longitude, task.chat_id, task.session.live_location_message_ids[0])
         else:
-            bot.send_message(chat_id, 'Live location основного бота не отправлена. Чтобы изменить координаты точки, '
+            bot.send_message(task.chat_id, 'Live location основного бота не отправлена. Чтобы изменить координаты точки, '
                                       'надо указать ее номер перед координатами '
                                       '(/edit_ll-пробел-номер-пробел-новые координаты)')
     else:
-        if point in session.live_location_message_ids.keys():
-            for coord in coords:
+        if task.point in task.session.live_location_message_ids.keys():
+            for coord in task.coords:
                 latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
                 longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-                telebot.TeleBot(DB.get_location_bot_token_by_number(point)).edit_message_live_location(
-                    latitude, longitude, chat_id, session.live_location_message_ids[point])
+                telebot.TeleBot(DB.get_location_bot_token_by_number(task.point)).edit_message_live_location(
+                    latitude, longitude, task.chat_id, task.session.live_location_message_ids[task.point])
         else:
-            bot.send_message(chat_id, 'Проверьте номер точки - соответствующая live location не найдена)')
+            bot.send_message(task.chat_id, 'Проверьте номер точки - соответствующая live location не найдена)')
 
 
-def add_custom_live_locations(chat_id, bot, session, points_dict, duration, **kwargs):
-    if not session.active:
-        bot.send_message(chat_id, 'Нельзя отправлять live location при неактивной сессии')
+def add_custom_live_locations(task, bot):
+    if not task.session.active:
+        bot.send_message(task.chat_id, 'Нельзя отправлять live location при неактивной сессии')
         return
-    if session.live_location_message_ids:
-        close_live_locations(chat_id, bot, session)
-    send_live_locations_to_chat(bot, chat_id, session, custom_points=points_dict, duration=duration)
+    if task.session.live_location_message_ids:
+        close_live_locations(task.chat_id, bot, task.session)
+    send_live_locations_to_chat(bot, task.chat_id, task.session, custom_points=task.points_dict, duration=task.duration)

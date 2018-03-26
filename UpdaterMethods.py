@@ -5,16 +5,18 @@ from CommonMethods import send_help, send_time_to_help, send_task, time_converte
     send_bonus_award_answer, send_adm_message, close_live_locations
 
 
-def updater(chat_id, bot, session, updaters_dict, **kwargs):
-    if not session.storm_game:
-        name = 'upd_thread_%s' % chat_id
-        updaters_dict[chat_id] = threading.Thread(name=name, target=linear_updater, args=(chat_id, bot, session))
-        updaters_dict[chat_id].start()
+def updater(task, bot):
+    if not task.session.storm_game:
+        name = 'upd_thread_%s' % task.chat_id
+        task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=linear_updater,
+                                                            args=(task.chat_id, bot, task.session))
+        task.updaters_dict[task.chat_id].start()
         return
     else:
-        name = 'upd_thread_%s' % chat_id
-        updaters_dict[chat_id] = threading.Thread(name=name, target=storm_updater, args=(chat_id, bot, session))
-        updaters_dict[chat_id].start()
+        name = 'upd_thread_%s' % task.chat_id
+        task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=storm_updater,
+                                                            args=(task.chat_id, bot, task.session))
+        task.updaters_dict[task.chat_id].start()
         return
 
 
