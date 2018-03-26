@@ -65,6 +65,13 @@ class DB(object):
         return [row[0] for row in main_rows] if main_rows else list(), [row[0] for row in add_rows] if add_rows else list()
 
     @staticmethod
+    def insert_main_chat_id(main_chat_id):
+        sql = "INSERT INTO AllowedChats (ChatId, AddChatId) VALUES (%s, %s)" % (str(main_chat_id), 'NULL')
+        cur = db_conn.cursor()
+        cur.execute(sql)
+        db_conn.commit()
+
+    @staticmethod
     def insert_add_chat_id(main_chat_id, add_chat_id):
         sql = "INSERT INTO AllowedChats (ChatId, AddChatId) VALUES (%s, %s)" % (str(main_chat_id), str(add_chat_id))
         cur = db_conn.cursor()
@@ -72,9 +79,8 @@ class DB(object):
         db_conn.commit()
 
     @staticmethod
-    def delete_add_chat_id(main_chat_id, add_chat_id):
-        sql = "DELETE FROM AllowedChats WHERE AddChatId = %s" % str(add_chat_id) if not main_chat_id \
-            else "DELETE FROM AllowedChats WHERE ChatId = %s AND AddChatId = %s" % (str(main_chat_id), str(add_chat_id))
+    def delete_add_chat_id(add_chat_id):
+        sql = "DELETE FROM AllowedChats WHERE AddChatId = %s" % str(add_chat_id)
         cur = db_conn.cursor()
         cur.execute(sql)
         db_conn.commit()
@@ -86,3 +92,11 @@ class DB(object):
         cur.execute(sql)
         rows = cur.fetchall()
         return rows[0][0] if rows else None
+
+    @staticmethod
+    def get_add_chat_ids_for_main(main_chat_id):
+        sql = "SELECT AddChatId FROM AllowedChats WHERE ChatId = %s AND AddChatId IS NOT NULL" % str(main_chat_id)
+        cur = db_conn.cursor()
+        cur.execute(sql)
+        rows = cur.fetchall()
+        return [row[0] for row in rows] if rows else list()

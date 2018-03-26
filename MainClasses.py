@@ -43,6 +43,14 @@ class Validations(object):
             return False
 
     @staticmethod
+    def check_from_main_chat(chat_id, bot, main_chat_ids, message_id):
+        if chat_id not in main_chat_ids:
+            bot.send_message(chat_id, 'Эта команда недоступна из личного чата', reply_to_message_id=message_id)
+            return False
+        else:
+            return True
+
+    @staticmethod
     def check_join_possible(chat_id, bot, user_id, message_id, add_chat_ids):
         if user_id == chat_id:
             bot.send_message(chat_id, 'Нельзя выполнить команду /join из личного чата. '
@@ -72,7 +80,7 @@ class Task(object):
     def __init__(self, chat_id, type, session=None, message_id=None, user_id=None, sessions_dict=None, main_vars=None,
                  updaters_dict=None, new_delay=None, new_login=None, new_password=None, new_domain=None, duration=None,
                  new_game_id=None, new_channel_name=None, code=None, coords=None, storm_level_number=None, point=None,
-                 points_dict=None):
+                 points_dict=None, add_chat_ids_per_session=None):
         self.chat_id = chat_id
         self.type = type
         self.session = session
@@ -93,6 +101,7 @@ class Task(object):
         self.duration = duration
         self.point = point
         self.points_dict = points_dict
+        self.add_chat_ids_per_session = add_chat_ids_per_session
 
     @staticmethod
     def get_session(chat_id, add_chat_ids, sessions_dict):

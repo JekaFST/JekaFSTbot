@@ -2,19 +2,19 @@ from MainMethods import *
 from UpdaterMethods import updater
 
 task_method_dict = {
-    'start': start,
-    'start_session': start_session,
-    'stop_session': stop_session, # needs refactoring in function (add_chat_ids)
-    'login_to_en': login,
+    'start': start,  # refactored
+    'start_session': start_session,  # refactored
+    'stop_session': stop_session,  # refactored
+    'login_to_en': login,  # refactored
     'start_updater': start_updater,
     'stop_updater': stop_updater,
     'updater': updater,
     'delay': set_updater_delay,
-    'login': set_login,
-    'password': set_password,
-    'domain': set_domain,
-    'game_id': set_game_id,
-    'config': config,
+    'login': set_login,  # refactored
+    'password': set_password,  # refactored
+    'domain': set_domain,  # refactored
+    'game_id': set_game_id,  # refactored
+    'config': config,  # refactored
     'channel_name': set_channel_name,
     'start_channel': start_channel,
     'stop_channel': stop_channel,
@@ -23,8 +23,8 @@ task_method_dict = {
     'send_code_main': send_code_main,
     'send_code_bonus': send_code_bonus,
     'send_coords': send_coords,
-    'send_task': send_task,
-    'task_images': send_task_images,
+    'send_task': send_task,  # refactored
+    'task_images': send_task_images,  # refactored
     'send_sectors': send_all_sectors,
     'send_helps': send_all_helps,
     'send_last_help': send_last_help,
@@ -50,7 +50,7 @@ class TaskMethodMap(object):
             'add_chat_id': task.user_id,
             'session': task.session,
             'sessions_dict': task.sessions_dict,
-            'add_chat_ids': task.add_chat_ids,
+            'add_chat_ids_per_session': task.add_chat_ids_per_session,
             'main_vars': task.main_vars,
             'updaters_dict': task.updaters_dict,
             'new_delay': task.new_delay,

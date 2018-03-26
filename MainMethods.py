@@ -15,7 +15,7 @@ from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_co
     send_live_locations_to_chat
 
 
-def start(chat_id, bot, sessions_dict):
+def start(chat_id, bot, sessions_dict, **kwargs):
     config = DB.get_config_by_chat_id(chat_id)
     if chat_id not in sessions_dict.keys() and not config:
         sessions_dict[chat_id] = BotSession()
@@ -49,18 +49,17 @@ def start(chat_id, bot, sessions_dict):
                                   'Введите /config для проверки ее состояния')
 
 
-def stop_session(chat_id, bot, session, add_chat_ids):
+def stop_session(chat_id, bot, session, add_chat_ids_per_session, **kwargs):
     session.stop_updater = True
     session.put_updater_task = False
     session.use_channel = False
     session.active = False
     bot.send_message(chat_id, 'Сессия остановлена')
-    for k, v in add_chat_ids.items():
-        if v == chat_id:
-            del add_chat_ids.updater_schedulers_dict[k]
+    for add_chat_id in add_chat_ids_per_session:
+        DB.delete_add_chat_id(add_chat_id)
 
 
-def config(chat_id, bot, session):
+def config(chat_id, bot, session, **kwargs):
     session_condition = 'Сессия активна' if session.active else 'Сессия не активна'
     channel_condition = '\r\nИмя канала задано' if session.channel_name else '\r\nИмя канала не задано'
     reply = session_condition + '\r\nДомен: ' + session.config['en_domain'] + '\r\nID игры: ' + session.config['game_id'] + \
@@ -68,7 +67,7 @@ def config(chat_id, bot, session):
     bot.send_message(chat_id, reply, disable_web_page_preview=True)
 
 
-def set_login(chat_id, bot, session, new_login):
+def set_login(chat_id, bot, session, new_login, **kwargs):
     if not session.active:
         session.config['Login'] = new_login
         reply = 'Логин успешно задан' if session.config['Login'] == new_login else 'Логин не задан, повторите'
@@ -77,7 +76,7 @@ def set_login(chat_id, bot, session, new_login):
         bot.send_message(chat_id, 'Нельзя менять логин при активной сессии')
 
 
-def set_password(chat_id, bot, session, new_password):
+def set_password(chat_id, bot, session, new_password, **kwargs):
     if not session.active:
         session.config['Password'] = new_password
         reply = 'Пароль успешно задан' if session.config['Password'] == new_password else 'Пароль не задана, повторите'
@@ -86,7 +85,7 @@ def set_password(chat_id, bot, session, new_password):
         bot.send_message(chat_id, 'Нельзя менять пароль при активной сессии')
 
 
-def set_domain(chat_id, bot, session, new_domain):
+def set_domain(chat_id, bot, session, new_domain, **kwargs):
     if not session.active:
         if 'http://' not in new_domain:
             new_domain = 'http://' + new_domain
@@ -98,7 +97,7 @@ def set_domain(chat_id, bot, session, new_domain):
         bot.send_message(chat_id, 'Нельзя менять домен при активной сессии')
 
 
-def set_game_id(chat_id, bot, session, new_game_id):
+def set_game_id(chat_id, bot, session, new_game_id, **kwargs):
     if not session.active:
         session.config['game_id'] = new_game_id
         reply = 'Игра успешно задана' if session.config['game_id'] == new_game_id \
@@ -109,7 +108,7 @@ def set_game_id(chat_id, bot, session, new_game_id):
         bot.send_message(chat_id, 'Нельзя менять игру при активной сессии')
 
 
-def login(chat_id, bot, session):
+def login(chat_id, bot, session, **kwargs):
     if session.config['en_domain'] and session.config['game_id'] and session.config['Login'] and session.config['Password']:
         session.urls = compile_urls(session.config)
         login_to_en(session, bot, chat_id)
@@ -117,7 +116,7 @@ def login(chat_id, bot, session):
         bot.send_message(chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
 
 
-def start_session(chat_id, bot, session):
+def start_session(chat_id, bot, session, **kwargs):
     if not session.active:
         if session.config['cookie'] and session.config['game_id'] and session.config['Login'] and session.config['Password']:
             launch_session(session, bot, chat_id)
@@ -128,7 +127,7 @@ def start_session(chat_id, bot, session):
                                   '/stop_updater, затем /start_updater')
 
 
-def send_task(chat_id, bot, session, storm_level_number):
+def send_task(chat_id, bot, session, storm_level_number, **kwargs):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя запросить задание при неактивной сессии')
         return
@@ -141,7 +140,7 @@ def send_task(chat_id, bot, session, storm_level_number):
         send_task_to_chat_storm(bot, chat_id, session, storm_level_number)
 
 
-def send_task_images(chat_id, bot, session):
+def send_task_images(chat_id, bot, session, **kwargs):
     if session.active:
         send_task_images_to_chat(bot, chat_id, session)
     else:
@@ -341,8 +340,8 @@ def join(bot, message_id, add_chat_id, **kwargs):
 
 
 def reset_join(chat_id, bot, message_id, add_chat_id):
-    main_chat_id = DB.get_main_chat_id_via_add(add_chat_id)
-    DB.delete_add_chat_id(main_chat_id, add_chat_id)
+    # main_chat_id = DB.get_main_chat_id_via_add(add_chat_id)
+    DB.delete_add_chat_id(add_chat_id)
     bot.send_message(chat_id, 'Взаимодействие с ботом через личный чат сброшено', reply_to_message_id=message_id)
 
 
