@@ -49,15 +49,15 @@ def start(chat_id, bot, sessions_dict):
                                   'Введите /config для проверки ее состояния')
 
 
-def stop_session(chat_id, bot, session, additional_chat_ids):
+def stop_session(chat_id, bot, session, add_chat_ids):
     session.stop_updater = True
     session.put_updater_task = False
     session.use_channel = False
     session.active = False
     bot.send_message(chat_id, 'Сессия остановлена')
-    for k, v in additional_chat_ids.items():
+    for k, v in add_chat_ids.items():
         if v == chat_id:
-            del additional_chat_ids.updater_schedulers_dict[k]
+            del add_chat_ids.updater_schedulers_dict[k]
 
 
 def config(chat_id, bot, session):

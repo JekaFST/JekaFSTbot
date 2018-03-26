@@ -4,7 +4,7 @@ from UpdaterMethods import updater
 task_method_dict = {
     'start': start,
     'start_session': start_session,
-    'stop_session': stop_session,
+    'stop_session': stop_session, # needs refactoring in function (add_chat_ids)
     'login_to_en': login,
     'start_updater': start_updater,
     'stop_updater': stop_updater,
@@ -48,7 +48,23 @@ class TaskMethodMap(object):
             'bot': bot,
             'message_id': task.message_id,
             'add_chat_id': task.user_id,
-            'session': task.session
+            'session': task.session,
+            'sessions_dict': task.sessions_dict,
+            'add_chat_ids': task.add_chat_ids,
+            'main_vars': task.main_vars,
+            'updaters_dict': task.updaters_dict,
+            'new_delay': task.new_delay,
+            'new_login': task.new_login,
+            'new_password': task.new_password,
+            'new_domain': task.new_domain,
+            'new_game_id': task.new_game_id,
+            'new_channel_name': task.new_channel_name,
+            'code': task.code,
+            'coords': task.coords,
+            'storm_level_number': task.storm_level_number,
+            'duration': task.duration,
+            'point': task.point,
+            'points_dict': task.points_dict
         }
         task_method_dict[task.type](**kwargs)
 

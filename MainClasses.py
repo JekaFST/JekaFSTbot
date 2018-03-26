@@ -69,12 +69,30 @@ class Validations(object):
 
 
 class Task(object):
-    def __init__(self, chat_id, type, session=None, message_id=None, user_id=None):
+    def __init__(self, chat_id, type, session=None, message_id=None, user_id=None, sessions_dict=None, main_vars=None,
+                 updaters_dict=None, new_delay=None, new_login=None, new_password=None, new_domain=None, duration=None,
+                 new_game_id=None, new_channel_name=None, code=None, coords=None, storm_level_number=None, point=None,
+                 points_dict=None):
         self.chat_id = chat_id
         self.type = type
         self.session = session
         self.message_id = message_id
         self.user_id = user_id
+        self.sessions_dict = sessions_dict
+        self.main_vars = main_vars
+        self.updaters_dict = updaters_dict
+        self.new_delay = new_delay
+        self.new_login = new_login
+        self.new_password = new_password
+        self.new_domain = new_domain
+        self.new_domain = new_game_id
+        self.new_channel_name = new_channel_name
+        self.code = code
+        self.coords = coords
+        self.storm_level_number = storm_level_number
+        self.duration = duration
+        self.point = point
+        self.points_dict = points_dict
 
     @staticmethod
     def get_session(chat_id, add_chat_ids, sessions_dict):

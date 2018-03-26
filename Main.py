@@ -27,11 +27,12 @@ except Exception:
 
 while True:
     for task in main_vars.task_queue:
-        # try:
-        #     TaskMethodMap.run_task(task)
-        # except Exception:
-        #     bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду %s' % task.type)
-        #     main_vars.task_queue.remove(task)
+        try:
+            TaskMethodMap.run_task(task, bot)
+        except Exception as e:
+            bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду %s' % task.type)
+            print e
+            main_vars.task_queue.remove(task)
 
     # # Updater task
         # if task['task_type'] == 'updater':
@@ -387,21 +388,21 @@ while True:
         #     continue
         #
         # Tasks to start & stop bot, get session config
-        if task.type == 'start':
-            try:
-                start(task.chat_id, bot, main_vars.sessions_dict)
-            except Exception:
-                bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду start')
-            main_vars.task_queue.remove(task)
-            continue
-
-        if task.type == 'start_session':
-            try:
-                start_session(task.chat_id, bot, main_vars.sessions_dict[task['chat_id']])
-            except Exception:
-                bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду start_session')
-            main_vars.task_queue.remove(task)
-            continue
+        # if task.type == 'start':
+        #     try:
+        #         start(task.chat_id, bot, main_vars.sessions_dict)
+        #     except Exception:
+        #         bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду start')
+        #     main_vars.task_queue.remove(task)
+        #     continue
+        #
+        # if task.type == 'start_session':
+        #     try:
+        #         start_session(task.chat_id, bot, main_vars.sessions_dict[task['chat_id']])
+        #     except Exception:
+        #         bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду start_session')
+        #     main_vars.task_queue.remove(task)
+        #     continue
         #
         # if task['task_type'] == 'stop_session':
         #     if not task['chat_id'] in main_vars.sessions_dict.keys():
@@ -586,24 +587,24 @@ while True:
         #                                    'Exception в main - не удалось обработать команду stop_channel')
         #     main_vars.task_queue.remove(task)
         #     continue
-
-        # Additional tasks to make bot more convenient
-        if task.type == 'join':
-            try:
-                TaskMethodMap.run_task(task, bot)
-            except Exception:
-                bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду join')
-            main_vars.task_queue.remove(task)
-            continue
-
-        if task.type == 'reset_join':
-            try:
-                reset_join(task.chat_id, bot, task.message_id, task.user_id)
-            except Exception:
-                bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду reset_join')
-            main_vars.task_queue.remove(task)
-            continue
-
+        #
+        # # Additional tasks to make bot more convenient
+        # if task.type == 'join':
+        #     try:
+        #         TaskMethodMap.run_task(task, bot)
+        #     except Exception:
+        #         bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду join')
+        #     main_vars.task_queue.remove(task)
+        #     continue
+        #
+        # if task.type == 'reset_join':
+        #     try:
+        #         reset_join(task.chat_id, bot, task.message_id, task.user_id)
+        #     except Exception:
+        #         bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду reset_join')
+        #     main_vars.task_queue.remove(task)
+        #     continue
+        #
         # if task['task_type'] == 'codes_on':
         #     if not task['chat_id'] in main_vars.sessions_dict.keys():
         #         bot.send_message(task['chat_id'],
