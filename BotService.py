@@ -198,255 +198,168 @@ def run_app(bot, main_vars):
             send_task_images_task = Task(message.chat.id, 'task_images', session=session)
             main_vars.task_queue.append(send_task_images_task)
 
+    # refactored
     @bot.message_handler(commands=['sectors'])
     def send_all_sectors(message):
-        storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
-            re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
-        if message.chat.id in main_vars.allowed_chats:
-            send_all_sectors_task = {
-                'task_type': 'send_sectors',
-                'chat_id': message.chat.id,
-                'additional_chat_id': None,
-                'storm_level': storm_level
-            }
-            main_vars.task_queue.append(send_all_sectors_task)
-        elif message.chat.id in main_vars.additional_ids.keys():
-            send_all_sectors_task = {
-                'task_type': 'send_sectors',
-                'chat_id': None,
-                'additional_chat_id': message.chat.id,
-                'storm_level': storm_level
-            }
-            main_vars.task_queue.append(send_all_sectors_task)
-        else:
-            bot.send_message(message.chat.id,
-                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission')
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
+                re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
+            send_all_sectors_task = Task(message.chat.id, 'send_sectors', session=session, storm_level_number=storm_level)
+            main_vars.task_queue.append(send_all_sectors_task)
+
+    # refactored
     @bot.message_handler(commands=['hints'])
     def send_all_helps(message):
-        storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
-            re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
-        if message.chat.id in main_vars.allowed_chats:
-            send_all_helps_task = {
-                'task_type': 'send_helps',
-                'chat_id': message.chat.id,
-                'additional_chat_id': None,
-                'storm_level': storm_level
-            }
-            main_vars.task_queue.append(send_all_helps_task)
-        elif message.chat.id in main_vars.additional_ids.keys():
-            send_all_helps_task = {
-                'task_type': 'send_helps',
-                'chat_id': None,
-                'additional_chat_id': message.chat.id,
-                'storm_level': storm_level
-            }
-            main_vars.task_queue.append(send_all_helps_task)
-        else:
-            bot.send_message(message.chat.id,
-                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission')
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
+                re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
+            send_all_helps_task = Task(message.chat.id, 'send_helps', session=session, storm_level_number=storm_level)
+            main_vars.task_queue.append(send_all_helps_task)
+
+    # refactored
     @bot.message_handler(commands=['last_hint'])
     def send_last_help(message):
-        storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
-            re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
-        if message.chat.id in main_vars.allowed_chats:
-            send_last_help_task = {
-                'task_type': 'send_last_help',
-                'chat_id': message.chat.id,
-                'additional_chat_id': None,
-                'storm_level': storm_level
-            }
-            main_vars.task_queue.append(send_last_help_task)
-        elif message.chat.id in main_vars.additional_ids.keys():
-            send_last_help_task = {
-                'task_type': 'send_last_help',
-                'chat_id': None,
-                'additional_chat_id': message.chat.id,
-                'storm_level': storm_level
-            }
-            main_vars.task_queue.append(send_last_help_task)
-        else:
-            bot.send_message(message.chat.id,
-                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission')
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
+                re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
+            send_last_help_task = Task(message.chat.id, 'send_last_help', session=session, storm_level_number=storm_level)
+            main_vars.task_queue.append(send_last_help_task)
+
+    # refactored
     @bot.message_handler(commands=['bonuses'])
     def send_all_bonuses(message):
-        storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
-            re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
-        if message.chat.id in main_vars.allowed_chats:
-            send_all_bonuses_task = {
-                'task_type': 'send_bonuses',
-                'chat_id': message.chat.id,
-                'additional_chat_id': None,
-                'storm_level': storm_level
-            }
-            main_vars.task_queue.append(send_all_bonuses_task)
-        elif message.chat.id in main_vars.additional_ids.keys():
-            send_all_bonuses_task = {
-                'task_type': 'send_bonuses',
-                'chat_id': None,
-                'additional_chat_id': message.chat.id,
-                'storm_level': storm_level
-            }
-            main_vars.task_queue.append(send_all_bonuses_task)
-        else:
-            bot.send_message(message.chat.id,
-                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission')
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
+                re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
+            send_all_bonuses_task = Task(message.chat.id, 'send_bonuses', session=session, storm_level_number=storm_level)
+            main_vars.task_queue.append(send_all_bonuses_task)
+
+    # refactored
     @bot.message_handler(commands=['unclosed_bonuses'])
     def send_unclosed_bonuses(message):
-        storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
-            re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
-        if message.chat.id in main_vars.allowed_chats:
-            send_unclosed_bonuses_task = {
-                'task_type': 'unclosed_bonuses',
-                'chat_id': message.chat.id,
-                'additional_chat_id': None,
-                'storm_level': storm_level
-            }
-            main_vars.task_queue.append(send_unclosed_bonuses_task)
-        elif message.chat.id in main_vars.additional_ids.keys():
-            send_unclosed_bonuses_task = {
-                'task_type': 'unclosed_bonuses',
-                'chat_id': None,
-                'additional_chat_id': message.chat.id,
-                'storm_level': storm_level
-            }
-            main_vars.task_queue.append(send_unclosed_bonuses_task)
-        else:
-            bot.send_message(message.chat.id,
-                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission')
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
+                re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
+            send_unclosed_bonuses_task = Task(message.chat.id, 'unclosed_bonuses', session=session, storm_level_number=storm_level)
+            main_vars.task_queue.append(send_unclosed_bonuses_task)
+
+    # refactored
     @bot.message_handler(commands=['messages'])
     def send_auth_messages(message):
-        storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
-            re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
-        if message.chat.id in main_vars.allowed_chats:
-            send_auth_messages_task = {
-                'task_type': 'send_messages',
-                'chat_id': message.chat.id,
-                'additional_chat_id': None,
-                'storm_level': storm_level
-            }
-            main_vars.task_queue.append(send_auth_messages_task)
-        elif message.chat.id in main_vars.additional_ids.keys():
-            send_auth_messages_task = {
-                'task_type': 'send_messages',
-                'chat_id': None,
-                'additional_chat_id': message.chat.id,
-                'storm_level': storm_level
-            }
-            main_vars.task_queue.append(send_auth_messages_task)
-        else:
-            bot.send_message(message.chat.id,
-                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission')
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
+                re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
+            send_auth_messages_task = Task(message.chat.id, 'send_messages', session=session, storm_level_number=storm_level)
+            main_vars.task_queue.append(send_auth_messages_task)
+
+    # refactored
     @bot.message_handler(commands=['start_updater'])
     def start_updater(message):
-        if message.chat.id not in main_vars.allowed_chats:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
-                                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
-        start_updater_task = {
-            'task_type': 'start_updater',
-            'chat_id': message.chat.id
-        }
-        main_vars.task_queue.append(start_updater_task)
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()) \
+                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
+            start_updater_task = Task(message.chat.id, 'start_updater', main_vars=main_vars)
+            main_vars.task_queue.append(start_updater_task)
+
+    # refactored
     @bot.message_handler(commands=['delay'])
     def set_updater_delay(message):
-        if message.chat.id not in main_vars.allowed_chats:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
-                                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
-        set_delay_task = {
-            'task_type': 'delay',
-            'chat_id': message.chat.id,
-            'new_delay': int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0))
-        }
-        main_vars.task_queue.append(set_delay_task)
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()) \
+                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            new_delay = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0))
+            set_delay_task = Task(message.chat.id, 'delay', session=session, new_delay=new_delay)
+            main_vars.task_queue.append(set_delay_task)
+
+    # refactored
     @bot.message_handler(commands=['stop_updater'])
     def stop_updater(message):
-        if message.chat.id not in main_vars.allowed_chats:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
-                                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
-        stop_updater_task = {
-            'task_type': 'stop_updater',
-            'chat_id': message.chat.id
-        }
-        main_vars.task_queue.append(stop_updater_task)
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()) \
+                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            stop_updater_task = Task(message.chat.id, 'stop_updater', session=session)
+            main_vars.task_queue.append(stop_updater_task)
+
+    # refactored
     @bot.message_handler(commands=['set_channel_name'])
     def set_channel_name(message):
-        if message.chat.id not in main_vars.allowed_chats:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
-                                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
-        set_channel_name_task = {
-            'task_type': 'channel_name',
-            'chat_id': message.chat.id,
-            'new_channel_name': re.findall(r'/set_channel_name\s*(.+)', str(message.text.encode('utf-8')))[0]
-        }
-        main_vars.task_queue.append(set_channel_name_task)
-        main_vars.id += 1
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()) \
+                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            new_channel_name = re.findall(r'/set_channel_name\s*(.+)', str(message.text.encode('utf-8')))[0]
+            set_channel_name_task = Task(message.chat.id, 'channel_name', session=session, new_channel_name=new_channel_name)
+            main_vars.task_queue.append(set_channel_name_task)
+
+    # refactored
     @bot.message_handler(commands=['start_channel'])
     def start_channel(message):
-        if message.chat.id not in main_vars.allowed_chats:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
-                                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
-        start_channel_task = {
-            'task_type': 'start_channel',
-            'chat_id': message.chat.id
-        }
-        main_vars.task_queue.append(start_channel_task)
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()) \
+                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            start_channel_task = Task(message.chat.id, 'start_channel', session=session)
+            main_vars.task_queue.append(start_channel_task)
+
+    # refactored
     @bot.message_handler(commands=['stop_channel'])
     def stop_channel(message):
-        if message.chat.id not in main_vars.allowed_chats:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
-                                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
-        stop_channel_task = {
-            'task_type': 'stop_channel',
-            'chat_id': message.chat.id
-        }
-        main_vars.task_queue.append(stop_channel_task)
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()) \
+                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            stop_channel_task = Task(message.chat.id, 'stop_channel', session=session)
+            main_vars.task_queue.append(stop_channel_task)
+
+    # refactored
     @bot.message_handler(commands=['codes_on'])
     def enable_codes(message):
-        if message.chat.id not in main_vars.allowed_chats:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
-                                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
-        enable_codes_task = {
-            'task_type': 'codes_on',
-            'chat_id': message.chat.id
-        }
-        main_vars.task_queue.append(enable_codes_task)
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()) \
+                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            enable_codes_task = Task(message.chat.id, 'codes_on', session=session)
+            main_vars.task_queue.append(enable_codes_task)
+
+    # refactored
     @bot.message_handler(commands=['codes_off'])
     def disable_codes(message):
-        if message.chat.id not in main_vars.allowed_chats:
-            bot.send_message(message.chat.id, 'Данный чат не является разрешенным для работы с ботом\r\n'
-                                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
-        disable_codes_task = {
-            'task_type': 'codes_off',
-            'chat_id': message.chat.id
-        }
-        main_vars.task_queue.append(disable_codes_task)
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()) \
+                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            disable_codes_task = Task(message.chat.id, 'codes_off', session=session)
+            main_vars.task_queue.append(disable_codes_task)
+
+    # refactored
     @bot.message_handler(commands=['add_tag'])
     def add_tag(message):
         if message.chat.id != 45839899:

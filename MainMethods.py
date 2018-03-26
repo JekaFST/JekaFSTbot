@@ -147,7 +147,7 @@ def send_task_images(chat_id, bot, session, **kwargs):
         bot.send_message(chat_id, 'Нельзя запросить задание при неактивной сессии')
 
 
-def send_all_sectors(chat_id, bot, session, storm_level_number):
+def send_all_sectors(chat_id, bot, session, storm_level_number, **kwargs):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя запросить сектора при неактивной сессии')
         return
@@ -160,7 +160,7 @@ def send_all_sectors(chat_id, bot, session, storm_level_number):
         send_all_sectors_to_chat_storm(bot, chat_id, session, storm_level_number)
 
 
-def send_all_helps(chat_id, bot, session, storm_level_number):
+def send_all_helps(chat_id, bot, session, storm_level_number, **kwargs):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя запросить подсказки при неактивной сессии')
         return
@@ -173,7 +173,7 @@ def send_all_helps(chat_id, bot, session, storm_level_number):
         send_all_helps_to_chat_storm(bot, chat_id, session, storm_level_number)
 
 
-def send_last_help(chat_id, bot, session, storm_level_number):
+def send_last_help(chat_id, bot, session, storm_level_number, **kwargs):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя запросить подсказку при неактивной сессии')
         return
@@ -186,7 +186,7 @@ def send_last_help(chat_id, bot, session, storm_level_number):
         send_last_help_to_chat_storm(bot, chat_id, session, storm_level_number)
 
 
-def send_all_bonuses(chat_id, bot, session, storm_level_number):
+def send_all_bonuses(chat_id, bot, session, storm_level_number, **kwargs):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя запросить бонусы при неактивной сессии')
         return
@@ -199,7 +199,7 @@ def send_all_bonuses(chat_id, bot, session, storm_level_number):
         send_all_bonuses_to_chat_storm(bot, chat_id, session, storm_level_number)
 
 
-def send_unclosed_bonuses(chat_id, bot, session, storm_level_number):
+def send_unclosed_bonuses(chat_id, bot, session, storm_level_number, **kwargs):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя запросить не закрытые бонусы при неактивной сессии')
         return
@@ -212,7 +212,7 @@ def send_unclosed_bonuses(chat_id, bot, session, storm_level_number):
         send_unclosed_bonuses_to_chat_storm(bot, chat_id, session, storm_level_number)
 
 
-def send_auth_messages(chat_id, bot, session, storm_level_number):
+def send_auth_messages(chat_id, bot, session, storm_level_number, **kwargs):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя запросить сообщения от авторов при неактивной сессии')
         return
@@ -225,7 +225,7 @@ def send_auth_messages(chat_id, bot, session, storm_level_number):
         send_auth_messages_to_chat_storm(bot, chat_id, session, storm_level_number)
 
 
-def start_updater(chat_id, bot, main_vars):
+def start_updater(chat_id, bot, main_vars, **kwargs):
     session = main_vars.sessions_dict[chat_id]
     if session.active and chat_id not in main_vars.updater_schedulers_dict.keys():
         session.stop_updater = False
@@ -257,19 +257,19 @@ def updater_scheduler(chat_id, bot, main_vars):
         return
 
 
-def set_updater_delay(chat_id, bot, session, new_delay):
+def set_updater_delay(chat_id, bot, session, new_delay, **kwargs):
     session.delay = new_delay
     reply = 'Задержка успешно выставлена' if session.delay == new_delay else 'Задержка не обновлена, повторите'
     bot.send_message(chat_id, reply)
 
 
-def stop_updater(session):
+def stop_updater(session, **kwargs):
     if session.active:
         session.stop_updater = True
         session.put_updater_task = False
 
 
-def set_channel_name(chat_id, bot, session, new_channel_name):
+def set_channel_name(chat_id, bot, session, new_channel_name, **kwargs):
     if "@" not in new_channel_name:
         new_channel_name = "@" + new_channel_name
     session.channel_name = new_channel_name
@@ -277,12 +277,12 @@ def set_channel_name(chat_id, bot, session, new_channel_name):
     bot.send_message(chat_id, reply)
 
 
-def start_channel(chat_id, bot, session):
+def start_channel(chat_id, bot, session, **kwargs):
     session.use_channel = True
     bot.send_message(chat_id, 'Постинг в канал разрешен')
 
 
-def stop_channel(chat_id, bot, session):
+def stop_channel(chat_id, bot, session, **kwargs):
     session.use_channel = False
     bot.send_message(chat_id, 'Постинг в канал запрещен')
 
@@ -339,18 +339,18 @@ def join(bot, message_id, add_chat_id, **kwargs):
     bot.send_message(kwargs['chat_id'], 'Теперь вы можете работать с ботом через личный чат', reply_to_message_id=message_id)
 
 
-def reset_join(chat_id, bot, message_id, add_chat_id):
+def reset_join(chat_id, bot, message_id, add_chat_id, **kwargs):
     # main_chat_id = DB.get_main_chat_id_via_add(add_chat_id)
     DB.delete_add_chat_id(add_chat_id)
     bot.send_message(chat_id, 'Взаимодействие с ботом через личный чат сброшено', reply_to_message_id=message_id)
 
 
-def enable_codes(chat_id, bot, session):
+def enable_codes(chat_id, bot, session, **kwargs):
     session.send_codes = True
     bot.send_message(chat_id, 'Сдача кодов включена')
 
 
-def disable_codes(chat_id, bot, session):
+def disable_codes(chat_id, bot, session, **kwargs):
     session.send_codes = False
     bot.send_message(chat_id, 'Сдача кодов выключена')
 

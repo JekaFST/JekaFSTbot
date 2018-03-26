@@ -6,33 +6,33 @@ task_method_dict = {
     'start_session': start_session,  # refactored
     'stop_session': stop_session,  # refactored
     'login_to_en': login,  # refactored
-    'start_updater': start_updater,
-    'stop_updater': stop_updater,
+    'start_updater': start_updater,  # refactored
+    'stop_updater': stop_updater,  # refactored
     'updater': updater,
-    'delay': set_updater_delay,
+    'delay': set_updater_delay,  # refactored
     'login': set_login,  # refactored
     'password': set_password,  # refactored
     'domain': set_domain,  # refactored
     'game_id': set_game_id,  # refactored
     'config': config,  # refactored
-    'channel_name': set_channel_name,
-    'start_channel': start_channel,
-    'stop_channel': stop_channel,
-    'join': join,
-    'reset_join': reset_join,
+    'channel_name': set_channel_name,  # refactored
+    'start_channel': start_channel,  # refactored
+    'stop_channel': stop_channel,  # refactored
+    'join': join,  # refactored
+    'reset_join': reset_join,  # refactored
     'send_code_main': send_code_main,
     'send_code_bonus': send_code_bonus,
     'send_coords': send_coords,
     'send_task': send_task,  # refactored
     'task_images': send_task_images,  # refactored
-    'send_sectors': send_all_sectors,
-    'send_helps': send_all_helps,
-    'send_last_help': send_last_help,
-    'send_bonuses': send_all_bonuses,
-    'unclosed_bonuses': send_unclosed_bonuses,
-    'send_messages': send_auth_messages,
-    'codes_on': enable_codes,
-    'codes_off': disable_codes,
+    'send_sectors': send_all_sectors,  # refactored
+    'send_helps': send_all_helps,  # refactored
+    'send_last_help': send_last_help,  # refactored
+    'send_bonuses': send_all_bonuses,  # refactored
+    'unclosed_bonuses': send_unclosed_bonuses,  # refactored
+    'send_messages': send_auth_messages,  # refactored
+    'codes_on': enable_codes,  # refactored
+    'codes_off': disable_codes,  # refactored
     'live_location': send_live_locations,
     'stop_live_location': stop_live_locations,
     'edit_live_location': edit_live_locations,
