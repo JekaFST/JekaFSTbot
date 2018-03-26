@@ -4,17 +4,6 @@ from DBMethods import DB
 
 class MainVars(object):
     def __init__(self):
-        self.allowed_chats = [
-            45839899,
-            -1001145974445,
-            -1001062839624,
-            -1001126631174, #P4
-            -1001076545820,
-            -1001116652124,
-            -169229164,
-            -1001135150893,
-            -1001184863414
-        ]
         self.task_queue = list()
         self.sessions_dict = dict()
         self.additional_ids = dict()
@@ -32,7 +21,7 @@ class Validations(object):
             bot.send_message(chat_id,
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission')
-            return False, _, _
+            return False, main_chat_ids, add_chat_ids
 
     @staticmethod
     def check_session_available(chat_id, bot, sessions_chats):
@@ -93,7 +82,7 @@ class Task(object):
         self.new_login = new_login
         self.new_password = new_password
         self.new_domain = new_domain
-        self.new_domain = new_game_id
+        self.new_game_id = new_game_id
         self.new_channel_name = new_channel_name
         self.code = code
         self.coords = coords

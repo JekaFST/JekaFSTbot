@@ -90,7 +90,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
             session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
-            start_session_task = Task(message.chat.id, 'start_sesion', session=session)
+            start_session_task = Task(message.chat.id, 'start_session', session=session)
             main_vars.task_queue.append(start_session_task)
 
     # refactored
@@ -383,8 +383,8 @@ def run_app(bot, main_vars):
                                 r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
-            seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))[0]
-            duration = int(seconds) if seconds else None
+            seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))
+            duration = int(seconds[0]) if seconds else None
             send_live_location_task = Task(message.chat.id, 'live_location', session=session, coords=coords, duration=duration)
             main_vars.task_queue.append(send_live_location_task)
 
@@ -432,34 +432,45 @@ def run_app(bot, main_vars):
             if not points_dict:
                 bot.send_message(message.chat.id, 'Нет точек, для отправки live_locations. Верный формат:\n'
                                                   '1 - корды\n2 - корды\n...\nn - корды')
-            seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))[0]
-            duration = int(seconds) if seconds else None
+            seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))
+            duration = int(seconds[0]) if seconds else None
             add_points_ll_task = Task(message.chat.id, 'add_points_ll', session=session, points_dict=points_dict, duration=duration)
             main_vars.task_queue.append(add_points_ll_task)
 
     # refactored
-    @bot.message_handler(content_types=['text'])
-    def text_processor(message):
+    @bot.message_handler(regexp='!\s*(.+)')
+    def main_code_processor(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
 
             session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
-            coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
-                                r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
-                                r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
-                                r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
             if message.text[0] == '!':
                 code = re.findall(r'!\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
                 send_code_main_task = Task(message.chat.id, 'send_code_main', session=session, code=code, message_id=message.message_id)
                 main_vars.task_queue.append(send_code_main_task)
-                return
 
+    @bot.message_handler(regexp='\?\s*(.+)')
+    def bonus_code_processor(message):
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
+
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
             if message.text[0] == '?':
                 code = re.findall(r'\?\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
                 send_code_bonus_task = Task(message.chat.id, 'send_code_bonus', session=session, code=code, message_id=message.message_id)
                 main_vars.task_queue.append(send_code_bonus_task)
-                return
 
+    @bot.message_handler(regexp='\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
+                                '\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+                                '\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+                                '\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}')
+    def coords_processor(message):
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed:
+            coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
+                                r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+                                r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+                                r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
             if coords:
                 send_coords_task = Task(message.chat.id, 'send_code_bonus', coords=coords)
                 main_vars.task_queue.append(send_coords_task)
@@ -468,8 +479,8 @@ def run_app(bot, main_vars):
     bot.remove_webhook()
 
     # Set webhook
-    # bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
-    bot.set_webhook(url='https://25286a0a.ngrok.io/webhook')
+    bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
+    # bot.set_webhook(url='https://52a01803.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():
