@@ -10,6 +10,7 @@ from MainMethods import start, stop_session, login, send_task, start_updater, st
     reset_join, send_task_images, enable_codes, disable_codes, start_session, send_auth_messages, send_unclosed_bonuses, \
     send_live_locations, stop_live_locations, edit_live_locations, add_custom_live_locations
 from MainClasses import MainVars
+from TaskMathodMap import TaskMethodMap
 from UpdaterMethods import updater
 
 main_vars = MainVars()
@@ -26,7 +27,13 @@ except Exception:
 
 while True:
     for task in main_vars.task_queue:
-        # # Updater task
+        # try:
+        #     TaskMethodMap.run_task(task)
+        # except Exception:
+        #     bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду %s' % task.type)
+        #     main_vars.task_queue.remove(task)
+
+    # # Updater task
         # if task['task_type'] == 'updater':
         #     if not task['chat_id'] in main_vars.sessions_dict.keys():
         #         bot.send_message(task['chat_id'],
@@ -384,7 +391,7 @@ while True:
             try:
                 start(task.chat_id, bot, main_vars.sessions_dict)
             except Exception:
-                bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду start')
+                bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду start')
             main_vars.task_queue.remove(task)
             continue
 
@@ -392,7 +399,7 @@ while True:
             try:
                 start_session(task.chat_id, bot, main_vars.sessions_dict[task['chat_id']])
             except Exception:
-                bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду start_session')
+                bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду start_session')
             main_vars.task_queue.remove(task)
             continue
         #
@@ -583,9 +590,9 @@ while True:
         # Additional tasks to make bot more convenient
         if task.type == 'join':
             try:
-                join(task.chat_id, bot, task.message_id, task.user_id)
+                TaskMethodMap.run_task(task, bot)
             except Exception:
-                bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду join')
+                bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду join')
             main_vars.task_queue.remove(task)
             continue
 
@@ -593,7 +600,7 @@ while True:
             try:
                 reset_join(task.chat_id, bot, task.message_id, task.user_id)
             except Exception:
-                bot.send_message(task['chat_id'], 'Exception в main - не удалось обработать команду reset_join')
+                bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду reset_join')
             main_vars.task_queue.remove(task)
             continue
 

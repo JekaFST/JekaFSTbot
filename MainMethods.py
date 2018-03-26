@@ -335,9 +335,9 @@ def send_coords(chat_id, bot, coords):
         bot.send_venue(chat_id, latitude, longitude, coord, '')
 
 
-def join(chat_id, bot, message_id, add_chat_id):
-    DB.insert_add_chat_id(chat_id, add_chat_id)
-    bot.send_message(chat_id, 'Теперь вы можете работать с ботом через личный чат', reply_to_message_id=message_id)
+def join(bot, message_id, add_chat_id, **kwargs):
+    DB.insert_add_chat_id(kwargs['chat_id'], add_chat_id)
+    bot.send_message(kwargs['chat_id'], 'Теперь вы можете работать с ботом через личный чат', reply_to_message_id=message_id)
 
 
 def reset_join(chat_id, bot, message_id, add_chat_id):
