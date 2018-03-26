@@ -7,6 +7,7 @@ import telebot
 from BotSession import BotSession
 from CommonMethods import close_live_locations
 from DBMethods import DB
+from MainClasses import Task
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
     send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session, \
     send_auth_messages_to_chat, send_unclosed_bonuses_to_chat, send_code_to_storm_level, send_task_to_chat_storm, \
@@ -244,10 +245,7 @@ def updater_scheduler(chat_id, bot, main_vars):
     while not session.stop_updater:
         if session.put_updater_task:
             time.sleep(session.delay)
-            updater_task = {
-                'task_type': 'updater',
-                'chat_id': chat_id
-            }
+            updater_task = Task(chat_id, 'updater', session=session, updaters_dict=main_vars.updaters_dict)
             main_vars.task_queue.append(updater_task)
             session.put_updater_task = False
     else:
@@ -287,7 +285,7 @@ def stop_channel(chat_id, bot, session, **kwargs):
     bot.send_message(chat_id, 'Постинг в канал запрещен')
 
 
-def send_code_main(chat_id, bot, session, message_id, code):
+def send_code_main(chat_id, bot, session, message_id, code, **kwargs):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя сдавать коды при неактивной сессии')
         return
@@ -307,7 +305,7 @@ def send_code_main(chat_id, bot, session, message_id, code):
         send_code_to_storm_level(code, level_number, bot, chat_id, message_id, session)
 
 
-def send_code_bonus(chat_id, bot, session, message_id, code):
+def send_code_bonus(chat_id, bot, session, message_id, code, **kwargs):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя сдавать коды при неактивной сессии')
         return
@@ -327,7 +325,7 @@ def send_code_bonus(chat_id, bot, session, message_id, code):
         send_code_to_storm_level(code, level_number, bot, chat_id, message_id, session, bonus_only=True)
 
 
-def send_coords(chat_id, bot, coords):
+def send_coords(chat_id, bot, coords, **kwargs):
     for coord in coords:
         latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
         longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
@@ -355,7 +353,7 @@ def disable_codes(chat_id, bot, session, **kwargs):
     bot.send_message(chat_id, 'Сдача кодов выключена')
 
 
-def send_live_locations(chat_id, bot, session, coords, duration):
+def send_live_locations(chat_id, bot, session, coords, duration, **kwargs):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя отправлять live location при неактивной сессии')
         return
@@ -374,7 +372,7 @@ def send_live_locations(chat_id, bot, session, coords, duration):
     send_live_locations_to_chat(bot, chat_id, session)
 
 
-def stop_live_locations(chat_id, bot, session, point):
+def stop_live_locations(chat_id, bot, session, point, **kwargs):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя остановить live location при неактивной сессии')
         return
@@ -384,7 +382,7 @@ def stop_live_locations(chat_id, bot, session, point):
     close_live_locations(chat_id, bot, session, point=point)
 
 
-def edit_live_locations(chat_id, bot, session, point, coords):
+def edit_live_locations(chat_id, bot, session, point, coords, **kwargs):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя редактировать live location при неактивной сессии')
         return
@@ -412,7 +410,7 @@ def edit_live_locations(chat_id, bot, session, point, coords):
             bot.send_message(chat_id, 'Проверьте номер точки - соответствующая live location не найдена)')
 
 
-def add_custom_live_locations(chat_id, bot, session, points_dict, duration):
+def add_custom_live_locations(chat_id, bot, session, points_dict, duration, **kwargs):
     if not session.active:
         bot.send_message(chat_id, 'Нельзя отправлять live location при неактивной сессии')
         return

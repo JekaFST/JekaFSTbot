@@ -372,187 +372,97 @@ def run_app(bot, main_vars):
         else:
             bot.send_message(message.chat.id, 'Тег не добавлен в обработчикб повторите попытку')
 
+    # refactored
     @bot.message_handler(commands=['send_ll'])
     def send_live_location(message):
-        coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
-        seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))[0]
-        if message.chat.id in main_vars.allowed_chats:
-            send_live_location_task = {
-                'task_type': 'live_location',
-                'chat_id': message.chat.id,
-                'additional_chat_id': None,
-                'coords': coords,
-                'duration': int(seconds) if seconds else None
-            }
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
+
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
+                                r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+                                r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+                                r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
+            seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))[0]
+            duration = int(seconds) if seconds else None
+            send_live_location_task = Task(message.chat.id, 'live_location', session=session, coords=coords, duration=duration)
             main_vars.task_queue.append(send_live_location_task)
-        elif message.chat.id in main_vars.additional_ids.keys():
-            send_live_location_task = {
-                'task_type': 'live_location',
-                'chat_id': None,
-                'additional_chat_id': message.chat.id,
-                'coords': coords,
-                'duration': int(seconds) if seconds else None
-            }
-            main_vars.task_queue.append(send_live_location_task)
-        else:
-            bot.send_message(message.chat.id,
-                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission')
 
     @bot.message_handler(commands=['stop_ll'])
     def stop_live_location(message):
-        point_number = re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
-        if message.chat.id in main_vars.allowed_chats:
-            stop_live_location_task = {
-                'task_type': 'stop_live_location',
-                'chat_id': message.chat.id,
-                'additional_chat_id': None,
-                'point': int(point_number.group(0)) if point_number else None
-            }
-            main_vars.task_queue.append(stop_live_location_task)
-        elif message.chat.id in main_vars.additional_ids.keys():
-            stop_live_location_task = {
-                'task_type': 'stop_live_location',
-                'chat_id': None,
-                'additional_chat_id': message.chat.id,
-                'point': int(point_number.group(0)) if point_number else None,
-            }
-            main_vars.task_queue.append(stop_live_location_task)
-        else:
-            bot.send_message(message.chat.id,
-                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission')
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            point_number = re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
+            point = int(point_number.group(0)) if point_number else None
+            stop_live_location_task = Task(message.chat.id, 'stop_live_location', session=session, point=point)
+            main_vars.task_queue.append(stop_live_location_task)
+
+    # refactored
     @bot.message_handler(commands=['edit_ll'])
     def edit_live_location(message):
-        if message.chat.id not in main_vars.allowed_chats and message.chat.id not in main_vars.additional_ids.keys():
-            bot.send_message(message.chat.id,
-                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
-        coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
-        point_number = re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
-        if message.chat.id in main_vars.allowed_chats:
-            edit_live_location_task = {
-                'task_type': 'edit_live_location',
-                'chat_id': message.chat.id,
-                'additional_chat_id': None,
-                'point': int(point_number.group(0)) if point_number else None,
-                'coords': coords
-            }
-            main_vars.task_queue.append(edit_live_location_task)
-        if message.chat.id in main_vars.additional_ids.keys():
-            edit_live_location_task = {
-                'task_type': 'edit_live_location',
-                'chat_id': None,
-                'additional_chat_id': message.chat.id,
-                'point': int(point_number.group(0)) if point_number else None,
-                'coords': coords
-            }
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
+
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
+                                r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+                                r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+                                r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
+            point_number = re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
+            point = int(point_number.group(0)) if point_number else None
+            edit_live_location_task = Task(message.chat.id, 'edit_live_location', session=session, point=point, coords=coords)
             main_vars.task_queue.append(edit_live_location_task)
 
+    # refactored
     @bot.message_handler(commands=['add_points_ll'])
     def add_points_live_location(message):
-        points_dict = dict()
-        points = re.findall(r'\d{1,2}\s*-\s*\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}|'
-                            r'\d{1,2}\s*-\s*\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}', str(message.text.encode('utf-8')))
-        for point in points:
-            i = int(re.findall(r'(\d{1,2})\s*-', point)[0])
-            points_dict[i] = re.findall(r'\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}|'
-                                        r'\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}', point)[0]
-        if not points_dict:
-            bot.send_message(message.chat.id, 'Нет точек, для отправки live_locations. Верный формат:\n'
-                                              '1 - корды\n2 - корды\n...\nn - корды')
-        seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))[0]
-        if message.chat.id in main_vars.allowed_chats:
-            add_points_ll_task = {
-                'task_type': 'add_points_ll',
-                'chat_id': message.chat.id,
-                'additional_chat_id': None,
-                'points_dict': points_dict,
-                'duration': int(seconds) if seconds else None
-            }
-            main_vars.task_queue.append(add_points_ll_task)
-        elif message.chat.id in main_vars.additional_ids.keys():
-            add_points_ll_task = {
-                'task_type': 'add_points_ll',
-                'chat_id': None,
-                'additional_chat_id': message.chat.id,
-                'points_dict': points_dict,
-                'duration': int(seconds) if seconds else None
-            }
-            main_vars.task_queue.append(add_points_ll_task)
-        else:
-            bot.send_message(message.chat.id,
-                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission')
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
 
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            points_dict = dict()
+            points = re.findall(r'\d{1,2}\s*-\s*\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}|'
+                                r'\d{1,2}\s*-\s*\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}', str(message.text.encode('utf-8')))
+            for point in points:
+                i = int(re.findall(r'(\d{1,2})\s*-', point)[0])
+                points_dict[i] = re.findall(r'\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}|'
+                                            r'\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}', point)[0]
+            if not points_dict:
+                bot.send_message(message.chat.id, 'Нет точек, для отправки live_locations. Верный формат:\n'
+                                                  '1 - корды\n2 - корды\n...\nn - корды')
+            seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))[0]
+            duration = int(seconds) if seconds else None
+            add_points_ll_task = Task(message.chat.id, 'add_points_ll', session=session, points_dict=points_dict, duration=duration)
+            main_vars.task_queue.append(add_points_ll_task)
+
+    # refactored
     @bot.message_handler(content_types=['text'])
     def text_processor(message):
-        if message.chat.id not in main_vars.allowed_chats and message.chat.id not in main_vars.additional_ids.keys():
-            bot.send_message(message.chat.id,
-                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission')
-            return
-        coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
-                            r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
-        if message.text[0] == '!':
-            code = re.findall(r'!\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
-            if message.chat.id in main_vars.allowed_chats:
-                send_code_main_task = {
-                    'task_type': 'send_code_main',
-                    'chat_id': message.chat.id,
-                    'additional_chat_id': None,
-                    'message_id': message.message_id,
-                    'code': code
-                }
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot, main_vars.sessions_dict.keys()):
+
+            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
+                                r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
+                                r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
+                                r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
+            if message.text[0] == '!':
+                code = re.findall(r'!\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
+                send_code_main_task = Task(message.chat.id, 'send_code_main', session=session, code=code, message_id=message.message_id)
                 main_vars.task_queue.append(send_code_main_task)
-            else:
-                send_code_main_task = {
-                    'task_type': 'send_code_main',
-                    'chat_id': None,
-                    'additional_chat_id': message.chat.id,
-                    'message_id': message.message_id,
-                    'code': code
-                }
-                main_vars.task_queue.append(send_code_main_task)
-            return
-        if message.text[0] == '?':
-            code = re.findall(r'\?\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
-            if message.chat.id in main_vars.allowed_chats:
-                send_code_bonus_task = {
-                    'task_type': 'send_code_bonus',
-                    'chat_id': message.chat.id,
-                    'additional_chat_id': None,
-                    'message_id': message.message_id,
-                    'code': code
-                }
+                return
+
+            if message.text[0] == '?':
+                code = re.findall(r'\?\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
+                send_code_bonus_task = Task(message.chat.id, 'send_code_bonus', session=session, code=code, message_id=message.message_id)
                 main_vars.task_queue.append(send_code_bonus_task)
-            else:
-                send_code_bonus_task = {
-                    'task_type': 'send_code_bonus',
-                    'chat_id': None,
-                    'additional_chat_id': message.chat.id,
-                    'message_id': message.message_id,
-                    'code': code
-                }
-                main_vars.task_queue.append(send_code_bonus_task)
-            return
-        if coords and message.chat.id in main_vars.allowed_chats:
-            send_coords_task = {
-                'task_type': 'send_coords',
-                'chat_id': message.chat.id,
-                'coords': coords
-            }
-            main_vars.task_queue.append(send_coords_task)
+                return
+
+            if coords:
+                send_coords_task = Task(message.chat.id, 'send_code_bonus', coords=coords)
+                main_vars.task_queue.append(send_coords_task)
 
     # Remove webhook, it fails sometimes the set if there is a previous webhook
     bot.remove_webhook()

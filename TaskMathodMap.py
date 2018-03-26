@@ -8,7 +8,7 @@ task_method_dict = {
     'login_to_en': login,  # refactored
     'start_updater': start_updater,  # refactored
     'stop_updater': stop_updater,  # refactored
-    'updater': updater,
+    'updater': updater,  # refactored
     'delay': set_updater_delay,  # refactored
     'login': set_login,  # refactored
     'password': set_password,  # refactored
@@ -20,9 +20,9 @@ task_method_dict = {
     'stop_channel': stop_channel,  # refactored
     'join': join,  # refactored
     'reset_join': reset_join,  # refactored
-    'send_code_main': send_code_main,
-    'send_code_bonus': send_code_bonus,
-    'send_coords': send_coords,
+    'send_code_main': send_code_main,  # refactored
+    'send_code_bonus': send_code_bonus,  # refactored
+    'send_coords': send_coords,  # refactored
     'send_task': send_task,  # refactored
     'task_images': send_task_images,  # refactored
     'send_sectors': send_all_sectors,  # refactored
@@ -33,10 +33,10 @@ task_method_dict = {
     'send_messages': send_auth_messages,  # refactored
     'codes_on': enable_codes,  # refactored
     'codes_off': disable_codes,  # refactored
-    'live_location': send_live_locations,
-    'stop_live_location': stop_live_locations,
-    'edit_live_location': edit_live_locations,
-    'add_points_ll': add_custom_live_locations
+    'live_location': send_live_locations,  # refactored
+    'stop_live_location': stop_live_locations,  # refactored
+    'edit_live_location': edit_live_locations,  # refactored
+    'add_points_ll': add_custom_live_locations,  # refactored
 }
 
 
@@ -64,7 +64,7 @@ class TaskMethodMap(object):
             'storm_level_number': task.storm_level_number,
             'duration': task.duration,
             'point': task.point,
-            'points_dict': task.points_dict
+            'points_dict': task.points_dict,
         }
         task_method_dict[task.type](**kwargs)
 
