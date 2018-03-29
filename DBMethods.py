@@ -22,7 +22,7 @@ def execute_dict_select_cur(sql):
         cur = db_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute(sql)
         return cur.fetchall()
-    except psycopg2.DatabaseError:
+    except psycopg2.DatabaseError as err:
         print 'DB error in the following query: "' + sql + '"'
         return False
 
@@ -33,7 +33,7 @@ def execute_insert_cur(sql):
         cur.execute(sql)
         db_conn.commit()
         return True
-    except psycopg2.DatabaseError:
+    except psycopg2.DatabaseError as err:
         print 'DB error in the following query: "' + sql + '"'
         return False
 
@@ -42,8 +42,7 @@ class DB(object):
     def get_sessions_ids():
         sql = "SELECT sessionid FROM sessionconfig"
         rows = execute_select_cur(sql)
-        if rows:
-            return [row[0] for row in rows]
+        return [row[0] for row in rows] if rows else list()
 
 
     @staticmethod
@@ -141,14 +140,14 @@ class DB(object):
 
     @staticmethod
     def insert_session(main_chat_id, login=None, password=None, en_domain=None, channel_name=None):
-        login = login if login else 'NULL'
-        password = password if password else 'NULL'
-        en_domain = en_domain if en_domain else 'NULL'
-        channel_name = channel_name if channel_name else 'NULL'
         use_channel = True if channel_name else False
+        login = "'" + login + "'" if login else 'NULL'
+        password = "'" + password + "'" if password else 'NULL'
+        en_domain = "'" + en_domain + "'" if en_domain else 'NULL'
+        channel_name = "'" + channel_name + "'" if channel_name else 'NULL'
         sql = """INSERT INTO SessionConfig
-                (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, GamejsURL, LoginURL,
+                (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, GameURLjs, LoginURL,
                 GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame)
-                VALUES (%s, False, '%s', '%s', '%s', NULL, '%s', NULL, NULL, NULL, NULL, NULL, %s, NULL, NULL, 2, True, False)
+                VALUES (%s, False, %s, %s, %s, NULL, %s, NULL, NULL, NULL, NULL, NULL, %s, NULL, NULL, 2, True, False)
               """ % (str(main_chat_id), login, password, en_domain, channel_name, use_channel)
         return execute_insert_cur(sql)
