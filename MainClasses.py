@@ -24,8 +24,9 @@ class Validations(object):
             return False, main_chat_ids, add_chat_ids
 
     @staticmethod
-    def check_session_available(chat_id, bot, sessions_chats):
-        if chat_id in sessions_chats or DB.get_main_chat_id_via_add(chat_id) in sessions_chats:
+    def check_session_available(chat_id, bot):
+        sessions_ids = DB.get_sessions_ids()
+        if chat_id in sessions_ids or DB.get_main_chat_id_via_add(chat_id) in sessions_ids:
             return True
         else:
             bot.send_message(chat_id, 'Для данного чата нет сессии. Для создания введите команду /start')
@@ -38,6 +39,13 @@ class Validations(object):
             return False
         else:
             return True
+
+    @staticmethod
+    def check_from_add_chat(chat_id, add_chat_ids):
+        if chat_id in add_chat_ids:
+            return True
+        else:
+            return False
 
     @staticmethod
     def check_join_possible(chat_id, bot, user_id, message_id, add_chat_ids):

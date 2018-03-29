@@ -19,6 +19,7 @@ def compile_urls(config):
 
 
 def login_to_en(session, bot, chat_id):
+    # save cookies in DB
     got_cookies = upd_session_cookie(session, bot, chat_id)
     if got_cookies:
         bot.send_message(chat_id, 'Бот успешно залогинился')

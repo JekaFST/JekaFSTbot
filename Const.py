@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+urls = {
+    'game_url_ending': '/gameengines/encounter/play/',
+    'login_url_ending': '/Login.aspx',
+    'json': '?json=1',
+}
+
 game_wrong_statuses = {
                 2: 'Игра с указанным ID не существует',
                 3: 'Запрошенная игра не соответствует запрошенному Engine',

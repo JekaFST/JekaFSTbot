@@ -17,36 +17,44 @@ from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_co
 
 
 def start(task, bot):
-    config = DB.get_config_by_chat_id(task.chat_id)
-    if task.chat_id not in task.sessions_dict.keys() and not config:
-        task.sessions_dict[task.chat_id] = BotSession()
-        bot.send_message(task.chat_id, '<b>Сессия создана</b>\n'
-                                       'Чтобы начать использовать бота, необходимо задать конфигурацию игры:\n'
-                                       '- ввести домен игры (/domain http://demo.en.cx)\n'
-                                       '- ввести game id игры (/gameid 26991)\n'
-                                       '- ввести логин игрока (/login abc)\n'
-                                       '- ввести пароль игрока (/password abc)\n'
-                                       '- залогиниться в движок (/login_to_en)\n'
-                                       'и активировать сессию (/start_session)\n'
-                                       'Краткое описание доступно по команде /help',
-                         disable_web_page_preview=True, parse_mode='HTML')
-    elif task.chat_id not in task.sessions_dict.keys() and config:
-        task.sessions_dict[task.chat_id] = BotSession()
-        task.sessions_dict[task.chat_id].config['Login'] = config['login']
-        task.sessions_dict[task.chat_id].config['Password'] = config['password']
-        task.sessions_dict[task.chat_id].config['en_domain'] = config['endomain']
-        task.sessions_dict[task.chat_id].channel_name = config['channelname']
-        bot.send_message(task.chat_id, '<b>Сессия создана</b>\n'
-                                       'Для данного чата найдена конфигурация по умолчанию. Проверить: /config\n'
-                                       'Чтобы начать использовать бота, необходимо:\n'
-                                       '- ввести game id игры (/gameid 26991)\n'
-                                       '- залогиниться в движок (/login_to_en)\n'
-                                       'и активировать сессию (/start_session)\n'
-                                       '- сменить домен игры (/domain http://demo.en.cx)\n'
-                                       '- сменить логин игрока (/login abc)\n'
-                                       '- сменить пароль игрока (/password abc)\n'
-                                       'Краткое описание доступно по команде /help',
-                         disable_web_page_preview=True, parse_mode='HTML')
+    config = DB.get_config_by_chat_id(task.chat_id)  # get default config
+    sessions_ids = DB.get_sessions_ids()
+    if task.chat_id not in sessions_ids and not config:
+        # task.sessions_dict[task.chat_id] = BotSession()
+        # insert new line in DB with default config
+        result = DB.insert_session(task.chat_id)
+        if result:
+            bot.send_message(task.chat_id, '<b>Сессия создана</b>\n'
+                                           'Чтобы начать использовать бота, необходимо задать конфигурацию игры:\n'
+                                           '- ввести домен игры (/domain http://demo.en.cx)\n'
+                                           '- ввести game id игры (/gameid 26991)\n'
+                                           '- ввести логин игрока (/login abc)\n'
+                                           '- ввести пароль игрока (/password abc)\n'
+                                           '- залогиниться в движок (/login_to_en)\n'
+                                           'и активировать сессию (/start_session)\n'
+                                           'Краткое описание доступно по команде /help',
+                             disable_web_page_preview=True, parse_mode='HTML')
+        else:
+            bot.send_message(task.chat_id, 'Сессия не создана. Ошибка SQL')
+    elif task.chat_id not in sessions_ids and config:
+        # task.sessions_dict[task.chat_id] = BotSession()
+        # insert new line in DB with default config
+        result = DB.insert_session(task.chat_id, login=config['login'], password=config['password'],
+                                   en_domain=config['endomain'], channel_name=config['channelname'])
+        if result:
+            bot.send_message(task.chat_id, '<b>Сессия создана</b>\n'
+                                           'Для данного чата найдена конфигурация по умолчанию. Проверить: /config\n'
+                                           'Чтобы начать использовать бота, необходимо:\n'
+                                           '- ввести game id игры (/gameid 26991)\n'
+                                           '- залогиниться в движок (/login_to_en)\n'
+                                           'и активировать сессию (/start_session)\n'
+                                           '- сменить домен игры (/domain http://demo.en.cx)\n'
+                                           '- сменить логин игрока (/login abc)\n'
+                                           '- сменить пароль игрока (/password abc)\n'
+                                           'Краткое описание доступно по команде /help',
+                             disable_web_page_preview=True, parse_mode='HTML')
+        else:
+            bot.send_message(task.chat_id, 'Сессия не создана. Ошибка SQL')
     else:
         bot.send_message(task.chat_id, 'Для данного чата уже создана сессия\n'
                                        'Введите /config для проверки ее состояния')
@@ -114,6 +122,7 @@ def set_game_id(task, bot):
 def login(task, bot):
     if task.session.config['en_domain'] and task.session.config['game_id'] and task.session.config['Login'] \
             and task.session.config['Password']:
+        # insert urls in DB
         task.session.urls = compile_urls(task.session.config)
         login_to_en(task.session, bot, task.chat_id)
     else:
