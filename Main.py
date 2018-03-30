@@ -9,8 +9,8 @@ from TaskMathodMap import TaskMethodMap
 
 main_vars = MainVars()
 # Bind to PORT if defined, otherwise default to 5000.
-port = int(os.environ.get('PORT', 5000))
-# port = 443
+# port = int(os.environ.get('PORT', 5000))
+port = 443
 bot = telebot.TeleBot(DB.get_main_bot_token())
 
 try:

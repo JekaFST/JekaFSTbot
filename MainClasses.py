@@ -74,13 +74,14 @@ class Validations(object):
 
 
 class Task(object):
-    def __init__(self, chat_id, type, session=None, message_id=None, user_id=None, sessions_dict=None, main_vars=None,
+    def __init__(self, chat_id, type, session=None, session_id=None, message_id=None, user_id=None, sessions_dict=None, main_vars=None,
                  updaters_dict=None, new_delay=None, new_login=None, new_password=None, new_domain=None, duration=None,
                  new_game_id=None, new_channel_name=None, code=None, coords=None, storm_level_number=None, point=None,
                  points_dict=None, add_chat_ids_per_session=None):
         self.chat_id = chat_id
         self.type = type
         self.session = session
+        self.session_id = session_id
         self.message_id = message_id
         self.user_id = user_id
         self.sessions_dict = sessions_dict
@@ -101,7 +102,14 @@ class Task(object):
         self.add_chat_ids_per_session = add_chat_ids_per_session
 
     @staticmethod
-    def get_session(chat_id, add_chat_ids, sessions_dict):
-        session = sessions_dict[chat_id] if chat_id not in add_chat_ids \
-            else sessions_dict[DB.get_main_chat_id_via_add(chat_id)]
+    def get_session(chat_id, main_chat_ids):
+        main_chat_id = chat_id if chat_id in main_chat_ids \
+            else DB.get_main_chat_id_via_add(chat_id)
+        session = DB.get_session(main_chat_id)
         return session
+
+    # @staticmethod
+    # def get_session_id(chat_id, main_chat_ids):
+    #     main_chat_id = chat_id if chat_id in main_chat_ids else DB.get_main_chat_id_via_add(chat_id)
+    #     session_id = DB.get_session_id(main_chat_id)
+    #     return session_id

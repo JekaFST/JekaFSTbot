@@ -6,16 +6,20 @@ import telebot
 from bs4 import BeautifulSoup
 from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, \
     send_adm_message
-from Const import game_wrong_statuses
+from Const import game_wrong_statuses, urls
 from DBMethods import DB
 
 
-def compile_urls(config):
-    urls = dict()
-    urls['game_url'] = str(config['en_domain'] + config['game_url_ending'] + config['game_id'])
-    urls['game_url_js'] = str(config['en_domain'] + config['game_url_ending'] + config['game_id'] + config['json'])
-    urls['login_url'] = str(config['en_domain'] + config['login_url_ending'])
-    return urls
+def compile_urls(session, chat_id, bot):
+    session_urls = dict()
+    session_urls['game_url'] = str(session['endomain'] + urls['game_url_ending'] + session['gameid'])
+    session_urls['game_url_js'] = str(session['endomain'] + urls['game_url_ending'] + session['gameid'] + urls['json'])
+    session_urls['login_url'] = str(session['endomain'] + urls['login_url_ending'])
+    if DB.update_session_urls(session['sessionid'], session_urls):
+        return True
+    else:
+        bot.send_message(chat_id, 'Ошибка SQL при создании URL игры')
+        return False
 
 
 def login_to_en(session, bot, chat_id):

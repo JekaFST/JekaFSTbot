@@ -1,10 +1,10 @@
 import os
 import psycopg2.extras
 
-DATABASE_URL = os.environ['DATABASE_URL']
-db_conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-# DATABASE_URL = 'jdbc:postgresql://localhost:5432/JekaFSTbot_base'
-# db_conn = psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
+# DATABASE_URL = os.environ['DATABASE_URL']
+# db_conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+DATABASE_URL = 'jdbc:postgresql://localhost:5432/JekaFSTbot_base'
+db_conn = psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
 
 
 def execute_select_cur(sql):
@@ -12,8 +12,8 @@ def execute_select_cur(sql):
         cur = db_conn.cursor()
         cur.execute(sql)
         return cur.fetchall()
-    except psycopg2.DatabaseError:
-        print 'DB error in the following query: "' + sql + '"'
+    except psycopg2.DatabaseError as err:
+        print 'DB error in the following query: "' + sql + '": ' + err.message
         return False
 
 
@@ -23,7 +23,7 @@ def execute_dict_select_cur(sql):
         cur.execute(sql)
         return cur.fetchall()
     except psycopg2.DatabaseError as err:
-        print 'DB error in the following query: "' + sql + '"'
+        print 'DB error in the following query: "' + sql + '": ' + err.message
         return False
 
 
@@ -34,7 +34,7 @@ def execute_insert_cur(sql):
         db_conn.commit()
         return True
     except psycopg2.DatabaseError as err:
-        print 'DB error in the following query: "' + sql + '"'
+        print 'DB error in the following query: "' + sql + '": ' + err.message
         return False
 
 class DB(object):
@@ -141,13 +141,41 @@ class DB(object):
     @staticmethod
     def insert_session(main_chat_id, login=None, password=None, en_domain=None, channel_name=None):
         use_channel = True if channel_name else False
-        login = "'" + login + "'" if login else 'NULL'
-        password = "'" + password + "'" if password else 'NULL'
-        en_domain = "'" + en_domain + "'" if en_domain else 'NULL'
+        login = "'" + login + "'" if login else "''"
+        password = "'" + password + "'" if password else "''"
+        en_domain = "'" + en_domain + "'" if en_domain else "''"
         channel_name = "'" + channel_name + "'" if channel_name else 'NULL'
         sql = """INSERT INTO SessionConfig
                 (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, GameURLjs, LoginURL,
                 GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame)
-                VALUES (%s, False, %s, %s, %s, NULL, %s, NULL, NULL, NULL, NULL, NULL, %s, NULL, NULL, 2, True, False)
+                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, NULL, %s, NULL, NULL, 2, True, False)
               """ % (str(main_chat_id), login, password, en_domain, channel_name, use_channel)
         return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_session(session_id):
+        sql = "SELECT * FROM SessionConfig WHERE sessionid = %s" % session_id
+        rows = execute_dict_select_cur(sql)
+        return rows[0] if rows else None
+
+    @staticmethod
+    def update_session_urls(sessionid, urls):
+        sql = """UPDATE SessionConfig
+                SET gameurl = '%s', gameurljs = '%s', loginurl = '%s'
+                WHERE sessionid = %s
+              """ % (urls['game_url'], urls['game_url_js'], urls['login_url'], sessionid)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def update_gameid(sessionid, game_id):
+        sql = """UPDATE SessionConfig
+                    SET gameid = %s
+                    WHERE sessionid = %s
+                  """ % (game_id, sessionid)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_game_id(sessionid):
+        sql = "SELECT gameid FROM SessionConfig WHERE sessionid = %s" % sessionid
+        rows = execute_select_cur(sql)
+        return rows[0][0]

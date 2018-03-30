@@ -83,7 +83,8 @@ def run_app(bot, main_vars):
     def start_session(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+
+            session = Task.get_session(message.chat.id, main_chat_ids)
             start_session_task = Task(message.chat.id, 'start_session', session=session)
             main_vars.task_queue.append(start_session_task)
 
@@ -93,7 +94,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             stop_session_task = Task(message.chat.id, 'start_sesion', session=session,
                                      add_chat_ids_per_session=DB.get_add_chat_ids_for_main(message.chat.id))
             main_vars.task_queue.append(stop_session_task)
@@ -103,8 +104,8 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
-
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            
+            session = Task.get_session(message.chat.id, main_chat_ids)
             config_task = Task(message.chat.id, 'config', session=session)
             main_vars.task_queue.append(config_task)
 
@@ -114,7 +115,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             new_login = re.findall(r'/login\s*(.+)', str(message.text.encode('utf-8')))[0]
             set_login_task = Task(message.chat.id, 'login', session=session, new_login=new_login)
             main_vars.task_queue.append(set_login_task)
@@ -125,7 +126,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             new_password = re.findall(r'/password\s*(.+)', str(message.text.encode('utf-8')))[0]
             set_password_task = Task(message.chat.id, 'password', session=session, new_password=new_password)
             main_vars.task_queue.append(set_password_task)
@@ -136,7 +137,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             new_domain = re.findall(r'/domain\s*(.+)', str(message.text.encode('utf-8')))[0]
             set_domain_task = Task(message.chat.id, 'domain', session=session, new_domain=new_domain)
             main_vars.task_queue.append(set_domain_task)
@@ -147,7 +148,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             new_game_id = re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)
             set_game_id_task = Task(message.chat.id, 'game_id', session=session, new_game_id=new_game_id)
             main_vars.task_queue.append(set_game_id_task)
@@ -158,7 +159,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             login_to_en_task = Task(message.chat.id, 'login_to_en', session=session)
             main_vars.task_queue.append(login_to_en_task)
 
@@ -167,7 +168,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
             send_task_task = Task(message.chat.id, 'send_task', session=session, storm_level_number=storm_level)
@@ -179,7 +180,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             send_task_images_task = Task(message.chat.id, 'task_images', session=session)
             main_vars.task_queue.append(send_task_images_task)
 
@@ -188,7 +189,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
             send_all_sectors_task = Task(message.chat.id, 'send_sectors', session=session, storm_level_number=storm_level)
@@ -199,7 +200,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
             send_all_helps_task = Task(message.chat.id, 'send_helps', session=session, storm_level_number=storm_level)
@@ -210,7 +211,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
             send_last_help_task = Task(message.chat.id, 'send_last_help', session=session, storm_level_number=storm_level)
@@ -221,7 +222,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
             send_all_bonuses_task = Task(message.chat.id, 'send_bonuses', session=session, storm_level_number=storm_level)
@@ -232,7 +233,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
             send_unclosed_bonuses_task = Task(message.chat.id, 'unclosed_bonuses', session=session, storm_level_number=storm_level)
@@ -243,7 +244,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
             send_auth_messages_task = Task(message.chat.id, 'send_messages', session=session, storm_level_number=storm_level)
@@ -264,7 +265,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             new_delay = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0))
             set_delay_task = Task(message.chat.id, 'delay', session=session, new_delay=new_delay)
             main_vars.task_queue.append(set_delay_task)
@@ -275,7 +276,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             stop_updater_task = Task(message.chat.id, 'stop_updater', session=session)
             main_vars.task_queue.append(stop_updater_task)
 
@@ -285,7 +286,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             new_channel_name = re.findall(r'/set_channel_name\s*(.+)', str(message.text.encode('utf-8')))[0]
             set_channel_name_task = Task(message.chat.id, 'channel_name', session=session, new_channel_name=new_channel_name)
             main_vars.task_queue.append(set_channel_name_task)
@@ -296,7 +297,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             start_channel_task = Task(message.chat.id, 'start_channel', session=session)
             main_vars.task_queue.append(start_channel_task)
 
@@ -306,7 +307,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             stop_channel_task = Task(message.chat.id, 'stop_channel', session=session)
             main_vars.task_queue.append(stop_channel_task)
 
@@ -316,7 +317,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             enable_codes_task = Task(message.chat.id, 'codes_on', session=session)
             main_vars.task_queue.append(enable_codes_task)
 
@@ -326,7 +327,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             disable_codes_task = Task(message.chat.id, 'codes_off', session=session)
             main_vars.task_queue.append(disable_codes_task)
 
@@ -347,7 +348,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
@@ -362,7 +363,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             point_number = re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
             point = int(point_number.group(0)) if point_number else None
             stop_live_location_task = Task(message.chat.id, 'stop_live_location', session=session, point=point)
@@ -373,7 +374,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
@@ -388,7 +389,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             points_dict = dict()
             points = re.findall(r'\d{1,2}\s*-\s*\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}|'
                                 r'\d{1,2}\s*-\s*\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}', str(message.text.encode('utf-8')))
@@ -409,7 +410,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             if message.text[0] == '!':
                 code = re.findall(r'!\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
                 send_code_main_task = Task(message.chat.id, 'send_code_main', session=session, code=code, message_id=message.message_id)
@@ -420,7 +421,7 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, add_chat_ids, main_vars.sessions_dict)
+            session = Task.get_session(message.chat.id, main_chat_ids)
             if message.text[0] == '?':
                 code = re.findall(r'\?\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
                 send_code_bonus_task = Task(message.chat.id, 'send_code_bonus', session=session, code=code, message_id=message.message_id)
@@ -442,8 +443,8 @@ def run_app(bot, main_vars):
     bot.remove_webhook()
 
     # Set webhook
-    bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
-    # bot.set_webhook(url='https://a69d42ba.ngrok.io/webhook')
+    # bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
+    bot.set_webhook(url='https://f2c692f5.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():

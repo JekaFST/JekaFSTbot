@@ -20,8 +20,6 @@ def start(task, bot):
     config = DB.get_config_by_chat_id(task.chat_id)  # get default config
     sessions_ids = DB.get_sessions_ids()
     if task.chat_id not in sessions_ids and not config:
-        # task.sessions_dict[task.chat_id] = BotSession()
-        # insert new line in DB with default config
         result = DB.insert_session(task.chat_id)
         if result:
             bot.send_message(task.chat_id, '<b>Сессия создана</b>\n'
@@ -37,8 +35,6 @@ def start(task, bot):
         else:
             bot.send_message(task.chat_id, 'Сессия не создана. Ошибка SQL')
     elif task.chat_id not in sessions_ids and config:
-        # task.sessions_dict[task.chat_id] = BotSession()
-        # insert new line in DB with default config
         result = DB.insert_session(task.chat_id, login=config['login'], password=config['password'],
                                    en_domain=config['endomain'], channel_name=config['channelname'])
         if result:
@@ -71,10 +67,10 @@ def stop_session(task, bot):
 
 
 def config(task, bot):
-    session_condition = 'Сессия активна' if task.session.active else 'Сессия не активна'
-    channel_condition = '\r\nИмя канала задано' if task.session.channel_name else '\r\nИмя канала не задано'
-    reply = session_condition + '\r\nДомен: ' + task.session.config['en_domain'] + '\r\nID игры: ' + task.session.config['game_id'] + \
-            '\r\nЛогин: ' + task.session.config['Login'] + channel_condition + '\r\nИнтервал слежения: ' + str(task.session.delay)
+    session_condition = 'Сессия активна' if task.session['active'] else 'Сессия не активна'
+    channel_condition = '\r\nИмя канала задано' if task.session['channelname'] else '\r\nИмя канала не задано'
+    reply = session_condition + '\r\nДомен: ' + task.session['endomain'] + '\r\nID игры: ' + task.session['gameid'] + \
+            '\r\nЛогин: ' + task.session['login'] + channel_condition + '\r\nИнтервал слежения: ' + str(task.session['delay'])
     bot.send_message(task.chat_id, reply, disable_web_page_preview=True)
 
 
@@ -109,30 +105,30 @@ def set_domain(task, bot):
 
 
 def set_game_id(task, bot):
-    if not task.session.active:
-        task.session.config['game_id'] = task.new_game_id
-        reply = 'Игра успешно задана' if task.session.config['game_id'] == task.new_game_id \
-            else 'Игра не задана, повторите (/gameid 26991)'
-        drop_session_vars(task.session)
+    if not task.session['active']:
+        if DB.update_gameid(task.session['sessionid'], task.new_game_id):
+            reply = 'Игра успешно задана' if DB.get_game_id(task.session['sessionid']) == task.new_game_id \
+                else 'Игра не задана, повторите (/gameid 26991)'
+        else:
+            reply = 'Сессия не создана. Ошибка SQL'
+        # drop_session_vars(task.session)
         bot.send_message(task.chat_id, reply)
     else:
         bot.send_message(task.chat_id, 'Нельзя менять игру при активной сессии')
 
 
 def login(task, bot):
-    if task.session.config['en_domain'] and task.session.config['game_id'] and task.session.config['Login'] \
-            and task.session.config['Password']:
-        # insert urls in DB
-        task.session.urls = compile_urls(task.session.config)
-        login_to_en(task.session, bot, task.chat_id)
+    if task.session['endomain'] and task.session['gameid'] and task.session['login'] \
+            and task.session['password']:
+        if compile_urls(task.session, task.chat_id, bot):
+            login_to_en(task.session, bot, task.chat_id)
     else:
         bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
 
 
 def start_session(task, bot):
-    if not task.session.active:
-        if task.session.config['cookie'] and task.session.config['game_id'] and task.session.config['Login'] \
-                and task.session.config['Password']:
+    if not task.session['active']:
+        if task.session['cookie'] and task.session['gameid'] and task.session['login'] and task.session['password']:
             launch_session(task.session, bot, task.chat_id)
         else:
             bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана или бот не залогинен. '
