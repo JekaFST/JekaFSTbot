@@ -28,41 +28,38 @@ def login_to_en(session, bot, chat_id):
         bot.send_message(chat_id, 'Бот успешно залогинился')
 
 
-def launch_session(session_id, bot, chat_id):
-    cookie = DB.get_cookie(session_id)
-    if 'stoken' not in cookie:
+# session in input
+def launch_session(session, bot, chat_id):
+    if 'stoken' not in session['cookie']:
         bot.send_message(chat_id, 'Сессия не активирована - бот не залогинен\n'
                                   'Проверьте конфигурацию /config и залогиньтесь /login_to_en')
         return
-    if DB.update_session_activity(session_id, 'True'):
-        session = DB.get_session(session_id)
-        linear, storm = initiate_session_vars(session, bot, chat_id)
-        if linear:
-            reply = 'Сессия активирована, игра в нормальном состоянии\r\n' \
-                    'для запуска слежения введите /start_updater\r\n' \
-                    'для остановки слежения введите /stop_updater\r\n' \
-                    'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
-                    'и запустите репстинг в канал /start_channel\r\n' \
-                    'если имя канала задано по умолчания, постинг уже активирован\r\n' \
-                    'для остановки репостинга в канал введите /stop_channel'
-            bot.send_message(chat_id, reply)
-        elif storm:
-            reply = 'Сессия активирована, штурмовая игра в нормальном состоянии\r\n' \
-                    'для запуска слежения введите /start_updater\r\n' \
-                    'для остановки слежения введите /stop_updater\r\n' \
-                    'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
-                    'и запустите репстинг в канал /start_channel\r\n' \
-                    'если имя канала задано по умолчания, постинг уже активирован\r\n' \
-                    'для остановки репостинга в канал введите /stop_channel'
-            bot.send_message(chat_id, reply)
-        else:
-            reply = 'Сессия активирована. Игра не в нормальном состоянии\r\n' \
-                    'для запуска слежения введите /start_updater\r\n' \
-                    'для остановки слежения введите /stop_updater\r\n' \
-                    'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
-                    'и запустите репстинг в канал /start_channel\r\n' \
-                    'для остановки репостинга в канал введите /stop_channel'
-            bot.send_message(chat_id, reply)
+    linear, storm = initiate_session_vars(session, bot, chat_id)
+    if linear:
+        reply = 'Сессия активирована, игра в нормальном состоянии\r\n' \
+                'для запуска слежения введите /start_updater\r\n' \
+                'для остановки слежения введите /stop_updater\r\n' \
+                'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
+                'и запустите репстинг в канал /start_channel\r\n' \
+                'если имя канала задано по умолчания, постинг уже активирован\r\n' \
+                'для остановки репостинга в канал введите /stop_channel'
+    elif storm:
+        reply = 'Сессия активирована, штурмовая игра в нормальном состоянии\r\n' \
+                'для запуска слежения введите /start_updater\r\n' \
+                'для остановки слежения введите /stop_updater\r\n' \
+                'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
+                'и запустите репстинг в канал /start_channel\r\n' \
+                'если имя канала задано по умолчания, постинг уже активирован\r\n' \
+                'для остановки репостинга в канал введите /stop_channel'
+    else:
+        reply = 'Сессия активирована. Игра не в нормальном состоянии\r\n' \
+                'для запуска слежения введите /start_updater\r\n' \
+                'для остановки слежения введите /stop_updater\r\n' \
+                'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
+                'и запустите репстинг в канал /start_channel\r\n' \
+                'для остановки репостинга в канал введите /stop_channel'
+    if DB.update_session_activity(session['sessionid'], 'True'):
+        bot.send_message(chat_id, reply)
 
 
 def upd_session_cookie(session, bot, chat_id):
@@ -101,11 +98,12 @@ def upd_session_cookie(session, bot, chat_id):
         return False
 
 
+# session in input
 def initiate_session_vars(session, bot, chat_id, from_updater=False):
-    game_model = get_current_game_model(session, bot, chat_id, from_updater)
+    game_model = get_current_game_model(session, bot, chat_id, from_updater) # session sent
     if game_model and game_model['LevelSequence'] == 3:
         levels = game_model['Levels']
-        storm_levels = get_storm_levels(len(levels), session['sessionid'], bot, chat_id, from_updater)
+        storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater)
         for level in storm_levels:
             if level['LevelId'] not in DB.get_level_ids_per_game(session['sessionid']):
                 DB.insert_level(session['sessionid'], level)
@@ -122,13 +120,12 @@ def initiate_session_vars(session, bot, chat_id, from_updater=False):
         return None, None
 
 
+# input should be session
 def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=None):
     for i in xrange(2):
         if not i == 0:
             _ = upd_session_cookie(session, bot, chat_id)
             session = DB.get_session(session['sessionid'])
-        # if session['endomain'] not in session['gameurljs'] or session['gameid'] not in session['gameurljs']:
-        #     session.urls = compile_urls(session.config)
         if not storm_level_url:
             response = requests.get(session['gameurljs'], headers={'Cookie': session['cookie']})
         else:
@@ -180,6 +177,7 @@ def check_game_model(game_model, session_id, bot, chat_id, from_updater=False):
     return False
 
 
+# session in input
 def get_current_level(session, bot, chat_id, from_updater=False):
     game_model = get_current_game_model(session, bot, chat_id, from_updater)
     if game_model:
@@ -190,16 +188,17 @@ def get_current_level(session, bot, chat_id, from_updater=False):
         return None, None
 
 
-def get_storm_levels(levels_qty, session_id, bot, chat_id, from_updater=False):
+# session in input
+def get_storm_levels(levels_qty, session, bot, chat_id, from_updater=False):
     storm_levels = list()
     for i in xrange(levels_qty):
-        storm_levels.append(get_storm_level(i+1, session_id, bot, chat_id, from_updater))
+        storm_levels.append(get_storm_level(i+1, session, bot, chat_id, from_updater))
     return storm_levels
 
 
-def get_storm_level(level_number, session_id, bot, chat_id, from_updater):
+# session in input
+def get_storm_level(level_number, session, bot, chat_id, from_updater):
     url_ending = '?level=%s&json=1' % str(level_number)
-    session = DB.get_session(session_id)
     url = str(session['endomain'] + urls['game_url_ending'] + session['gameid'] + url_ending)
     storm_level_game_model = get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=url)
     if not storm_level_game_model:
@@ -228,7 +227,7 @@ def send_task_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
-    send_task(level, bot, chat_id, session['locations'])
+    send_task(level, bot, chat_id, json.loads(session['locations']))
 
 
 def send_task_to_chat_storm(bot, chat_id, session, storm_level_number):

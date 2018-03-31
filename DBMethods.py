@@ -1,3 +1,4 @@
+import json
 import os
 import psycopg2.extras
 
@@ -148,8 +149,8 @@ class DB(object):
         channel_name = "'" + channel_name + "'" if channel_name else 'NULL'
         sql = """INSERT INTO SessionConfig
                 (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, GameURLjs, LoginURL,
-                GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame, CurrLevelId)
-                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, '', %s, NULL, NULL, 2, True, NULL, NULL)
+                GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame, CurrLevelId, Locations)
+                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, '', %s, NULL, NULL, 2, True, NULL, NULL, '{}')
               """ % (main_chat_id, login, password, en_domain, channel_name, use_channel)
         return execute_insert_cur(sql)
 
@@ -297,8 +298,8 @@ class DB(object):
     def insert_level(sessionid, level):
         game_id = DB.get_game_id(sessionid)
         sql = """INSERT INTO levels
-                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, SectorsToClose, SectorsMessageId, Locations)
-                    VALUES (%s, %s, '%s', %s, %s, %s, False, Null, Null, '{}')
+                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, SectorsToClose, SectorsMessageId)
+                    VALUES (%s, %s, '%s', %s, %s, %s, False, Null, Null)
                 """ % (sessionid, level['LevelId'], game_id, level['Number'], level['IsPassed'], level['Dismissed'])
         return execute_insert_cur(sql)
 

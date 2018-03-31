@@ -128,12 +128,15 @@ def start_session(task, bot):
         if not session['cookie'] and session['endomain'] and session['gameid'] and session['login'] \
                 and session['password']:
             compile_urls(session['sessionid'], task.chat_id, bot, session['gameid'], session['endomain'])
+            session = DB.get_session(task.session_id)
             login_to_en(session, bot, task.chat_id)
-            launch_session(task.session_id, bot, task.chat_id)
+            session = DB.get_session(task.session_id)
+            launch_session(session, bot, task.chat_id)
 
         elif session['cookie'] and session['gameid'] and session['login'] and session['password']:
             compile_urls(session['sessionid'], task.chat_id, bot, session['gameid'], session['endomain'])
-            launch_session(task.session_id, bot, task.chat_id)
+            session = DB.get_session(task.session_id)
+            launch_session(session, bot, task.chat_id)
         else:
             bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана или бот не залогинен. '
                                            'Проверьте домен, id игры, логин и пароль.')
