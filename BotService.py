@@ -102,9 +102,8 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
-            
-            session = Task.get_session(message.chat.id, main_chat_ids)
-            config_task = Task(message.chat.id, 'config', session=session)
+
+            config_task = Task(message.chat.id, 'config', session_id=message.chat.id)
             main_vars.task_queue.append(config_task)
 
     @bot.message_handler(commands=['login'])
@@ -113,9 +112,8 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
             new_login = re.findall(r'/login\s*(.+)', str(message.text.encode('utf-8')))[0]
-            set_login_task = Task(message.chat.id, 'login', session=session, new_login=new_login)
+            set_login_task = Task(message.chat.id, 'login', session_id=message.chat.id, new_login=new_login)
             main_vars.task_queue.append(set_login_task)
 
     @bot.message_handler(commands=['password'])
@@ -124,9 +122,8 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
             new_password = re.findall(r'/password\s*(.+)', str(message.text.encode('utf-8')))[0]
-            set_password_task = Task(message.chat.id, 'password', session=session, new_password=new_password)
+            set_password_task = Task(message.chat.id, 'password', session_id=message.chat.id, new_password=new_password)
             main_vars.task_queue.append(set_password_task)
 
     @bot.message_handler(commands=['domain'])
@@ -135,9 +132,8 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
             new_domain = re.findall(r'/domain\s*(.+)', str(message.text.encode('utf-8')))[0]
-            set_domain_task = Task(message.chat.id, 'domain', session=session, new_domain=new_domain)
+            set_domain_task = Task(message.chat.id, 'domain', session_id=message.chat.id, new_domain=new_domain)
             main_vars.task_queue.append(set_domain_task)
 
     @bot.message_handler(commands=['gameid'])
@@ -146,10 +142,8 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            # session = Task.get_session(message.chat.id, main_chat_ids)
-            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             new_game_id = re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)
-            set_game_id_task = Task(message.chat.id, 'game_id', session_id=main_chat_id, new_game_id=new_game_id)
+            set_game_id_task = Task(message.chat.id, 'game_id', session_id=message.chat.id, new_game_id=new_game_id)
             main_vars.task_queue.append(set_game_id_task)
 
     @bot.message_handler(commands=['login_to_en'])
@@ -158,9 +152,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            # session = Task.get_session(message.chat.id, main_chat_ids)
-            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
-            login_to_en_task = Task(message.chat.id, 'login_to_en', session_id=main_chat_id)
+            login_to_en_task = Task(message.chat.id, 'login_to_en', session_id=message.chat.id)
             main_vars.task_queue.append(login_to_en_task)
 
     @bot.message_handler(commands=['task'])

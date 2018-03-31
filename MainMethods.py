@@ -65,37 +65,37 @@ def stop_session(task, bot):
 
 
 def config(task, bot):
-    session_condition = 'Сессия активна' if task.session['active'] else 'Сессия не активна'
-    channel_condition = '\r\nИмя канала задано' if task.session['channelname'] else '\r\nИмя канала не задано'
-    reply = session_condition + '\r\nДомен: ' + task.session['endomain'] + '\r\nID игры: ' + task.session['gameid'] + \
-            '\r\nЛогин: ' + task.session['login'] + channel_condition + '\r\nИнтервал слежения: ' + str(task.session['delay'])
+    session = DB.get_session(task.session_id)
+    session_condition = 'Сессия активна' if session['active'] else 'Сессия не активна'
+    channel_condition = '\r\nИмя канала задано' if session['channelname'] else '\r\nИмя канала не задано'
+    reply = session_condition + '\r\nДомен: ' + session['endomain'] + '\r\nID игры: ' + session['gameid'] + \
+            '\r\nЛогин: ' + session['login'] + channel_condition + '\r\nИнтервал слежения: ' + str(session['delay'])
     bot.send_message(task.chat_id, reply, disable_web_page_preview=True)
 
 
 def set_login(task, bot):
-    if not task.session.active:
-        task.session.config['Login'] = task.new_login
-        reply = 'Логин успешно задан' if task.session.config['Login'] == task.new_login else 'Логин не задан, повторите'
+    if not DB.get_session_activity(task.session_id):
+        reply = 'Логин успешно задан' if DB.update_login(task.session_id, task.new_login) \
+            else 'Логин не задан, повторите'
         bot.send_message(task.chat_id, reply)
     else:
         bot.send_message(task.chat_id, 'Нельзя менять логин при активной сессии')
 
 
 def set_password(task, bot):
-    if not task.session.active:
-        task.session.config['Password'] = task.new_password
-        reply = 'Пароль успешно задан' if task.session.config['Password'] == task.new_password else 'Пароль не задана, повторите'
+    if not DB.get_session_activity(task.session_id):
+        reply = 'Пароль успешно задан' if DB.update_password(task.session_id, task.new_password) \
+            else 'Пароль не задан, повторите'
         bot.send_message(task.chat_id, reply)
     else:
         bot.send_message(task.chat_id, 'Нельзя менять пароль при активной сессии')
 
 
 def set_domain(task, bot):
-    if not task.session.active:
+    if not DB.get_session_activity(task.session_id):
         if 'http://' not in task.new_domain:
-            new_domain = 'http://' + task.new_domain
-            task.session.config['en_domain'] = new_domain
-        reply = 'Домен успешно задан' if task.session.config['en_domain'] == new_domain \
+            task.new_domain = 'http://' + task.new_domain
+        reply = 'Домен успешно задан' if DB.update_domain(task.session_id, task.new_domain) \
             else 'Домен не задан, повторите (/domain http://demo.en.cx)'
         bot.send_message(task.chat_id, reply)
     else:
@@ -105,11 +105,8 @@ def set_domain(task, bot):
 def set_game_id(task, bot):
     if not DB.get_session_activity(task.session_id):
         if DB.update_gameid(task.session_id, task.new_game_id):
-            if DB.get_game_id(task.session_id) == task.new_game_id:
-                DB.drop_session_vars(task.session_id)
-                reply = 'Игра успешно задана. Переменные сброшены'
-            else:
-                reply = 'Игра не задана, повторите (/gameid 26991)'
+            DB.drop_session_vars(task.session_id)
+            reply = 'Игра успешно задана. Переменные сброшены'
         else:
             reply = 'game_id не задан, urls не сгенерированы. Ошибка SQL'
         bot.send_message(task.chat_id, reply)

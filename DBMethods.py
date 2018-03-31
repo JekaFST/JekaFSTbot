@@ -182,6 +182,30 @@ class DB(object):
         return rows[0][0]
 
     @staticmethod
+    def update_login(sessionid, login):
+        sql = """UPDATE SessionConfig
+                    SET login = %s
+                    WHERE sessionid = %s
+                  """ % (login, sessionid)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def update_password(sessionid, password):
+        sql = """UPDATE SessionConfig
+                    SET password = %s
+                    WHERE sessionid = %s
+                  """ % (password, sessionid)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def update_domain(sessionid, domain):
+        sql = """UPDATE SessionConfig
+                    SET endomain = %s
+                    WHERE sessionid = %s
+                  """ % (domain, sessionid)
+        return execute_insert_cur(sql)
+
+    @staticmethod
     def update_cookie(sessionid, cookie):
         sql = """UPDATE SessionConfig
                     SET cookie = '%s'
