@@ -4,20 +4,19 @@ import threading
 import time
 import re
 import telebot
-from BotSession import BotSession
 from CommonMethods import close_live_locations
 from DBMethods import DB
 from MainClasses import Task
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
     send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session, \
     send_auth_messages_to_chat, send_unclosed_bonuses_to_chat, send_code_to_storm_level, send_task_to_chat_storm, \
-    drop_session_vars, send_all_helps_to_chat_storm, send_last_help_to_chat_storm, send_all_sectors_to_chat_storm, \
+    send_all_helps_to_chat_storm, send_last_help_to_chat_storm, send_all_sectors_to_chat_storm, \
     send_all_bonuses_to_chat_storm, send_unclosed_bonuses_to_chat_storm, send_auth_messages_to_chat_storm, \
     send_live_locations_to_chat
 
 
 def start(task, bot):
-    config = DB.get_config_by_chat_id(task.chat_id)  # get default config
+    config = DB.get_config_by_chat_id(task.chat_id)
     sessions_ids = DB.get_sessions_ids()
     if task.chat_id not in sessions_ids and not config:
         result = DB.insert_session(task.chat_id)
@@ -28,8 +27,7 @@ def start(task, bot):
                                            '- ввести game id игры (/gameid 26991)\n'
                                            '- ввести логин игрока (/login abc)\n'
                                            '- ввести пароль игрока (/password abc)\n'
-                                           '- залогиниться в движок (/login_to_en)\n'
-                                           'и активировать сессию (/start_session)\n'
+                                           '- активировать сессию (/start_session)\n'
                                            'Краткое описание доступно по команде /help',
                              disable_web_page_preview=True, parse_mode='HTML')
         else:
@@ -42,8 +40,7 @@ def start(task, bot):
                                            'Для данного чата найдена конфигурация по умолчанию. Проверить: /config\n'
                                            'Чтобы начать использовать бота, необходимо:\n'
                                            '- ввести game id игры (/gameid 26991)\n'
-                                           '- залогиниться в движок (/login_to_en)\n'
-                                           'и активировать сессию (/start_session)\n'
+                                           '- активировать сессию (/start_session)\n'
                                            '- сменить домен игры (/domain http://demo.en.cx)\n'
                                            '- сменить логин игрока (/login abc)\n'
                                            '- сменить пароль игрока (/password abc)\n'
@@ -57,12 +54,13 @@ def start(task, bot):
 
 
 def stop_session(task, bot):
-    task.session.update_stop_updater = True
-    task.session.put_updater_task = False
-    task.session.use_channel = False
-    task.session.active = False
+    DB.update_stop_updater(task.session_id, 'True')
+    DB.update_put_updater_task(task.session_id, 'False')
+    DB.update_use_channel(task.session_id, 'False')
+    DB.update_session_activity(task.session_id, 'False')
     bot.send_message(task.chat_id, 'Сессия остановлена')
-    for add_chat_id in task.add_chat_ids_per_session:
+    add_chat_ids_per_session = DB.get_add_chat_ids_for_main(task.session_id)
+    for add_chat_id in add_chat_ids_per_session:
         DB.delete_add_chat_id(add_chat_id)
 
 
@@ -107,11 +105,13 @@ def set_domain(task, bot):
 def set_game_id(task, bot):
     if not DB.get_session_activity(task.session_id):
         if DB.update_gameid(task.session_id, task.new_game_id):
-            reply = 'Игра успешно задана' if DB.get_game_id(task.session_id) == task.new_game_id \
-                else 'Игра не задана, повторите (/gameid 26991)'
+            if DB.get_game_id(task.session_id) == task.new_game_id:
+                DB.drop_session_vars(task.session_id)
+                reply = 'Игра успешно задана. Переменные сброшены'
+            else:
+                reply = 'Игра не задана, повторите (/gameid 26991)'
         else:
             reply = 'game_id не задан, urls не сгенерированы. Ошибка SQL'
-        # drop_session_vars(task.session)
         bot.send_message(task.chat_id, reply)
     else:
         bot.send_message(task.chat_id, 'Нельзя менять игру при активной сессии')
@@ -135,7 +135,7 @@ def start_session(task, bot):
             launch_session(task.session_id, bot, task.chat_id)
 
         elif session['cookie'] and session['gameid'] and session['login'] and session['password']:
-            compile_urls(session['sessionid'], task.chat_id, bot, session['gameid', session['endomain']])
+            compile_urls(session['sessionid'], task.chat_id, bot, session['gameid'], session['endomain'])
             launch_session(task.session_id, bot, task.chat_id)
         else:
             bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана или бот не залогинен. '

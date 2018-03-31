@@ -8,7 +8,6 @@ from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bo
     send_adm_message
 from Const import game_wrong_statuses, urls
 from DBMethods import DB
-from MainClasses import Task
 
 
 def compile_urls(session_id, chat_id, bot, game_id, en_domain):
@@ -44,6 +43,7 @@ def launch_session(session_id, bot, chat_id):
                     'для остановки слежения введите /stop_updater\r\n' \
                     'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
                     'и запустите репстинг в канал /start_channel\r\n' \
+                    'если имя канала задано по умолчания, постинг уже активирован\r\n' \
                     'для остановки репостинга в канал введите /stop_channel'
             bot.send_message(chat_id, reply)
         elif storm:
@@ -52,6 +52,7 @@ def launch_session(session_id, bot, chat_id):
                     'для остановки слежения введите /stop_updater\r\n' \
                     'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
                     'и запустите репстинг в канал /start_channel\r\n' \
+                    'если имя канала задано по умолчания, постинг уже активирован\r\n' \
                     'для остановки репостинга в канал введите /stop_channel'
             bot.send_message(chat_id, reply)
         else:
@@ -114,6 +115,7 @@ def initiate_session_vars(session_id, bot, chat_id, from_updater=False):
         current_level_info = game_model['Level']
         DB.update_currlevelid(session_id, current_level_info['LevelId'])
         DB.insert_level(session_id, current_level_info)
+        DB.update_storm_game(session_id, 'False')
         return True, None
     else:
         return None, None
@@ -161,7 +163,7 @@ def check_game_model(game_model, session_id, bot, chat_id, from_updater=False):
             DB.update_stop_updater(session_id, 'True')
             DB.update_use_channel(session_id, 'False')
             DB.update_session_activity(session_id, 'False')
-            # drop_session_vars(session)
+            DB.drop_session_vars(session_id)
             loaded_game_wrong_status = game_wrong_statuses.keys[17] + '\r\nСессия остановлена, переменные сброшены'
         else:
             for k, v in game_wrong_statuses.items():
@@ -187,16 +189,17 @@ def get_current_level(session, bot, chat_id, from_updater=False):
         return None, None
 
 
-def get_storm_levels(levels_qty, session, bot, chat_id, from_updater=False):
+def get_storm_levels(levels_qty, session_id, bot, chat_id, from_updater=False):
     storm_levels = list()
     for i in xrange(levels_qty):
-        storm_levels.append(get_storm_level(i+1, session, bot, chat_id, from_updater))
+        storm_levels.append(get_storm_level(i+1, session_id, bot, chat_id, from_updater))
     return storm_levels
 
 
-def get_storm_level(level_number, session, bot, chat_id, from_updater):
+def get_storm_level(level_number, session_id, bot, chat_id, from_updater):
     url_ending = '?level=%s&json=1' % str(level_number)
-    url = str(session.config['en_domain'] + session.config['game_url_ending'] + session.config['game_id'] + url_ending)
+    session = DB.get_session(session_id)
+    url = str(session['endomain'] + session['gameurlending'] + session['gameid'] + url_ending)
     storm_level_game_model = get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=url)
     if not storm_level_game_model:
         return
@@ -580,28 +583,3 @@ def send_live_locations_to_chat(bot, chat_id, session, coords=None, duration=Non
         if not_in_chat_bots:
             bot.send_message(chat_id, 'Live location для следующих точек не отправлен: %s.\r\n'
                                       'В чате нет соответствующего(-их) бота(-ов)' % str(not_in_chat_bots))
-
-
-def drop_session_vars(session):
-    session.channel_name = None
-    session.current_level = None
-    session.storm_levels = None
-    session.urls = {
-            'game_url': '',
-            'game_url_js': '',
-            'login_url': ''
-        }
-    session.game_answered_bonus_ids = list()
-    session.help_statuses = dict()
-    session.bonus_statuses = dict()
-    session.sector_statuses = dict()
-    session.message_statuses = dict()
-    session.sent_messages = list()
-    session.time_to_up_sent = None
-    session.sectors_to_close = None
-    session.sectors_message_id = None
-    session.game_model_status = None
-    session.put_updater_task = None
-    session.send_codes = True
-    session.dismissed_level_ids = list()
-    session.storm_game = False

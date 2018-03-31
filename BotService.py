@@ -82,11 +82,10 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['start_session'])
     def start_session(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot):
+        if allowed and Validations.check_session_available(message.chat.id, bot) \
+                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            # session = Task.get_session(message.chat.id, main_chat_ids)
-            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
-            start_session_task = Task(message.chat.id, 'start_session', session_id=main_chat_id)
+            start_session_task = Task(message.chat.id, 'start_session', session_id=message.chat.id)
             main_vars.task_queue.append(start_session_task)
 
     @bot.message_handler(commands=['stop_session'])
@@ -95,9 +94,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
-            stop_session_task = Task(message.chat.id, 'start_sesion', session=session,
-                                     add_chat_ids_per_session=DB.get_add_chat_ids_for_main(message.chat.id))
+            stop_session_task = Task(message.chat.id, 'stop_session', session_id=message.chat.id)
             main_vars.task_queue.append(stop_session_task)
 
     @bot.message_handler(commands=['config'])

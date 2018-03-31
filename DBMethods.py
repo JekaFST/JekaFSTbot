@@ -149,8 +149,8 @@ class DB(object):
         sql = """INSERT INTO SessionConfig
                 (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, GameURLjs, LoginURL,
                 GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame, CurrLevelId)
-                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, '', %s, NULL, NULL, 2, True, False, NULL)
-              """ % (str(main_chat_id), login, password, en_domain, channel_name, use_channel)
+                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, '', %s, NULL, NULL, 2, True, NULL, NULL)
+              """ % (main_chat_id, login, password, en_domain, channel_name, use_channel)
         return execute_insert_cur(sql)
 
     @staticmethod
@@ -224,6 +224,14 @@ class DB(object):
         return execute_insert_cur(sql)
 
     @staticmethod
+    def update_put_updater_task(sessionid, active):
+        sql = """UPDATE SessionConfig
+                SET putupdatertask = %s
+                WHERE sessionid = %s
+                """ % (active, sessionid)
+        return execute_insert_cur(sql)
+
+    @staticmethod
     def update_use_channel(sessionid, active):
         sql = """UPDATE SessionConfig
                 SET usechannel = %s
@@ -267,5 +275,14 @@ class DB(object):
         sql = """INSERT INTO levels
                     (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, SectorsToClose, SectorsMessageId)
                     VALUES (%s, %s, '%s', %s, %s, %s, False, Null, Null)
-                """ % (str(sessionid), str(level['LevelId']), game_id, str(level['Number']), level['IsPassed'], level['Dismissed'], )
+                """ % (sessionid, level['LevelId'], game_id, level['Number'], level['IsPassed'], level['Dismissed'])
         return execute_insert_cur(sql)
+
+    @staticmethod
+    def drop_session_vars(session_id):
+        sql = """UPDATE SessionConfig
+                    SET CurrLevelId = NULL, GameURL = NULL, GameURLjs = NULL, LoginURL = NULL, StormGame = NULL,
+                    SendCodes = True, GameModelStatus = '', PutUpdaterTask = Null, StopUpdater = NULL
+                    WHERE sessionid = %s
+                    """ % session_id
+        execute_insert_cur(sql)
