@@ -286,3 +286,12 @@ class DB(object):
                     WHERE sessionid = %s
                     """ % session_id
         execute_insert_cur(sql)
+
+    @staticmethod
+    def get_level_ids_per_game(session_id):
+        game_id = DB.get_game_id(session_id)
+        sql = """SELECT LevelId FROM Levels
+                    WHERE sessionid = %s AND gameid = '%s'
+                    """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()

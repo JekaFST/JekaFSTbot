@@ -108,13 +108,15 @@ def initiate_session_vars(session_id, bot, chat_id, from_updater=False):
         levels = game_model['Levels']
         storm_levels = get_storm_levels(len(levels), session_id, bot, chat_id, from_updater)
         for level in storm_levels:
-            DB.insert_level(session_id, level)
+            if level['LevelId'] not in DB.get_level_ids_per_game(session_id):
+                DB.insert_level(session_id, level)
         DB.update_storm_game(session_id, 'True')
         return None, True
     elif game_model:
         current_level_info = game_model['Level']
         DB.update_currlevelid(session_id, current_level_info['LevelId'])
-        DB.insert_level(session_id, current_level_info)
+        if current_level_info['LevelId'] not in DB.get_level_ids_per_game(session_id):
+            DB.insert_level(session_id, current_level_info)
         DB.update_storm_game(session_id, 'False')
         return True, None
     else:
@@ -199,8 +201,8 @@ def get_storm_levels(levels_qty, session_id, bot, chat_id, from_updater=False):
 def get_storm_level(level_number, session_id, bot, chat_id, from_updater):
     url_ending = '?level=%s&json=1' % str(level_number)
     session = DB.get_session(session_id)
-    url = str(session['endomain'] + session['gameurlending'] + session['gameid'] + url_ending)
-    storm_level_game_model = get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=url)
+    url = str(session['endomain'] + urls['game_url_ending'] + session['gameid'] + url_ending)
+    storm_level_game_model = get_current_game_model(session_id, bot, chat_id, from_updater, storm_level_url=url)
     if not storm_level_game_model:
         return
     storm_level = storm_level_game_model['Level']
