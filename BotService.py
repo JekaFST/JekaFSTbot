@@ -84,8 +84,9 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
-            start_session_task = Task(message.chat.id, 'start_session', session=session)
+            # session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
+            start_session_task = Task(message.chat.id, 'start_session', session_id=main_chat_id)
             main_vars.task_queue.append(start_session_task)
 
     @bot.message_handler(commands=['stop_session'])
@@ -148,9 +149,10 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            # session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             new_game_id = re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)
-            set_game_id_task = Task(message.chat.id, 'game_id', session=session, new_game_id=new_game_id)
+            set_game_id_task = Task(message.chat.id, 'game_id', session_id=main_chat_id, new_game_id=new_game_id)
             main_vars.task_queue.append(set_game_id_task)
 
     @bot.message_handler(commands=['login_to_en'])
@@ -159,8 +161,9 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
-            login_to_en_task = Task(message.chat.id, 'login_to_en', session=session)
+            # session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
+            login_to_en_task = Task(message.chat.id, 'login_to_en', session_id=main_chat_id)
             main_vars.task_queue.append(login_to_en_task)
 
     @bot.message_handler(commands=['task'])
@@ -444,7 +447,7 @@ def run_app(bot, main_vars):
 
     # Set webhook
     # bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
-    bot.set_webhook(url='https://f2c692f5.ngrok.io/webhook')
+    bot.set_webhook(url='https://ffa40eb4.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():

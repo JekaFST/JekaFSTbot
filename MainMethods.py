@@ -57,7 +57,7 @@ def start(task, bot):
 
 
 def stop_session(task, bot):
-    task.session.stop_updater = True
+    task.session.update_stop_updater = True
     task.session.put_updater_task = False
     task.session.use_channel = False
     task.session.active = False
@@ -105,12 +105,12 @@ def set_domain(task, bot):
 
 
 def set_game_id(task, bot):
-    if not task.session['active']:
-        if DB.update_gameid(task.session['sessionid'], task.new_game_id):
-            reply = 'Игра успешно задана' if DB.get_game_id(task.session['sessionid']) == task.new_game_id \
+    if not DB.get_session_activity(task.session_id):
+        if DB.update_gameid(task.session_id, task.new_game_id):
+            reply = 'Игра успешно задана' if DB.get_game_id(task.session_id) == task.new_game_id \
                 else 'Игра не задана, повторите (/gameid 26991)'
         else:
-            reply = 'Сессия не создана. Ошибка SQL'
+            reply = 'game_id не задан, urls не сгенерированы. Ошибка SQL'
         # drop_session_vars(task.session)
         bot.send_message(task.chat_id, reply)
     else:
@@ -118,22 +118,28 @@ def set_game_id(task, bot):
 
 
 def login(task, bot):
-    if task.session['endomain'] and task.session['gameid'] and task.session['login'] \
-            and task.session['password']:
-        if compile_urls(task.session, task.chat_id, bot):
-            login_to_en(task.session, bot, task.chat_id)
+    session = DB.get_session(task.session_id)
+    if session['endomain'] and session['gameid'] and session['login'] and session['password']:
+        login_to_en(task.session_id, bot, task.chat_id)
     else:
         bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
 
 
 def start_session(task, bot):
-    if not task.session['active']:
-        if task.session['cookie'] and task.session['gameid'] and task.session['login'] and task.session['password']:
-            launch_session(task.session, bot, task.chat_id)
+    if not DB.get_session_activity(task.session_id):
+        session = DB.get_session(task.session_id)
+        if not session['cookie'] and session['endomain'] and session['gameid'] and session['login'] \
+                and session['password']:
+            compile_urls(session['sessionid'], task.chat_id, bot, session['gameid', session['endomain']])
+            login_to_en(task.session_id, bot, task.chat_id)
+            launch_session(task.session_id, bot, task.chat_id)
+
+        elif session['cookie'] and session['gameid'] and session['login'] and session['password']:
+            compile_urls(session['sessionid'], task.chat_id, bot, session['gameid', session['endomain']])
+            launch_session(task.session_id, bot, task.chat_id)
         else:
             bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана или бот не залогинен. '
-                                           'Проверьте домен, id игры, логин и пароль.\n'
-                                           'Чтобы залогиниться введите /login_to_en')
+                                           'Проверьте домен, id игры, логин и пароль.')
     else:
         bot.send_message(task.chat_id, 'Сессия уже активирована. Если у вас проблемы со слежением - попробуйте '
                                        '/stop_updater, затем /start_updater')
@@ -240,7 +246,7 @@ def send_auth_messages(task, bot):
 def start_updater(task, bot):
     session = task.main_vars.sessions_dict[task.chat_id]
     if session.active and task.chat_id not in task.main_vars.updater_schedulers_dict.keys():
-        session.stop_updater = False
+        session.update_stop_updater = False
         session.put_updater_task = True
         bot.send_message(task.chat_id, 'Слежение запущено')
         name = 'updater_%s' % task.chat_id
@@ -253,7 +259,7 @@ def start_updater(task, bot):
 
 def updater_scheduler(chat_id, bot, main_vars):
     session = main_vars.sessions_dict[chat_id]
-    while not session.stop_updater:
+    while not session.update_stop_updater:
         if session.put_updater_task:
             time.sleep(session.delay)
             updater_task = Task(chat_id, 'updater', session=session, updaters_dict=main_vars.updaters_dict)
@@ -274,7 +280,7 @@ def set_updater_delay(task, bot):
 
 def stop_updater(task, bot):
     if task.session.active:
-        task.session.stop_updater = True
+        task.session.update_stop_updater = True
         task.session.put_updater_task = False
 
 

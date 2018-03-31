@@ -160,8 +160,8 @@ def storm_updater(chat_id, bot, session):
             fill_all_statuses_storm(session, bot, chat_id)
 
         for level in session.storm_levels:
-            if session.stop_updater:
-                session.put_updater_task = True
+            if session.update_stop_updater:
+                session.put_updater_task = False
                 return
             if level['IsPassed'] or level['Dismissed']:
                 continue
@@ -432,7 +432,7 @@ def get_unclosed_sectors(sectors):
 def fill_all_statuses_storm(session, bot, chat_id):
     if not session.help_statuses:
         for level in session.storm_levels:
-            if session.stop_updater:
+            if session.update_stop_updater:
                 return
             loaded_storm_level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
             if not loaded_storm_level:
@@ -444,7 +444,7 @@ def fill_all_statuses_storm(session, bot, chat_id):
 
     if not session.bonus_statuses:
         for level in session.storm_levels:
-            if session.stop_updater:
+            if session.update_stop_updater:
                 return
             loaded_storm_level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
             if not loaded_storm_level:
@@ -456,7 +456,7 @@ def fill_all_statuses_storm(session, bot, chat_id):
 
     if not session.sector_statuses:
         for level in session.storm_levels:
-            if session.stop_updater:
+            if session.update_stop_updater:
                 return
             loaded_storm_level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
             if not loaded_storm_level:
@@ -468,7 +468,7 @@ def fill_all_statuses_storm(session, bot, chat_id):
 
     if not session.message_statuses:
         for level in session.storm_levels:
-            if session.stop_updater:
+            if session.update_stop_updater:
                 return
             loaded_storm_level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
             if not loaded_storm_level:

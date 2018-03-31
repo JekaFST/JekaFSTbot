@@ -8,66 +8,71 @@ from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bo
     send_adm_message
 from Const import game_wrong_statuses, urls
 from DBMethods import DB
+from MainClasses import Task
 
 
-def compile_urls(session, chat_id, bot):
+def compile_urls(session_id, chat_id, bot, game_id, en_domain):
     session_urls = dict()
-    session_urls['game_url'] = str(session['endomain'] + urls['game_url_ending'] + session['gameid'])
-    session_urls['game_url_js'] = str(session['endomain'] + urls['game_url_ending'] + session['gameid'] + urls['json'])
-    session_urls['login_url'] = str(session['endomain'] + urls['login_url_ending'])
-    if DB.update_session_urls(session['sessionid'], session_urls):
+    session_urls['game_url'] = str(en_domain + urls['game_url_ending'] + game_id)
+    session_urls['game_url_js'] = str(en_domain + urls['game_url_ending'] + game_id + urls['json'])
+    session_urls['login_url'] = str(en_domain + urls['login_url_ending'])
+    if DB.update_session_urls(session_id, session_urls):
         return True
     else:
         bot.send_message(chat_id, 'Ошибка SQL при создании URL игры')
         return False
 
 
-def login_to_en(session, bot, chat_id):
-    # save cookies in DB
-    got_cookies = upd_session_cookie(session, bot, chat_id)
+def login_to_en(session_id, bot, chat_id):
+    got_cookies = upd_session_cookie(session_id, bot, chat_id)
     if got_cookies:
         bot.send_message(chat_id, 'Бот успешно залогинился')
 
 
-def launch_session(session, bot, chat_id):
-    if 'stoken' not in session.config['cookie']:
+def launch_session(session_id, bot, chat_id):
+    cookie = DB.get_cookie(session_id)
+    if 'stoken' not in cookie:
         bot.send_message(chat_id, 'Сессия не активирована - бот не залогинен\n'
                                   'Проверьте конфигурацию /config и залогиньтесь /login_to_en')
         return
-    session.active = True
-    session.current_level, session.storm_levels = initiate_session_vars(session, bot, chat_id)
-    if session.current_level:
-        reply = 'Сессия активирована, игра в нормальном состоянии\r\n' \
-                'для запуска слежения введите /start_updater\r\n' \
-                'для остановки слежения введите /stop_updater\r\n' \
-                'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
-                'и запустите репстинг в канал /start_channel\r\n' \
-                'для остановки репостинга в канал введите /stop_channel'
-        bot.send_message(chat_id, reply)
-    elif session.storm_levels:
-        reply = 'Сессия активирована, штурмовая игра в нормальном состоянии\r\n' \
-                'для запуска слежения введите /start_updater\r\n' \
-                'для остановки слежения введите /stop_updater\r\n' \
-                'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
-                'и запустите репстинг в канал /start_channel\r\n' \
-                'для остановки репостинга в канал введите /stop_channel'
-        bot.send_message(chat_id, reply)
-    else:
-        reply = 'Сессия активирована. Игра не в нормальном состоянии\r\n' \
-                'для запуска слежения введите /start_updater\r\n' \
-                'для остановки слежения введите /stop_updater\r\n' \
-                'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
-                'и запустите репстинг в канал /start_channel\r\n' \
-                'для остановки репостинга в канал введите /stop_channel'
-        bot.send_message(chat_id, reply)
+    if DB.update_session_activity(session_id, 'True'):
+        # current_level, storm_levels = initiate_session_vars(session_id, bot, chat_id)
+        linear, storm = initiate_session_vars(session_id, bot, chat_id)
+        if linear:
+            reply = 'Сессия активирована, игра в нормальном состоянии\r\n' \
+                    'для запуска слежения введите /start_updater\r\n' \
+                    'для остановки слежения введите /stop_updater\r\n' \
+                    'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
+                    'и запустите репстинг в канал /start_channel\r\n' \
+                    'для остановки репостинга в канал введите /stop_channel'
+            bot.send_message(chat_id, reply)
+        elif storm:
+            reply = 'Сессия активирована, штурмовая игра в нормальном состоянии\r\n' \
+                    'для запуска слежения введите /start_updater\r\n' \
+                    'для остановки слежения введите /stop_updater\r\n' \
+                    'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
+                    'и запустите репстинг в канал /start_channel\r\n' \
+                    'для остановки репостинга в канал введите /stop_channel'
+            bot.send_message(chat_id, reply)
+        else:
+            reply = 'Сессия активирована. Игра не в нормальном состоянии\r\n' \
+                    'для запуска слежения введите /start_updater\r\n' \
+                    'для остановки слежения введите /stop_updater\r\n' \
+                    'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
+                    'и запустите репстинг в канал /start_channel\r\n' \
+                    'для остановки репостинга в канал введите /stop_channel'
+            bot.send_message(chat_id, reply)
 
 
-def upd_session_cookie(session, bot, chat_id):
+def upd_session_cookie(session_id, bot, chat_id):
     try:
-        if session.config['en_domain'] not in session.urls['login_url']:
-            session.urls = compile_urls(session.config)
-        response = requests.post(session.urls['login_url'], data={'Login': session.config['Login'],
-                                                                  'Password': session.config['Password']},
+        session = DB.get_session(session_id)
+        if session['endomain'] not in session['loginurl']:
+            if compile_urls(session_id, chat_id, bot, session['gameid'], session['endomain']):
+                session = DB.get_session(session_id)
+            else:
+                return False
+        response = requests.post(session['loginurl'], data={'Login': session['login'], 'Password': session['password']},
                                  headers={'Cookie': 'lang=ru'})
     except Exception:
         reply = '<b>Exception</b>\r\nПроверьте конфигурацию игры и попробуйте еще раз'
@@ -78,8 +83,8 @@ def upd_session_cookie(session, bot, chat_id):
         bot.send_message(chat_id, reply)
         return False
 
-    session.config['cookie'] = response.request.headers['Cookie']
-    if not 'stoken' in session.config['cookie']:
+    cookie = response.request.headers['Cookie']
+    if not 'stoken' in cookie:
         soup = BeautifulSoup(response.content)
         for div in soup.find_all('div'):
             if div.attrs['class'][0] == 'error':
@@ -90,33 +95,41 @@ def upd_session_cookie(session, bot, chat_id):
         reply = 'Бот не залогинился, попробуйте еще раз'
         bot.send_message(chat_id, reply)
         return False
-    return True
+    if DB.update_cookie(session['sessionid'], cookie):
+        return True
+    else:
+        return False
 
 
-def initiate_session_vars(session, bot, chat_id, from_updater=False):
-    game_model = get_current_game_model(session, bot, chat_id, from_updater)
+def initiate_session_vars(session_id, bot, chat_id, from_updater=False):
+    game_model = get_current_game_model(session_id, bot, chat_id, from_updater)
     if game_model and game_model['LevelSequence'] == 3:
         levels = game_model['Levels']
-        storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater)
-        session.storm_game = True
-        return None, storm_levels
+        storm_levels = get_storm_levels(len(levels), session_id, bot, chat_id, from_updater)
+        for level in storm_levels:
+            DB.insert_level(session_id, level)
+        DB.update_storm_game(session_id, 'True')
+        return None, True
     elif game_model:
         current_level_info = game_model['Level']
-        return current_level_info, None
+        DB.update_currlevelid(session_id, current_level_info['LevelId'])
+        DB.insert_level(session_id, current_level_info)
+        return True, None
     else:
         return None, None
 
 
-def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=None):
+def get_current_game_model(session_id, bot, chat_id, from_updater, storm_level_url=None):
     for i in xrange(2):
         if not i == 0:
-            _ = upd_session_cookie(session, bot, chat_id)
-        if session.config['en_domain'] not in session.urls['game_url_js'] or session.config['game_id'] not in session.urls['game_url_js']:
-            session.urls = compile_urls(session.config)
+            _ = upd_session_cookie(session_id, bot, chat_id)
+        session = DB.get_session(session_id)
+        # if session['endomain'] not in session['gameurljs'] or session['gameid'] not in session['gameurljs']:
+        #     session.urls = compile_urls(session.config)
         if not storm_level_url:
-            response = requests.get(session.urls['game_url_js'], headers={'Cookie': session.config['cookie']})
+            response = requests.get(session['gameurljs'], headers={'Cookie': session['cookie']})
         else:
-            response = requests.get(storm_level_url, headers={'Cookie': session.config['cookie']})
+            response = requests.get(storm_level_url, headers={'Cookie': session['cookie']})
         try:
             response_json = json.loads(response.text)
             break
@@ -124,32 +137,31 @@ def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=
             if i == 0:
                 continue
             if "Your requests have been classified as robot's requests." in response.text:
-                session.stop_updater = True
+                DB.update_stop_updater(session_id, 'True')
                 reply = 'Сработала защита движка от повторяющихся запросов.' \
                         ' Необходимо перелогиниться и перезапустить апдейтер.\r\n/login_to_en\r\n/start_updater'
                 bot.send_message(chat_id, reply)
                 return False
             else:
-                session.stop_updater = True
+                DB.update_stop_updater(session_id, 'True')
                 bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
                 return False
 
-    game_model = check_game_model(response_json, session, bot, chat_id, from_updater)
+    game_model = check_game_model(response_json, session_id, bot, chat_id, from_updater)
     return game_model
 
 
-def check_game_model(game_model, session, bot, chat_id, from_updater=False):
+def check_game_model(game_model, session_id, bot, chat_id, from_updater=False):
     if game_model['Event'] == 0:
-        # session.current_game_model = game_model
         return game_model
 
     loaded_game_wrong_status = None
     if game_model['Event'] in game_wrong_statuses.keys():
         if game_model['Event'] == 17:
-            session.stop_updater = True
-            session.use_channel = False
-            session.active = False
-            drop_session_vars(session)
+            DB.update_stop_updater(session_id, 'True')
+            DB.update_use_channel(session_id, 'False')
+            DB.update_session_activity(session_id, 'False')
+            # drop_session_vars(session)
             loaded_game_wrong_status = game_wrong_statuses.keys[17] + '\r\nСессия остановлена, переменные сброшены'
         else:
             for k, v in game_wrong_statuses.items():
@@ -158,9 +170,9 @@ def check_game_model(game_model, session, bot, chat_id, from_updater=False):
     else:
         loaded_game_wrong_status = 'Состояние игры не соответствует ни одному из ожидаемых. Проверьте настройки бота'
 
-    if not from_updater or not session.game_model_status == loaded_game_wrong_status:
+    if not from_updater or not DB.get_game_model_status == loaded_game_wrong_status:
+        DB.update_game_model_status(session_id, loaded_game_wrong_status)
         bot.send_message(chat_id, loaded_game_wrong_status)
-        session.game_model_status = loaded_game_wrong_status
 
     return False
 

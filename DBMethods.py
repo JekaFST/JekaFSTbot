@@ -37,6 +37,7 @@ def execute_insert_cur(sql):
         print 'DB error in the following query: "' + sql + '": ' + err.message
         return False
 
+
 class DB(object):
     @staticmethod
     def get_sessions_ids():
@@ -147,8 +148,8 @@ class DB(object):
         channel_name = "'" + channel_name + "'" if channel_name else 'NULL'
         sql = """INSERT INTO SessionConfig
                 (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, GameURLjs, LoginURL,
-                GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame)
-                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, NULL, %s, NULL, NULL, 2, True, False)
+                GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame, CurrLevelId)
+                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, '', %s, NULL, NULL, 2, True, False, NULL)
               """ % (str(main_chat_id), login, password, en_domain, channel_name, use_channel)
         return execute_insert_cur(sql)
 
@@ -179,3 +180,92 @@ class DB(object):
         sql = "SELECT gameid FROM SessionConfig WHERE sessionid = %s" % sessionid
         rows = execute_select_cur(sql)
         return rows[0][0]
+
+    @staticmethod
+    def update_cookie(sessionid, cookie):
+        sql = """UPDATE SessionConfig
+                    SET cookie = '%s'
+                    WHERE sessionid = %s
+                  """ % (cookie, sessionid)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_cookie(sessionid):
+        sql = "SELECT cookie FROM SessionConfig WHERE sessionid = %s" % sessionid
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_session_activity(sessionid, active):
+        sql = """UPDATE SessionConfig
+                SET Active = %s
+                WHERE sessionid = %s
+                """ % (active, sessionid)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_session_activity(sessionid):
+        sql = "SELECT active FROM SessionConfig WHERE sessionid = %s" % sessionid
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def get_en_domain(sessionid):
+        sql = "SELECT endomain FROM SessionConfig WHERE sessionid = %s" % sessionid
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_stop_updater(sessionid, active):
+        sql = """UPDATE SessionConfig
+                SET stopupdater = %s
+                WHERE sessionid = %s
+                """ % (active, sessionid)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def update_use_channel(sessionid, active):
+        sql = """UPDATE SessionConfig
+                SET usechannel = %s
+                WHERE sessionid = %s
+                """ % (active, sessionid)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_game_model_status(sessionid):
+        sql = "SELECT gamemodelstatus FROM SessionConfig WHERE sessionid = %s" % sessionid
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_game_model_status(sessionid, game_model_status):
+        sql = """UPDATE SessionConfig
+                SET gamemodelstatus = '%s'
+                WHERE sessionid = %s
+                """ % (game_model_status, sessionid)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def update_storm_game(sessionid, active):
+        sql = """UPDATE SessionConfig
+                SET StormGame = %s
+                WHERE sessionid = %s
+                """ % (active, sessionid)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def update_currlevelid(sessionid, currlevelid):
+        sql = """UPDATE SessionConfig
+                SET currlevelid = %s
+                WHERE sessionid = %s
+                """ % (currlevelid, sessionid)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def insert_level(sessionid, level):
+        DB.get_game_id(sessionid)
+        sql = """INSERT INTO levels
+                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, SectorsToClose, SectorsMessageId)
+                    VALUES ()
+                """ % (str(main_chat_id), login, password, en_domain, channel_name, use_channel)
+        return execute_insert_cur(sql)
