@@ -180,8 +180,8 @@ def check_game_model(game_model, session_id, bot, chat_id, from_updater=False):
     return False
 
 
-def get_current_level(session_id, bot, chat_id, from_updater=False):
-    game_model = get_current_game_model(session_id, bot, chat_id, from_updater)
+def get_current_level(session, bot, chat_id, from_updater=False):
+    game_model = get_current_game_model(session, bot, chat_id, from_updater)
     if game_model:
         current_level = game_model['Level']
         levels = game_model['Levels']
@@ -201,7 +201,7 @@ def get_storm_level(level_number, session_id, bot, chat_id, from_updater):
     url_ending = '?level=%s&json=1' % str(level_number)
     session = DB.get_session(session_id)
     url = str(session['endomain'] + urls['game_url_ending'] + session['gameid'] + url_ending)
-    storm_level_game_model = get_current_game_model(session_id, bot, chat_id, from_updater, storm_level_url=url)
+    storm_level_game_model = get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=url)
     if not storm_level_game_model:
         return
     storm_level = storm_level_game_model['Level']
@@ -232,7 +232,7 @@ def send_task_to_chat(bot, chat_id, session):
 
 
 def send_task_to_chat_storm(bot, chat_id, session, storm_level_number):
-    storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
+    storm_level = get_storm_level(storm_level_number, session['sessionid'], bot, chat_id, from_updater=False)
     if not storm_level:
         return
     send_task(storm_level, bot, chat_id, session.locations, storm=True)
