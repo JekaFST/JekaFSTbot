@@ -10,3 +10,4 @@ ngrok.exe
 Новая папка_local/webhook_pkey.pem
 .idea/vcs.xml
 *.pyc
+.idea/inspectionProfiles/Project_Default.xml
