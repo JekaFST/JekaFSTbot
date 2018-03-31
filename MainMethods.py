@@ -117,18 +117,18 @@ def set_game_id(task, bot):
 def login(task, bot):
     session = DB.get_session(task.session_id)
     if session['endomain'] and session['gameid'] and session['login'] and session['password']:
-        login_to_en(task.session_id, bot, task.chat_id)
+        login_to_en(session, bot, task.chat_id)
     else:
         bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
 
 
 def start_session(task, bot):
-    if not DB.get_session_activity(task.session_id):
-        session = DB.get_session(task.session_id)
+    session = DB.get_session(task.session_id)
+    if not session['active']:
         if not session['cookie'] and session['endomain'] and session['gameid'] and session['login'] \
                 and session['password']:
             compile_urls(session['sessionid'], task.chat_id, bot, session['gameid'], session['endomain'])
-            login_to_en(task.session_id, bot, task.chat_id)
+            login_to_en(session, bot, task.chat_id)
             launch_session(task.session_id, bot, task.chat_id)
 
         elif session['cookie'] and session['gameid'] and session['login'] and session['password']:
@@ -143,16 +143,17 @@ def start_session(task, bot):
 
 
 def send_task(task, bot):
-    if not task.session.active:
+    session = DB.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить задание при неактивной сессии')
         return
-    if not task.session.storm_game:
-        send_task_to_chat(bot, task.chat_id, task.session)
+    if not session['stormgame']:
+        send_task_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:
             bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/task номер уровня</b>', parse_mode='HTML')
             return
-        send_task_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
+        send_task_to_chat_storm(bot, task.chat_id, session, task.storm_level_number)
 
 
 def send_task_images(task, bot):

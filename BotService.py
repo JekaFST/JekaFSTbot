@@ -160,10 +160,11 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            # session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
-            send_task_task = Task(message.chat.id, 'send_task', session=session, storm_level_number=storm_level)
+            send_task_task = Task(message.chat.id, 'send_task', session_id=main_chat_id, storm_level_number=storm_level)
             main_vars.task_queue.append(send_task_task)
 
     @bot.message_handler(commands=['task_images'])

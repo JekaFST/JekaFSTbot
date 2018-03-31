@@ -22,8 +22,8 @@ def compile_urls(session_id, chat_id, bot, game_id, en_domain):
         return False
 
 
-def login_to_en(session_id, bot, chat_id):
-    got_cookies = upd_session_cookie(session_id, bot, chat_id)
+def login_to_en(session, bot, chat_id):
+    got_cookies = upd_session_cookie(session, bot, chat_id)
     if got_cookies:
         bot.send_message(chat_id, 'Бот успешно залогинился')
 
@@ -35,8 +35,8 @@ def launch_session(session_id, bot, chat_id):
                                   'Проверьте конфигурацию /config и залогиньтесь /login_to_en')
         return
     if DB.update_session_activity(session_id, 'True'):
-        # current_level, storm_levels = initiate_session_vars(session_id, bot, chat_id)
-        linear, storm = initiate_session_vars(session_id, bot, chat_id)
+        session = DB.get_session(session_id)
+        linear, storm = initiate_session_vars(session, bot, chat_id)
         if linear:
             reply = 'Сессия активирована, игра в нормальном состоянии\r\n' \
                     'для запуска слежения введите /start_updater\r\n' \
@@ -65,12 +65,11 @@ def launch_session(session_id, bot, chat_id):
             bot.send_message(chat_id, reply)
 
 
-def upd_session_cookie(session_id, bot, chat_id):
+def upd_session_cookie(session, bot, chat_id):
     try:
-        session = DB.get_session(session_id)
         if session['endomain'] not in session['loginurl']:
-            if compile_urls(session_id, chat_id, bot, session['gameid'], session['endomain']):
-                session = DB.get_session(session_id)
+            if compile_urls(session['sessionid'], chat_id, bot, session['gameid'], session['endomain']):
+                session = DB.get_session(session['sessionid'])
             else:
                 return False
         response = requests.post(session['loginurl'], data={'Login': session['login'], 'Password': session['password']},
@@ -102,32 +101,32 @@ def upd_session_cookie(session_id, bot, chat_id):
         return False
 
 
-def initiate_session_vars(session_id, bot, chat_id, from_updater=False):
-    game_model = get_current_game_model(session_id, bot, chat_id, from_updater)
+def initiate_session_vars(session, bot, chat_id, from_updater=False):
+    game_model = get_current_game_model(session, bot, chat_id, from_updater)
     if game_model and game_model['LevelSequence'] == 3:
         levels = game_model['Levels']
-        storm_levels = get_storm_levels(len(levels), session_id, bot, chat_id, from_updater)
+        storm_levels = get_storm_levels(len(levels), session['sessionid'], bot, chat_id, from_updater)
         for level in storm_levels:
-            if level['LevelId'] not in DB.get_level_ids_per_game(session_id):
-                DB.insert_level(session_id, level)
-        DB.update_storm_game(session_id, 'True')
+            if level['LevelId'] not in DB.get_level_ids_per_game(session['sessionid']):
+                DB.insert_level(session['sessionid'], level)
+        DB.update_storm_game(session['sessionid'], 'True')
         return None, True
     elif game_model:
         current_level_info = game_model['Level']
-        DB.update_currlevelid(session_id, current_level_info['LevelId'])
-        if current_level_info['LevelId'] not in DB.get_level_ids_per_game(session_id):
-            DB.insert_level(session_id, current_level_info)
-        DB.update_storm_game(session_id, 'False')
+        DB.update_currlevelid(session['sessionid'], current_level_info['LevelId'])
+        if current_level_info['LevelId'] not in DB.get_level_ids_per_game(session['sessionid']):
+            DB.insert_level(session['sessionid'], current_level_info)
+        DB.update_storm_game(session['sessionid'], 'False')
         return True, None
     else:
         return None, None
 
 
-def get_current_game_model(session_id, bot, chat_id, from_updater, storm_level_url=None):
+def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=None):
     for i in xrange(2):
         if not i == 0:
-            _ = upd_session_cookie(session_id, bot, chat_id)
-        session = DB.get_session(session_id)
+            _ = upd_session_cookie(session, bot, chat_id)
+            session = DB.get_session(session['sessionid'])
         # if session['endomain'] not in session['gameurljs'] or session['gameid'] not in session['gameurljs']:
         #     session.urls = compile_urls(session.config)
         if not storm_level_url:
@@ -141,17 +140,17 @@ def get_current_game_model(session_id, bot, chat_id, from_updater, storm_level_u
             if i == 0:
                 continue
             if "Your requests have been classified as robot's requests." in response.text:
-                DB.update_stop_updater(session_id, 'True')
+                DB.update_stop_updater(session['sessionid'], 'True')
                 reply = 'Сработала защита движка от повторяющихся запросов.' \
                         ' Необходимо перелогиниться и перезапустить апдейтер.\r\n/login_to_en\r\n/start_updater'
                 bot.send_message(chat_id, reply)
                 return False
             else:
-                DB.update_stop_updater(session_id, 'True')
+                DB.update_stop_updater(session['sessionid'], 'True')
                 bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
                 return False
 
-    game_model = check_game_model(response_json, session_id, bot, chat_id, from_updater)
+    game_model = check_game_model(response_json, session['sessionid'], bot, chat_id, from_updater)
     return game_model
 
 
@@ -181,8 +180,8 @@ def check_game_model(game_model, session_id, bot, chat_id, from_updater=False):
     return False
 
 
-def get_current_level(session, bot, chat_id, from_updater=False):
-    game_model = get_current_game_model(session, bot, chat_id, from_updater)
+def get_current_level(session_id, bot, chat_id, from_updater=False):
+    game_model = get_current_game_model(session_id, bot, chat_id, from_updater)
     if game_model:
         current_level = game_model['Level']
         levels = game_model['Levels']
