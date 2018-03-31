@@ -249,7 +249,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            start_updater_task = Task(message.chat.id, 'start_updater', main_vars=main_vars)
+            start_updater_task = Task(message.chat.id, 'start_updater', main_vars=main_vars, session_id=message.chat.id)
             main_vars.task_queue.append(start_updater_task)
 
     @bot.message_handler(commands=['delay'])

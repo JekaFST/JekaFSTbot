@@ -245,21 +245,21 @@ def send_auth_messages(task, bot):
 
 
 def start_updater(task, bot):
-    session = task.main_vars.sessions_dict[task.chat_id]
-    if session.active and task.chat_id not in task.main_vars.updater_schedulers_dict.keys():
-        session.update_stop_updater = False
-        session.put_updater_task = True
-        bot.send_message(task.chat_id, 'Слежение запущено')
+    session = DB.get_session(task.session_id)
+    if session['active'] and task.chat_id not in task.main_vars.updater_schedulers_dict.keys():
+        DB.update_stop_updater(task.session_id, 'False')
+        DB.update_put_updater_task(task.session_id, 'True')
         name = 'updater_%s' % task.chat_id
         task.main_vars.updater_schedulers_dict[task.chat_id] = threading.Thread(name=name, target=updater_scheduler,
                                                                                 args=(task.chat_id, bot, task.main_vars))
         task.main_vars.updater_schedulers_dict[task.chat_id].start()
+        bot.send_message(task.chat_id, 'Слежение запущено')
     else:
         bot.send_message(task.chat_id, 'Нельзя запустить слежение повторно или при неактивной сессии')
 
 
-def updater_scheduler(chat_id, bot, main_vars):
-    session = main_vars.sessions_dict[chat_id]
+def updater_scheduler(chat_id, bot, main_vars, session):
+    # session = main_vars.sessions_dict[chat_id]
     while not session.update_stop_updater:
         if session.put_updater_task:
             time.sleep(session.delay)
