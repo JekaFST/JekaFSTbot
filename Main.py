@@ -17,6 +17,7 @@ main_vars = MainVars()
 port = int(os.environ.get('PORT', 5000))
 # port = 443
 bot = telebot.TeleBot(DB.get_main_bot_token())
+# bot = telebot.TeleBot("452195897:AAHDmVUqPc_yKMSLLneAkTqK85xiPvE4tnI")
 
 try:
     th_flask = threading.Thread(name='th_flask', target=run_app(bot, main_vars).run, args=('0.0.0.0', port))

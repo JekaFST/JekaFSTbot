@@ -440,7 +440,6 @@ def run_app(bot, main_vars):
             'new_channel_name': re.findall(r'/set_channel_name\s*(.+)', str(message.text.encode('utf-8')))[0]
         }
         main_vars.task_queue.append(set_channel_name_task)
-        main_vars.id += 1
 
     @bot.message_handler(commands=['start_channel'])
     def start_channel(message):
