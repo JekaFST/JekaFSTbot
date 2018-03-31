@@ -184,7 +184,7 @@ class DB(object):
     @staticmethod
     def update_login(sessionid, login):
         sql = """UPDATE SessionConfig
-                    SET login = %s
+                    SET login = '%s'
                     WHERE sessionid = %s
                   """ % (login, sessionid)
         return execute_insert_cur(sql)
@@ -192,7 +192,7 @@ class DB(object):
     @staticmethod
     def update_password(sessionid, password):
         sql = """UPDATE SessionConfig
-                    SET password = %s
+                    SET password = '%s'
                     WHERE sessionid = %s
                   """ % (password, sessionid)
         return execute_insert_cur(sql)
@@ -200,7 +200,7 @@ class DB(object):
     @staticmethod
     def update_domain(sessionid, domain):
         sql = """UPDATE SessionConfig
-                    SET endomain = %s
+                    SET endomain = '%s'
                     WHERE sessionid = %s
                   """ % (domain, sessionid)
         return execute_insert_cur(sql)
@@ -297,8 +297,8 @@ class DB(object):
     def insert_level(sessionid, level):
         game_id = DB.get_game_id(sessionid)
         sql = """INSERT INTO levels
-                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, SectorsToClose, SectorsMessageId)
-                    VALUES (%s, %s, '%s', %s, %s, %s, False, Null, Null)
+                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, SectorsToClose, SectorsMessageId, Locations)
+                    VALUES (%s, %s, '%s', %s, %s, %s, False, Null, Null, '{}')
                 """ % (sessionid, level['LevelId'], game_id, level['Number'], level['IsPassed'], level['Dismissed'])
         return execute_insert_cur(sql)
 

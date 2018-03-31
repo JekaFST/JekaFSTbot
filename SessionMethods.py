@@ -228,7 +228,7 @@ def send_task_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
-    send_task(level, bot, chat_id, session.locations)
+    send_task(level, bot, chat_id, session['locations'])
 
 
 def send_task_to_chat_storm(bot, chat_id, session, storm_level_number):
