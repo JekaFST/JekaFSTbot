@@ -1,4 +1,4 @@
-import json
+# -*- coding: utf-8 -*-
 import os
 import psycopg2.extras
 
@@ -320,3 +320,11 @@ class DB(object):
                     """ % (session_id, game_id)
         rows = execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def update_channel_name(sessionid, channel_name):
+        sql = """UPDATE SessionConfig
+                    SET channelname = '%s'
+                    WHERE sessionid = %s
+                  """ % (channel_name, sessionid)
+        return execute_insert_cur(sql)

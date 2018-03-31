@@ -279,9 +279,8 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
             new_channel_name = re.findall(r'/set_channel_name\s*(.+)', str(message.text.encode('utf-8')))[0]
-            set_channel_name_task = Task(message.chat.id, 'channel_name', session=session, new_channel_name=new_channel_name)
+            set_channel_name_task = Task(message.chat.id, 'channel_name', session_id=message.chat.id, new_channel_name=new_channel_name)
             main_vars.task_queue.append(set_channel_name_task)
 
     @bot.message_handler(commands=['start_channel'])
@@ -290,8 +289,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
-            start_channel_task = Task(message.chat.id, 'start_channel', session=session)
+            start_channel_task = Task(message.chat.id, 'start_channel', session_id=message.chat.id)
             main_vars.task_queue.append(start_channel_task)
 
     @bot.message_handler(commands=['stop_channel'])
@@ -300,8 +298,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
-            stop_channel_task = Task(message.chat.id, 'stop_channel', session=session)
+            stop_channel_task = Task(message.chat.id, 'stop_channel', session_id=message.chat.id)
             main_vars.task_queue.append(stop_channel_task)
 
     @bot.message_handler(commands=['codes_on'])

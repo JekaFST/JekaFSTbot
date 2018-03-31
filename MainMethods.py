@@ -280,27 +280,25 @@ def set_updater_delay(task, bot):
 
 
 def stop_updater(task, bot):
-    if task.session.active:
-        task.session.update_stop_updater = True
-        task.session.put_updater_task = False
+    if DB.get_session_activity(task.session_id):
+        DB.update_stop_updater(task.session_id, 'True')
+        DB.update_put_updater_task(task.session_id, 'False')
 
 
 def set_channel_name(task, bot):
-    if "@" not in task.new_channel_name:
-        new_channel_name = "@" + task.new_channel_name
-    task.session.channel_name = new_channel_name
-    reply = 'Канал успешно задан' if task.session.channel_name == new_channel_name else 'Канал не задан, повторите'
+    new_channel_name = "@" + task.new_channel_name if "@" not in task.new_channel_name else task.new_channel_name
+    reply = 'Канал успешно задан' if DB.update_channel_name(task.session_id, new_channel_name) else 'Канал не задан, повторите'
     bot.send_message(task.chat_id, reply)
 
 
 def start_channel(task, bot):
-    task.session.use_channel = True
-    bot.send_message(task.chat_id, 'Постинг в канал разрешен')
+    if DB.update_use_channel(task.session_id, 'True'):
+        bot.send_message(task.chat_id, 'Постинг в канал разрешен')
 
 
 def stop_channel(task, bot):
-    task.session.use_channel = False
-    bot.send_message(task.chat_id, 'Постинг в канал запрещен')
+    if DB.update_use_channel(task.session_id, 'False'):
+        bot.send_message(task.chat_id, 'Постинг в канал запрещен')
 
 
 def send_code_main(task, bot):
