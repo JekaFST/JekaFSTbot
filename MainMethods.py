@@ -130,7 +130,7 @@ def start_session(task, bot):
         session = DB.get_session(task.session_id)
         if not session['cookie'] and session['endomain'] and session['gameid'] and session['login'] \
                 and session['password']:
-            compile_urls(session['sessionid'], task.chat_id, bot, session['gameid', session['endomain']])
+            compile_urls(session['sessionid'], task.chat_id, bot, session['gameid'], session['endomain'])
             login_to_en(task.session_id, bot, task.chat_id)
             launch_session(task.session_id, bot, task.chat_id)
 

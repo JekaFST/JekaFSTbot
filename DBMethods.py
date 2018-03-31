@@ -263,9 +263,9 @@ class DB(object):
 
     @staticmethod
     def insert_level(sessionid, level):
-        DB.get_game_id(sessionid)
+        game_id = DB.get_game_id(sessionid)
         sql = """INSERT INTO levels
                     (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, SectorsToClose, SectorsMessageId)
-                    VALUES ()
-                """ % (str(main_chat_id), login, password, en_domain, channel_name, use_channel)
+                    VALUES (%s, %s, '%s', %s, %s, %s, False, Null, Null)
+                """ % (str(sessionid), str(level['LevelId']), game_id, str(level['Number']), level['IsPassed'], level['Dismissed'], )
         return execute_insert_cur(sql)
