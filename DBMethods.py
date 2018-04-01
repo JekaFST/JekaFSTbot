@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import json
 import psycopg2.extras
 
 # DATABASE_URL = os.environ['DATABASE_URL']
@@ -352,9 +353,23 @@ class DB(object):
         return rows[0][0]
 
     @staticmethod
+    def get_locations(session_id):
+        sql = "SELECT locations FROM SessionConfig WHERE sessionid = %s" % session_id
+        rows = execute_select_cur(sql)
+        return json.loads(rows[0][0])
+
+    @staticmethod
+    def update_locations(session_id, locations):
+        sql = """UPDATE SessionConfig
+                    SET locations = '%s'
+                    WHERE sessionid = %s
+                  """ % (locations, session_id)
+        return execute_insert_cur(sql)
+
+    @staticmethod
     def insert_help(session_id, game_id, help_id):
         sql = """INSERT INTO helps
-                    (SessionId, HintId, GameId, NotSent, TimeNotSent, SectorsMessageId)
+                    (SessionId, HintId, GameId, NotSent, TimeNotSent)
                     VALUES (%s, %s, '%s', True, True)
                 """ % (session_id, help_id, game_id)
         return execute_insert_cur(sql)
@@ -362,6 +377,52 @@ class DB(object):
     @staticmethod
     def get_help_ids_per_game(session_id, game_id):
         sql = """SELECT HelpId FROM helps
+                    WHERE sessionid = %s AND gameid = '%s'
+                    """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def insert_bonus(session_id, game_id, bonus_id):
+        sql = """INSERT INTO bonuses
+                    (SessionId, BonusId, GameId, InfoNotSent, AwardNotSent)
+                    VALUES (%s, %s, '%s', True, True)
+                """ % (session_id, bonus_id, game_id)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_bonus_ids_per_game(session_id, game_id):
+        sql = """SELECT BonusId FROM bonuses
+                    WHERE sessionid = %s AND gameid = '%s'
+                    """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+    @staticmethod
+    def insert_sector(session_id, game_id, sector_id):
+        sql = """INSERT INTO sectors
+                    (SessionId, SectorId, GameId, AnswerInfoNotSent)
+                    VALUES (%s, %s, '%s', True)
+                """ % (session_id, sector_id, game_id)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_sector_ids_per_game(session_id, game_id):
+        sql = """SELECT SectorId FROM sectors
+                    WHERE sessionid = %s AND gameid = '%s'
+                    """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+    @staticmethod
+    def insert_message(session_id, game_id, message_id):
+        sql = """INSERT INTO messages
+                    (SessionId, MessageId, GameId, MessageNotSent)
+                    VALUES (%s, %s, '%s', True)
+                """ % (session_id, message_id, game_id)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_message_ids_per_game(session_id, game_id):
+        sql = """SELECT MessageId FROM messages
                     WHERE sessionid = %s AND gameid = '%s'
                     """ % (session_id, game_id)
         rows = execute_select_cur(sql)

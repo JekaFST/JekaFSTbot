@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import threading
-
+import json
 from DBMethods import DB
 from SessionMethods import get_current_level, get_storm_level, get_storm_levels, get_current_game_model
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
@@ -47,20 +47,22 @@ def linear_updater(chat_id, bot, session_id):
     except Exception:
         bot.send_message(chat_id, 'Exception - updater не смог вытащить элементы '
                                   '(сектора|бонусы|подсказки) загруженного уровня')
-        session.put_updater_task = True
+        DB.update_put_updater_task(session_id, 'True')
         return
 
     if not DB.get_current_level_id(session_id):
         DB.update_currlevelid(session_id, loaded_level['LevelId'])
         insert_level_details_in_db(session_id, session['gameid'], loaded_level['Helps'], loaded_level['Bonuses'],
                                    loaded_level['Sectors'], loaded_level['Messages'])
+        # try:
+        #     reset_live_locations(chat_id, bot, session)
+        # except Exception:
+        #     bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
         try:
-            reset_live_locations(chat_id, bot, session)
-        except Exception:
-            bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
-        try:
-            session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
-                                                session.channel_name, session.use_channel, session.locations)
+            send_up_info(session_id, loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
+                         session['channelname'], session['use_channel'])
+            # session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
+            #                                     session.channel_name, session.use_channel, session.locations)
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог прислать информацию об АПе')
         if session.channel_name and session.use_channel:
@@ -74,17 +76,17 @@ def linear_updater(chat_id, bot, session_id):
             session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог заполнить статусы элементов')
-        session.put_updater_task = True
+        DB.update_put_updater_task(session_id, 'True')
         return
 
     if loaded_level['LevelId'] != session.current_level['LevelId']:
         session.current_level = loaded_level
         insert_level_details_in_db(session_id, session['gameid'], loaded_level['Helps'], loaded_level['Bonuses'],
                                    loaded_level['Sectors'], loaded_level['Messages'])
-        try:
-            reset_live_locations(chat_id, bot, session)
-        except Exception:
-            bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
+        # try:
+        #     reset_live_locations(chat_id, bot, session)
+        # except Exception:
+        #     bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
         try:
             session.sectors_to_close = send_up_info(loaded_level, len(levels), loaded_helps, loaded_bonuses, bot, chat_id,
                                                     session.channel_name, session.use_channel, session.locations)
@@ -101,7 +103,7 @@ def linear_updater(chat_id, bot, session_id):
             session.message_statuses = fill_message_statuses(loaded_messages, session.message_statuses, session.sent_messages)
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог заполнить статусы элементов')
-        session.put_updater_task = True
+        DB.update_put_updater_task(session_id, 'True')
         return
 
     session.current_level = loaded_level
@@ -140,7 +142,7 @@ def linear_updater(chat_id, bot, session_id):
     except Exception:
         bot.send_message(chat_id, 'Exception - не удалось выполнить слежение')
 
-    session.put_updater_task = True
+    DB.update_put_updater_task(session_id, 'True')
 
 
 def storm_updater(chat_id, bot, session_id):
@@ -212,6 +214,18 @@ def insert_level_details_in_db(session_id, game_id, helps, bonuses, sectors, mes
     for help in helps:
         if help not in existing_helps:
             DB.insert_help(session_id, game_id, help['HelpId'])
+    existing_bonuses = DB.get_bonus_ids_per_game(session_id, game_id)
+    for bonus in bonuses:
+        if bonus not in existing_bonuses:
+            DB.insert_bonus(session_id, game_id, help['BonusId'])
+    existing_sectors = DB.get_sector_ids_per_game(session_id, game_id)
+    for sector in sectors:
+        if sector not in existing_sectors:
+            DB.insert_sector(session_id, game_id, help['SectorId'])
+    existing_messages = DB.get_message_ids_per_game(session_id, game_id)
+    for message in messages:
+        if message not in existing_messages:
+            DB.insert_message(session_id, game_id, help['MessageId'])
 
 
 def reset_level_vars():
@@ -229,8 +243,7 @@ def reset_live_locations(chat_id, bot, session):
         close_live_locations(chat_id, bot, session)
 
 
-def send_up_info(loaded_level, number_of_levels, loaded_helps, loaded_bonuses, bot, chat_id, channel_name, use_channel,
-                 locations, block=''):
+def send_up_info(session_id, loaded_level, number_of_levels, loaded_helps, loaded_bonuses, bot, chat_id, channel_name, use_channel, block=''):
     try:
         up = '\xE2\x9D\x97#АП'
         name = loaded_level['Name'].encode('utf-8') if loaded_level['Name'] else 'без названия'
@@ -259,12 +272,12 @@ def send_up_info(loaded_level, number_of_levels, loaded_helps, loaded_bonuses, b
     except Exception:
         bot.send_message(chat_id, up + '\r\nException - updater не смог собрать и отправить информацию об уровне')
 
-    send_task(loaded_level, bot, chat_id, locations, from_updater=True)
+    send_task(session_id, loaded_level, bot, chat_id, from_updater=True)
 
     try:
         if channel_name and use_channel:
             bot.send_message(channel_name, up_message, parse_mode='HTML')
-            send_task(loaded_level, bot, channel_name, locations)
+            send_task(session_id, loaded_level, bot, channel_name)
     except Exception:
         bot.send_message(chat_id, 'Exception - updater не смог отправить информацию по новому уровню в канал')
 

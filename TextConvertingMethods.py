@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from DBMethods import DB
 
 
-def send_object_text(text, header, bot, chat_id, locations, from_updater, storm, parse=True):
+def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm, parse=True):
     tags_list = DB.get_tags_list()
     text_pieces = list()
     raw_text = text
@@ -31,7 +31,7 @@ def send_object_text(text, header, bot, chat_id, locations, from_updater, storm,
         bot.send_message(chat_id, header + '\r\nException - ссылки не вырезаны')
         links = list()
     try:
-        text, indexes, incommon_coords = handle_coords(text, locations, from_updater, storm)
+        text, indexes, incommon_coords = handle_coords(text, session_id, from_updater, storm)
     except Exception:
         bot.send_message(chat_id, header + '\r\nException - координаты не обработаны')
 
@@ -64,6 +64,7 @@ def send_object_text(text, header, bot, chat_id, locations, from_updater, storm,
         except Exception:
             bot.send_message(chat_id, 'Exceprion - бот не смог отправить ссылки')
 
+    locations = DB.get_locations(session_id)
     if locations and indexes:
         try:
             for i in indexes:
@@ -127,7 +128,7 @@ def cut_images(text):
     return text, images
 
 
-def handle_coords(text, locations, from_udater, storm):
+def handle_coords(text, session_id, from_udater, storm):
     incommon_coords = list()
     indexes = list()
 
@@ -150,15 +151,18 @@ def handle_coords(text, locations, from_udater, storm):
     if coords:
         if from_udater and not storm:
             for coord in coords:
+                locations = DB.get_locations(session_id)
                 i = 1 if not locations else len(locations.keys()) + 1
                 coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(i) + '</b>'
                 text = text.replace(coord, coord_Y_G)
                 if i not in locations.keys():
                     indexes.append(i)
                 locations[i] = coord
+                DB.update_locations(session_id, locations)
 
         elif not from_udater and not storm:
             for coord in coords:
+                locations = DB.get_locations(session_id)
                 if coord in locations.values():
                     for k, v in locations.items():
                         if coord == v:
