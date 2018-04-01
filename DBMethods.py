@@ -322,9 +322,33 @@ class DB(object):
         return [row[0] for row in rows] if rows else list()
 
     @staticmethod
-    def update_channel_name(sessionid, channel_name):
+    def update_channel_name(session_id, channel_name):
         sql = """UPDATE SessionConfig
                     SET channelname = '%s'
                     WHERE sessionid = %s
-                  """ % (channel_name, sessionid)
+                  """ % (channel_name, session_id)
         return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_stop_updater(session_id):
+        sql = "SELECT stopupdater FROM SessionConfig WHERE sessionid = %s" % session_id
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def get_put_updater_task(session_id):
+        sql = "SELECT putupdatertask FROM SessionConfig WHERE sessionid = %s" % session_id
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def get_delay(session_id):
+        sql = "SELECT delay FROM SessionConfig WHERE sessionid = %s" % session_id
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def get_current_level_id(session_id):
+        sql = "SELECT delay FROM SessionConfig WHERE sessionid = %s" % session_id
+        rows = execute_select_cur(sql)
+        return rows[0][0]

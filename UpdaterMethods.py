@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import threading
+
+from DBMethods import DB
 from SessionMethods import get_current_level, get_storm_level, get_storm_levels, get_current_game_model
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
     send_bonus_award_answer, send_adm_message, close_live_locations
@@ -9,18 +11,19 @@ def updater(task, bot):
     if not task.session.storm_game:
         name = 'upd_thread_%s' % task.chat_id
         task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=linear_updater,
-                                                            args=(task.chat_id, bot, task.session))
+                                                            args=(task.chat_id, bot, task.session_id))
         task.updaters_dict[task.chat_id].start()
         return
     else:
         name = 'upd_thread_%s' % task.chat_id
         task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=storm_updater,
-                                                            args=(task.chat_id, bot, task.session))
+                                                            args=(task.chat_id, bot, task.session_id))
         task.updaters_dict[task.chat_id].start()
         return
 
 
-def linear_updater(chat_id, bot, session):
+def linear_updater(chat_id, bot, session_id):
+    session = DB.get_session(session_id)
     for i in xrange(2):
         try:
             loaded_level, levels = get_current_level(session, bot, chat_id, from_updater=True)
@@ -29,28 +32,28 @@ def linear_updater(chat_id, bot, session):
             if i == 0:
                 continue
             bot.send_message(chat_id, 'Exception - updater не смог загрузить уровень(-вни)')
-            session.put_updater_task = True
+            DB.update_put_updater_task(session_id, 'True')
             return
 
     if not loaded_level:
-        session.put_updater_task = True
+        DB.update_put_updater_task(session_id, 'True')
         return
 
-    try:
-        loaded_helps = loaded_level['Helps']
-        loaded_bonuses = loaded_level['Bonuses']
-        loaded_sectors = loaded_level['Sectors']
-        loaded_messages = loaded_level['Messages']
-    except Exception:
-        bot.send_message(chat_id, 'Exception - updater не смог вытащить элементы '
-                                  '(сектора|бонусы|подсказки) загруженного уровня')
-        session.put_updater_task = True
-        return
+    # try:
+        # loaded_helps = loaded_level['Helps']
+        # loaded_bonuses = loaded_level['Bonuses']
+        # loaded_sectors = loaded_level['Sectors']
+        # loaded_messages = loaded_level['Messages']
+    # except Exception:
+    #     bot.send_message(chat_id, 'Exception - updater не смог вытащить элементы '
+    #                               '(сектора|бонусы|подсказки) загруженного уровня')
+    #     session.put_updater_task = True
+    #     return
 
-    if not session.current_level:
-        session.current_level = loaded_level
-        session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
-                                                                        session.message_statuses = reset_level_vars()
+    if not DB.get_current_level_id(session_id):
+        DB.update_currlevelid(session_id, loaded_level['LevelId'])
+        # session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
+        #                                                                 session.message_statuses = reset_level_vars()
         try:
             reset_live_locations(chat_id, bot, session)
         except Exception:
@@ -140,7 +143,7 @@ def linear_updater(chat_id, bot, session):
     session.put_updater_task = True
 
 
-def storm_updater(chat_id, bot, session):
+def storm_updater(chat_id, bot, session_id):
     if not session.storm_levels:
         for i in xrange(2):
             try:

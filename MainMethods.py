@@ -245,27 +245,27 @@ def send_auth_messages(task, bot):
 
 
 def start_updater(task, bot):
-    session = DB.get_session(task.session_id)
-    if session['active'] and task.chat_id not in task.main_vars.updater_schedulers_dict.keys():
+    if DB.get_session_activity(task.session_id) and task.chat_id not in task.main_vars.updater_schedulers_dict.keys():
         DB.update_stop_updater(task.session_id, 'False')
         DB.update_put_updater_task(task.session_id, 'True')
         name = 'updater_%s' % task.chat_id
         task.main_vars.updater_schedulers_dict[task.chat_id] = threading.Thread(name=name, target=updater_scheduler,
-                                                                                args=(task.chat_id, bot, task.main_vars))
+                                                                                args=(task.chat_id, bot, task.main_vars,
+                                                                                      task.session_id))
         task.main_vars.updater_schedulers_dict[task.chat_id].start()
         bot.send_message(task.chat_id, 'Слежение запущено')
     else:
         bot.send_message(task.chat_id, 'Нельзя запустить слежение повторно или при неактивной сессии')
 
 
-def updater_scheduler(chat_id, bot, main_vars, session):
-    # session = main_vars.sessions_dict[chat_id]
-    while not session.update_stop_updater:
-        if session.put_updater_task:
-            time.sleep(session.delay)
-            updater_task = Task(chat_id, 'updater', session=session, updaters_dict=main_vars.updaters_dict)
+# needs only session_id
+def updater_scheduler(chat_id, bot, main_vars, session_id):
+    while not DB.get_stop_updater(session_id):
+        if DB.get_put_updater_task(session_id):
+            time.sleep(DB.get_delay(session_id))
+            updater_task = Task(chat_id, 'updater', session_id=session_id, updaters_dict=main_vars.updaters_dict)
             main_vars.task_queue.append(updater_task)
-            session.put_updater_task = False
+            DB.update_put_updater_task(session_id, 'False')
     else:
         bot.send_message(chat_id, 'Слежение остановлено')
         if chat_id in main_vars.updater_schedulers_dict.keys():
