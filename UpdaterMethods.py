@@ -44,8 +44,6 @@ def linear_updater(chat_id, bot, session_id):
         loaded_bonuses = loaded_level['Bonuses']
         loaded_sectors = loaded_level['Sectors']
         loaded_messages = loaded_level['Messages']
-        insert_level_details_in_db(session_id, session['gameid'], loaded_level['Helps'], loaded_level['Bonuses'],
-                                   loaded_level['Sectors'], loaded_level['Messages'])
     except Exception:
         bot.send_message(chat_id, 'Exception - updater не смог вытащить элементы '
                                   '(сектора|бонусы|подсказки) загруженного уровня')
@@ -54,6 +52,8 @@ def linear_updater(chat_id, bot, session_id):
 
     if not DB.get_current_level_id(session_id):
         DB.update_currlevelid(session_id, loaded_level['LevelId'])
+        insert_level_details_in_db(session_id, session['gameid'], loaded_level['Helps'], loaded_level['Bonuses'],
+                                   loaded_level['Sectors'], loaded_level['Messages'])
         try:
             reset_live_locations(chat_id, bot, session)
         except Exception:
@@ -79,8 +79,8 @@ def linear_updater(chat_id, bot, session_id):
 
     if loaded_level['LevelId'] != session.current_level['LevelId']:
         session.current_level = loaded_level
-        session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
-                                                                        session.message_statuses = reset_level_vars()
+        insert_level_details_in_db(session_id, session['gameid'], loaded_level['Helps'], loaded_level['Bonuses'],
+                                   loaded_level['Sectors'], loaded_level['Messages'])
         try:
             reset_live_locations(chat_id, bot, session)
         except Exception:
