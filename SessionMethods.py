@@ -104,16 +104,18 @@ def initiate_session_vars(session, bot, chat_id, from_updater=False):
     if game_model and game_model['LevelSequence'] == 3:
         levels = game_model['Levels']
         storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater)
+        existing_levels = DB.get_level_ids_per_game(session['sessionid'], session['gameid'])
         for level in storm_levels:
-            if level['LevelId'] not in DB.get_level_ids_per_game(session['sessionid']):
-                DB.insert_level(session['sessionid'], level)
+            if level['LevelId'] not in existing_levels:
+                DB.insert_level(session['sessionid'], session['gameid'], level)
         DB.update_storm_game(session['sessionid'], 'True')
         return None, True
     elif game_model:
         current_level_info = game_model['Level']
         DB.update_currlevelid(session['sessionid'], current_level_info['LevelId'])
-        if current_level_info['LevelId'] not in DB.get_level_ids_per_game(session['sessionid']):
-            DB.insert_level(session['sessionid'], current_level_info)
+        existing_levels = DB.get_level_ids_per_game(session['sessionid'], session['gameid'])
+        if current_level_info['LevelId'] not in existing_levels:
+            DB.insert_level(session['sessionid'], session['gameid'], current_level_info)
         DB.update_storm_game(session['sessionid'], 'False')
         return True, None
     else:

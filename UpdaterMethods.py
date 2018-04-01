@@ -39,21 +39,21 @@ def linear_updater(chat_id, bot, session_id):
         DB.update_put_updater_task(session_id, 'True')
         return
 
-    # try:
-        # loaded_helps = loaded_level['Helps']
-        # loaded_bonuses = loaded_level['Bonuses']
-        # loaded_sectors = loaded_level['Sectors']
-        # loaded_messages = loaded_level['Messages']
-    # except Exception:
-    #     bot.send_message(chat_id, 'Exception - updater не смог вытащить элементы '
-    #                               '(сектора|бонусы|подсказки) загруженного уровня')
-    #     session.put_updater_task = True
-    #     return
+    try:
+        loaded_helps = loaded_level['Helps']
+        loaded_bonuses = loaded_level['Bonuses']
+        loaded_sectors = loaded_level['Sectors']
+        loaded_messages = loaded_level['Messages']
+        insert_level_details_in_db(session_id, session['gameid'], loaded_level['Helps'], loaded_level['Bonuses'],
+                                   loaded_level['Sectors'], loaded_level['Messages'])
+    except Exception:
+        bot.send_message(chat_id, 'Exception - updater не смог вытащить элементы '
+                                  '(сектора|бонусы|подсказки) загруженного уровня')
+        session.put_updater_task = True
+        return
 
     if not DB.get_current_level_id(session_id):
         DB.update_currlevelid(session_id, loaded_level['LevelId'])
-        # session.help_statuses, session.bonus_statuses, session.time_to_up_sent, session.sector_statuses, \
-        #                                                                 session.message_statuses = reset_level_vars()
         try:
             reset_live_locations(chat_id, bot, session)
         except Exception:
@@ -205,6 +205,13 @@ def storm_updater(chat_id, bot, session_id):
         bot.send_message(chat_id, 'Exception - не удалось выполнить команду updater до конца')
 
     session.put_updater_task = True
+
+
+def insert_level_details_in_db(session_id, game_id, helps, bonuses, sectors, messages):
+    existing_helps = DB.get_help_ids_per_game(session_id, game_id)
+    for help in helps:
+        if help not in existing_helps:
+            DB.insert_help(session_id, game_id, help['HelpId'])
 
 
 def reset_level_vars():

@@ -295,12 +295,11 @@ class DB(object):
         return execute_insert_cur(sql)
 
     @staticmethod
-    def insert_level(sessionid, level):
-        game_id = DB.get_game_id(sessionid)
+    def insert_level(session_id, game_id, level):
         sql = """INSERT INTO levels
                     (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, SectorsToClose, SectorsMessageId)
                     VALUES (%s, %s, '%s', %s, %s, %s, False, Null, Null)
-                """ % (sessionid, level['LevelId'], game_id, level['Number'], level['IsPassed'], level['Dismissed'])
+                """ % (session_id, level['LevelId'], game_id, level['Number'], level['IsPassed'], level['Dismissed'])
         return execute_insert_cur(sql)
 
     @staticmethod
@@ -313,8 +312,7 @@ class DB(object):
         execute_insert_cur(sql)
 
     @staticmethod
-    def get_level_ids_per_game(session_id):
-        game_id = DB.get_game_id(session_id)
+    def get_level_ids_per_game(session_id, game_id):
         sql = """SELECT LevelId FROM Levels
                     WHERE sessionid = %s AND gameid = '%s'
                     """ % (session_id, game_id)
@@ -352,3 +350,19 @@ class DB(object):
         sql = "SELECT delay FROM SessionConfig WHERE sessionid = %s" % session_id
         rows = execute_select_cur(sql)
         return rows[0][0]
+
+    @staticmethod
+    def insert_help(session_id, game_id, help_id):
+        sql = """INSERT INTO helps
+                    (SessionId, HintId, GameId, NotSent, TimeNotSent, SectorsMessageId)
+                    VALUES (%s, %s, '%s', True, True)
+                """ % (session_id, help_id, game_id)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_help_ids_per_game(session_id, game_id):
+        sql = """SELECT HelpId FROM helps
+                    WHERE sessionid = %s AND gameid = '%s'
+                    """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
