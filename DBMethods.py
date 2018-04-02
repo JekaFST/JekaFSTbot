@@ -427,3 +427,63 @@ class DB(object):
                     """ % (session_id, game_id)
         rows = execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def update_sectors_to_close(session_id, sectors_to_close):
+        sql = """UPDATE SessionConfig
+                    SET sectorstoclose = '%s'
+                    WHERE sessionid = %s
+                  """ % (sectors_to_close, session_id)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def update_sectors_message_id(session_id, sectors_message_id):
+        sql = """UPDATE SessionConfig
+                    SET sectorsmessageid = %s
+                    WHERE sessionid = %s
+                  """ % (sectors_message_id, session_id)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_time_to_up_sent(session_id, level_id):
+        sql = "SELECT timetoupsent FROM Levels WHERE sessionid = %s AND levelid = %s" % (session_id, level_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_time_to_up_sent(session_id, level_id, active):
+        sql = """UPDATE Levels
+                SET timetoupsent = %s
+                WHERE sessionid = %s AND levelid = %s
+                """ % (active, session_id, level_id)
+        execute_insert_cur(sql)
+
+    @staticmethod
+    def get_message_not_sent(session_id, game_id, message_id):
+        sql = "SELECT messagenotsent FROM Messages WHERE sessionid = %s AND gameid = %s AND messageid = %s" % \
+              (session_id, game_id, message_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_message_not_sent(session_id, game_id, message_id, active):
+        sql = """UPDATE Messages
+                SET messagenotsent = %s
+                WHERE sessionid = %s AND gameid = %s AND messageid = %s
+                """ % (active, session_id, game_id, message_id)
+        execute_insert_cur(sql)
+
+    @staticmethod
+    def get_answer_info_not_sent(session_id, game_id, sector_id):
+        sql = "SELECT answerinfonotsent FROM Sectors WHERE sessionid = %s AND gameid = %s AND sectorid = %s" % \
+              (session_id, game_id, sector_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_answer_info_not_sent(session_id, game_id, sector_id, active):
+        sql = """UPDATE Sectors
+                SET answerinfonotsent = %s
+                WHERE sessionid = %s AND gameid = %s AND sectorid = %s
+                """ % (active, session_id, game_id, sector_id)
+        execute_insert_cur(sql)
