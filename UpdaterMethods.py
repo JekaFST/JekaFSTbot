@@ -15,10 +15,10 @@ def updater(task, bot):
         task.updaters_dict[task.chat_id].start()
         return
     else:
-        name = 'upd_thread_%s' % task.chat_id
-        task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=storm_updater,
-                                                            args=(task.chat_id, bot, task.session_id))
-        task.updaters_dict[task.chat_id].start()
+        # name = 'upd_thread_%s' % task.chat_id
+        # task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=storm_updater,
+        #                                                     args=(task.chat_id, bot, task.session_id))
+        # task.updaters_dict[task.chat_id].start()
         return
 
 
@@ -57,6 +57,7 @@ def linear_updater(chat_id, bot, session_id):
                                    loaded_level['Sectors'], loaded_level['Messages'])
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог заполнить статусы элементов')
+        # needs to be refactored
         # try:
         #     reset_live_locations(chat_id, bot, session)
         # except Exception:
@@ -80,10 +81,10 @@ def linear_updater(chat_id, bot, session_id):
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог заполнить статусы элементов')
         # needs to be refactored
-        try:
-            reset_live_locations(chat_id, bot, session)
-        except Exception:
-            bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
+        # try:
+        #     reset_live_locations(chat_id, bot, session)
+        # except Exception:
+        #     bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
         try:
             sectors_to_close = send_up_info(session_id, loaded_level, len(levels), loaded_helps, loaded_bonuses, bot,
                                             chat_id, session['channelname'], session['use_channel'])
@@ -106,7 +107,6 @@ def linear_updater(chat_id, bot, session_id):
     except Exception:
         bot.send_message(chat_id, 'Exception - updater не смог проанализировать время до автоперехода')
 
-# needs to be refactored
     try:
         if loaded_messages:
             message_parcer(session_id, session['gameid'], loaded_messages, bot, chat_id, session['channel_name'],
@@ -117,12 +117,10 @@ def linear_updater(chat_id, bot, session_id):
             sectors_parcer(session_id, session['gameid'], loaded_sectors, codes_to_find, bot, chat_id)
 
         if loaded_helps:
-            help_parcer(loaded_helps, session.help_statuses, bot, chat_id, session.channel_name, session.use_channel,
-                        locations=session.locations)
+            help_parcer(session_id, session['gameid'], loaded_helps, bot, chat_id, session['channel_name'], session['use_channel'])
 
         if loaded_bonuses:
-            bonus_parcer(loaded_bonuses, session.bonus_statuses, session.game_answered_bonus_ids, bot, chat_id,
-                         locations=session.locations)
+            bonus_parcer(loaded_bonuses, session.bonus_statuses, session.game_answered_bonus_ids, bot, chat_id)
 
         if session.channel_name and session.use_channel and session.sectors_to_close and session.sectors_to_close != '1'\
                 and session.sectors_message_id:
@@ -135,68 +133,68 @@ def linear_updater(chat_id, bot, session_id):
     DB.update_put_updater_task(session_id, 'True')
 
 
-def storm_updater(chat_id, bot, session_id):
-    if not session.storm_levels:
-        for i in xrange(2):
-            try:
-                game_model = get_current_game_model(session, bot, chat_id, from_updater=True)
-                levels = game_model['Levels']
-                session.storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater=True)
-                break
-            except Exception:
-                if i == 0:
-                    continue
-                bot.send_message(chat_id, 'Exception - updater не смог загрузить уровень(-вни)')
-        session.put_updater_task = True
-        return
-
-    try:
-        if not session.help_statuses or not session.bonus_statuses or not session.sector_statuses or not session.message_statuses:
-            fill_all_statuses_storm(session, bot, chat_id)
-
-        for level in session.storm_levels:
-            if session.update_stop_updater:
-                session.put_updater_task = False
-                return
-            if level['IsPassed'] or level['Dismissed']:
-                continue
-            loaded_storm_level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
-            if not loaded_storm_level:
-                continue
-
-            loaded_helps = loaded_storm_level['Helps']
-            loaded_bonuses = loaded_storm_level['Bonuses']
-            loaded_sectors = loaded_storm_level['Sectors']
-            loaded_messages = loaded_storm_level['Messages']
-
-            session.storm_levels[level['Number']-1] = loaded_storm_level
-            levelmark = '<b>Уровень %s: %s</b>' % (str(loaded_storm_level['Number']), loaded_storm_level['Name'].encode('utf-8')) \
-                if loaded_storm_level['Name'] else '<b>Уровень %s</b>' % str(loaded_storm_level['Number'])
-
-            if loaded_messages:
-                message_parcer(loaded_messages, session.message_statuses, session.sent_messages, bot, chat_id,
-                               session.channel_name, session.use_channel, session.locations,
-                               levelmark=levelmark, storm=True)
-
-            if loaded_sectors:
-                codes_to_find = loaded_storm_level['SectorsLeftToClose']
-                sectors_parcer(loaded_sectors, codes_to_find,
-                               session.sector_statuses[loaded_storm_level['LevelId']], bot, chat_id,
-                               levelmark=levelmark, storm=True)
-
-            if loaded_helps:
-                help_parcer(loaded_helps, session.help_statuses[loaded_storm_level['LevelId']],
-                            bot, chat_id, session.channel_name, session.use_channel, session.locations,
-                            levelmark=levelmark, storm=True)
-
-            if loaded_bonuses:
-                bonus_parcer(loaded_bonuses, session.bonus_statuses[loaded_storm_level['LevelId']],
-                             session.game_answered_bonus_ids, bot, chat_id, session.locations,
-                             levelmark=levelmark, storm=True)
-    except Exception:
-        bot.send_message(chat_id, 'Exception - не удалось выполнить команду updater до конца')
-
-    session.put_updater_task = True
+# def storm_updater(chat_id, bot, session_id):
+#     if not session.storm_levels:
+#         for i in xrange(2):
+#             try:
+#                 game_model = get_current_game_model(session, bot, chat_id, from_updater=True)
+#                 levels = game_model['Levels']
+#                 session.storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater=True)
+#                 break
+#             except Exception:
+#                 if i == 0:
+#                     continue
+#                 bot.send_message(chat_id, 'Exception - updater не смог загрузить уровень(-вни)')
+#         session.put_updater_task = True
+#         return
+#
+#     try:
+#         if not session.help_statuses or not session.bonus_statuses or not session.sector_statuses or not session.message_statuses:
+#             fill_all_statuses_storm(session, bot, chat_id)
+#
+#         for level in session.storm_levels:
+#             if session.update_stop_updater:
+#                 session.put_updater_task = False
+#                 return
+#             if level['IsPassed'] or level['Dismissed']:
+#                 continue
+#             loaded_storm_level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
+#             if not loaded_storm_level:
+#                 continue
+#
+#             loaded_helps = loaded_storm_level['Helps']
+#             loaded_bonuses = loaded_storm_level['Bonuses']
+#             loaded_sectors = loaded_storm_level['Sectors']
+#             loaded_messages = loaded_storm_level['Messages']
+#
+#             session.storm_levels[level['Number']-1] = loaded_storm_level
+#             levelmark = '<b>Уровень %s: %s</b>' % (str(loaded_storm_level['Number']), loaded_storm_level['Name'].encode('utf-8')) \
+#                 if loaded_storm_level['Name'] else '<b>Уровень %s</b>' % str(loaded_storm_level['Number'])
+#
+#             if loaded_messages:
+#                 message_parcer(loaded_messages, session.message_statuses, session.sent_messages, bot, chat_id,
+#                                session.channel_name, session.use_channel, session.locations,
+#                                levelmark=levelmark, storm=True)
+#
+#             if loaded_sectors:
+#                 codes_to_find = loaded_storm_level['SectorsLeftToClose']
+#                 sectors_parcer(loaded_sectors, codes_to_find,
+#                                session.sector_statuses[loaded_storm_level['LevelId']], bot, chat_id,
+#                                levelmark=levelmark, storm=True)
+#
+#             if loaded_helps:
+#                 help_parcer(loaded_helps, session.help_statuses[loaded_storm_level['LevelId']],
+#                             bot, chat_id, session.channel_name, session.use_channel, session.locations,
+#                             levelmark=levelmark, storm=True)
+#
+#             if loaded_bonuses:
+#                 bonus_parcer(loaded_bonuses, session.bonus_statuses[loaded_storm_level['LevelId']],
+#                              session.game_answered_bonus_ids, bot, chat_id, session.locations,
+#                              levelmark=levelmark, storm=True)
+#     except Exception:
+#         bot.send_message(chat_id, 'Exception - не удалось выполнить команду updater до конца')
+#
+#     session.put_updater_task = True
 
 
 def insert_level_details_in_db(session_id, game_id, helps, bonuses, sectors, messages):
@@ -346,43 +344,41 @@ def sectors_parcer(session_id, game_id, loaded_sectors, codes_to_find, bot, chat
                 DB.update_answer_info_not_sent(session_id, game_id, sector['SectorId'], 'False')
 
 
-def help_parcer(loaded_helps, help_statuses, bot, chat_id, channel_name, use_channel, locations, levelmark=None,
-                storm=False):
+def help_parcer(session_id, game_id, loaded_helps, bot, chat_id, channel_name, use_channel, levelmark=None, storm=False):
     if loaded_helps:
+        existing_helps = DB.get_help_ids_per_game(session_id, game_id)
         for help in loaded_helps:
-            if not help['HelpId'] in help_statuses.keys():
-                help_statuses[help['HelpId']] = {'not_sent': True, 'time_not_sent': True}
+            if help['HelpId'] not in existing_helps:
+                DB.insert_help(session_id, game_id, help['HelpId'])
 
-            if help_statuses[help['HelpId']]['not_sent'] and help['HelpText'] is not None:
-                help_statuses[help['HelpId']]['not_sent'] = False
-                help_statuses[help['HelpId']]['time_not_sent'] = False
-                send_help(help, bot, chat_id, locations, from_updater=True, storm=storm, levelmark=levelmark)
+            if DB.get_help_not_sent(session_id, game_id, [help['HelpId']]) and help['HelpText'] is not None:
+                DB.update_help_not_sent(session_id, game_id, [help['HelpId']], 'False')
+                DB.update_help_time_not_sent(session_id, game_id, [help['HelpId']], 'False')
+                send_help(help, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
                 if channel_name and use_channel:
-                    send_help(help, bot, channel_name, locations, storm=storm, levelmark=levelmark)
+                    send_help(help, bot, channel_name, session_id, storm=storm, levelmark=levelmark)
                 continue
-            if help_statuses[help['HelpId']]['time_not_sent'] and help['RemainSeconds'] <= 180:
-                help_statuses[help['HelpId']]['time_not_sent'] = False
+            if DB.get_help_time_not_sent(session_id, game_id, [help['HelpId']]) and help['RemainSeconds'] <= 180:
+                DB.update_help_time_not_sent(session_id, game_id, [help['HelpId']], 'False')
                 send_time_to_help(help, bot, chat_id, levelmark, storm)
 
 
-def bonus_parcer(loaded_bonuses, bonus_statuses, game_answered_bonus_ids, bot, chat_id, locations, levelmark=None,
-                 storm=False):
+def bonus_parcer(session_id, game_id, loaded_bonuses, bot, chat_id, levelmark=None, storm=False):
     if loaded_bonuses:
-
+        existing_bonuses = DB.get_bonus_ids_per_game(session_id, game_id)
         for bonus in loaded_bonuses:
-            if not bonus['BonusId'] in bonus_statuses.keys():
-                bonus_statuses[bonus['BonusId']] = {'info_not_sent': True, 'award_not_sent': True}
+            if bonus['BonusId'] not in existing_bonuses:
+                DB.insert_bonus(session_id, game_id, bonus['BonusId'])
 
-            if bonus['IsAnswered'] and bonus_statuses[bonus['BonusId']]['award_not_sent']:
-                bonus_statuses[bonus['BonusId']]['award_not_sent'] = False
-                bonus_statuses[bonus['BonusId']]['info_not_sent'] = False
-                game_answered_bonus_ids.append(bonus['BonusId'])
-                send_bonus_award_answer(bonus, bot, chat_id, locations, from_updater=True, storm=storm,
-                                        levelmark=levelmark)
+            if bonus['IsAnswered'] and DB.get_bonus_award_not_sent(session_id, game_id, bonus['BonusId']):
+                DB.update_bonus_award_not_sent(session_id, game_id, bonus['BonusId'], 'True')
+                DB.update_bonus_info_not_sent(session_id, game_id, bonus['BonusId'], 'True')
+                send_bonus_award_answer(bonus, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
                 continue
-            if bonus_statuses[bonus['BonusId']]['info_not_sent'] and bonus['Task'] and not bonus['Expired']:
-                bonus_statuses[bonus['BonusId']]['info_not_sent'] = False
-                # send_bonus_info(bonus, bot, chat_id, locations, from_updater=True, storm=storm, levelmark=levelmark)
+            if DB.get_bonus_info_not_sent(session_id, game_id, bonus['BonusId']) and bonus['Task'] and not bonus['Expired']:
+                DB.update_bonus_info_not_sent(session_id, game_id, bonus['BonusId'], 'True')
+                if not storm:
+                    send_bonus_info(bonus, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
 
 
 def message_parcer(session_id, game_id, loaded_messages, bot, chat_id, channel_name, use_channel, levelmark=None, storm=False):
@@ -394,9 +390,9 @@ def message_parcer(session_id, game_id, loaded_messages, bot, chat_id, channel_n
 
             if DB.get_message_not_sent(session_id, game_id, message['MessageId']):
                 DB.update_message_not_sent(session_id, game_id, message['MessageId'], 'False')
-                send_adm_message(message, bot, chat_id, DB.get_locations(session_id), from_updater=True, storm=storm, levelmark=levelmark)
+                send_adm_message(message, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
                 if channel_name and use_channel:
-                    send_adm_message(message, bot, channel_name, DB.get_locations(session_id), storm=storm, levelmark=levelmark)
+                    send_adm_message(message, bot, channel_name, session_id, storm=storm, levelmark=levelmark)
 
 
 def levels_parcer(levels, session, bot, chat_id):

@@ -22,11 +22,11 @@ def send_task(session_id, loaded_level, bot, chat_id, from_updater=False, storm=
         bot.send_message(chat_id, 'Задание не предусмотрено')
 
 
-def send_help(help, bot, chat_id, locations, from_updater=False, storm=False, levelmark=None):
+def send_help(help, bot, chat_id, session_id, from_updater=False, storm=False, levelmark=None):
     help_number = str(help['Number'])
     help_text = help['HelpText'].encode('utf-8')
     help_header = '<b>Подсказка ' + help_number + '</b>' if not storm else levelmark + '\r\n<b>Подсказка ' + help_number + '</b>'
-    send_object_text(help_text, help_header, bot, chat_id, locations, from_updater, storm)
+    send_object_text(help_text, help_header, bot, chat_id, session_id, from_updater, storm)
 
 
 def send_time_to_help(help, bot, chat_id, levelmark=None, storm=False):
@@ -50,7 +50,7 @@ def send_bonus_info(bonus, bot, chat_id, locations, from_updater=False, storm=Fa
     send_object_text(bonus_task + bonus_left_time, bonus_name, bot, chat_id, locations, from_updater, storm)
 
 
-def send_bonus_award_answer(bonus, bot, chat_id, locations, from_updater=False, storm=False, levelmark=None):
+def send_bonus_award_answer(bonus, bot, chat_id, session_id, from_updater=False, storm=False, levelmark=None):
     bonus_name = "<b>б-с " + str(bonus['Number']) + ': ' + bonus['Name'].encode('utf-8') if bonus['Name'] \
         else "<b>Бонус " + str(bonus['Number'])
     code = bonus['Answer']['Answer'].encode('utf-8')
@@ -62,13 +62,13 @@ def send_bonus_award_answer(bonus, bot, chat_id, locations, from_updater=False, 
     bonus_award = '\r\n<b>Награда: ' + time_converter(bonus['AwardTime']) + '</b>' if bonus['AwardTime'] != 0 \
         else '\n<b>Без награды</b>'
     bonus_award_text = bonus_help + bonus_award
-    send_object_text(bonus_award_text, bonus_award_header, bot, chat_id, locations, from_updater, storm)
+    send_object_text(bonus_award_text, bonus_award_header, bot, chat_id, session_id, from_updater, storm)
 
 
-def send_adm_message(message, bot, chat_id, locations, from_updater=False, storm=False, levelmark=None):
+def send_adm_message(message, bot, chat_id, session_id, from_updater=False, storm=False, levelmark=None):
     message_header = '<b>Сообщение от авторов</b>' if not storm else levelmark + '\r\n<b>Сообщение от авторов</b>'
     message_text = message['MessageText'].encode('utf-8')
-    send_object_text(message_text, message_header, bot, chat_id, locations, from_updater, storm)
+    send_object_text(message_text, message_header, bot, chat_id, session_id, from_updater, storm)
 
 
 def close_live_locations(chat_id, bot, session, point=None):

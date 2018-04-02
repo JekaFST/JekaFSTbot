@@ -487,3 +487,78 @@ class DB(object):
                 WHERE sessionid = %s AND gameid = %s AND sectorid = %s
                 """ % (active, session_id, game_id, sector_id)
         execute_insert_cur(sql)
+
+    @staticmethod
+    def get_answer_info_not_sent(session_id, game_id, sector_id):
+        sql = "SELECT answerinfonotsent FROM Sectors WHERE sessionid = %s AND gameid = %s AND sectorid = %s" % \
+              (session_id, game_id, sector_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_answer_info_not_sent(session_id, game_id, sector_id, active):
+        sql = """UPDATE Sectors
+                SET answerinfonotsent = %s
+                WHERE sessionid = %s AND gameid = %s AND sectorid = %s
+                """ % (active, session_id, game_id, sector_id)
+        execute_insert_cur(sql)
+
+    @staticmethod
+    def get_help_not_sent(session_id, game_id, help_id):
+        sql = "SELECT notsent FROM Helps WHERE sessionid = %s AND gameid = %s AND hintid = %s" % \
+              (session_id, game_id, help_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_help_not_sent(session_id, game_id, help_id, active):
+        sql = """UPDATE Helps
+                SET notsent = %s
+                WHERE sessionid = %s AND gameid = %s AND hintid = %s
+                """ % (active, session_id, game_id, help_id)
+        execute_insert_cur(sql)
+
+    @staticmethod
+    def get_help_time_not_sent(session_id, game_id, help_id):
+        sql = "SELECT timenotsent FROM Helps WHERE sessionid = %s AND gameid = %s AND hintid = %s" % \
+              (session_id, game_id, help_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_help_time_not_sent(session_id, game_id, help_id, active):
+        sql = """UPDATE Helps
+                SET timenotsent = %s
+                WHERE sessionid = %s AND gameid = %s AND hintid = %s
+                """ % (active, session_id, game_id, help_id)
+        execute_insert_cur(sql)
+
+    @staticmethod
+    def get_bonus_info_not_sent(session_id, game_id, bonus_id):
+        sql = "SELECT infonotsent FROM Bonuses WHERE sessionid = %s AND gameid = %s AND bonusid = %s" % \
+              (session_id, game_id, bonus_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_bonus_info_not_sent(session_id, game_id, bonus_id, active):
+        sql = """UPDATE Bonuses
+                SET infonotsent = %s
+                WHERE sessionid = %s AND gameid = %s AND bonusid = %s
+                """ % (active, session_id, game_id, bonus_id)
+        execute_insert_cur(sql)
+
+    @staticmethod
+    def get_bonus_award_not_sent(session_id, game_id, bonus_id):
+        sql = "SELECT awardnotsent FROM Bonuses WHERE sessionid = %s AND gameid = %s AND bonusid = %s" % \
+              (session_id, game_id, bonus_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_bonus_award_not_sent(session_id, game_id, bonus_id, active):
+        sql = """UPDATE Bonuses
+                SET awardnotsent = %s
+                WHERE sessionid = %s AND gameid = %s AND bonusid = %s
+                """ % (active, session_id, game_id, bonus_id)
+        execute_insert_cur(sql)
