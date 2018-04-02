@@ -8,7 +8,7 @@ from CommonMethods import send_help, send_time_to_help, send_task, time_converte
 
 
 def updater(task, bot):
-    if not task.session.storm_game:
+    if not DB.get_storm_game(task.session_id):
         name = 'upd_thread_%s' % task.chat_id
         task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=linear_updater,
                                                             args=(task.chat_id, bot, task.session_id))
@@ -73,7 +73,7 @@ def linear_updater(chat_id, bot, session_id):
         DB.update_put_updater_task(session_id, 'True')
         return
 
-    if loaded_level['LevelId'] != session.current_level['LevelId']:
+    if loaded_level['LevelId'] != session['currlevelid']:
         DB.update_currlevelid(session_id, loaded_level['LevelId'])
         try:
             insert_level_details_in_db(session_id, session['gameid'], loaded_level['Helps'], loaded_level['Bonuses'],
@@ -126,6 +126,7 @@ def linear_updater(chat_id, bot, session_id):
                 and session.sectors_message_id:
             session.sectors_to_close = channel_sectors_editor(loaded_level, session.sectors_to_close,
                                                               bot, session.channel_name, session.sectors_message_id)
+        # needs to be refactored
         levels_parcer(levels, session, bot, chat_id)
     except Exception:
         bot.send_message(chat_id, 'Exception - не удалось выполнить слежение')

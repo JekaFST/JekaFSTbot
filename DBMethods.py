@@ -353,6 +353,12 @@ class DB(object):
         return rows[0][0]
 
     @staticmethod
+    def get_storm_game(session_id):
+        sql = "SELECT stormgame FROM SessionConfig WHERE sessionid = %s" % session_id
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
     def get_locations(session_id):
         sql = "SELECT locations FROM SessionConfig WHERE sessionid = %s" % session_id
         rows = execute_select_cur(sql)
