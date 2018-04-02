@@ -33,7 +33,7 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
     try:
         text, indexes, incommon_coords = handle_coords(text, session_id, from_updater, storm)
     except Exception:
-        bot.send_message(chat_id, header + '\r\nException - координаты не обработаны')
+        bot.send_message(chat_id, header + '\r\nException - координаты не обработаны', parse_mode='HTML')
 
     if len(text) > 7000:
         text_pieces = cut_long_text_on_pieces(text, text_pieces)
@@ -55,22 +55,22 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
                        'Для отправки всех изображений из задания введите /task_images' % str(len(images))
                 bot.send_message(chat_id, text)
         except Exception:
-            bot.send_message(chat_id, 'Exceprion - бот не смог отправить картинки')
+            bot.send_message(chat_id, 'Exception - бот не смог отправить картинки')
     if links:
         try:
             for i, link in enumerate(links):
                 message = '(link%s)' % i
                 bot.send_message(chat_id, message + '\r\n' + link)
         except Exception:
-            bot.send_message(chat_id, 'Exceprion - бот не смог отправить ссылки')
+            bot.send_message(chat_id, 'Exception - бот не смог отправить ссылки')
 
     locations = DB.get_locations(session_id)
     if locations and indexes:
         try:
             for i in indexes:
-                latitude = re.findall(r'\d\d\.\d{4,7}', locations[i])[0]
-                longitude = re.findall(r'\d\d\.\d{4,7}', locations[i])[1]
-                bot.send_venue(chat_id, latitude, longitude, locations[i] + ' - ' + str(i), '')
+                latitude = re.findall(r'\d\d\.\d{4,7}', locations[str(i)])[0]
+                longitude = re.findall(r'\d\d\.\d{4,7}', locations[str(i)])[1]
+                bot.send_venue(chat_id, latitude, longitude, locations[str(i)] + ' - ' + str(i), '')
         except Exception:
             bot.send_message(chat_id, 'Exceprion - бот не смог отправить координаты')
 
@@ -157,7 +157,7 @@ def handle_coords(text, session_id, from_udater, storm):
                 text = text.replace(coord, coord_Y_G)
                 if i not in locations.keys():
                     indexes.append(i)
-                locations[i] = coord
+                locations[str(i)] = coord
                 DB.update_locations(session_id, locations)
 
         elif not from_udater and not storm:
@@ -166,9 +166,9 @@ def handle_coords(text, session_id, from_udater, storm):
                 if coord in locations.values():
                     for k, v in locations.items():
                         if coord == v:
-                            coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(k) + '</b>'
+                            coord_Y_G = make_Y_G_links(coord) + ' - <b>' + k + '</b>'
                             text = text.replace(coord, coord_Y_G)
-                            indexes.append(k)
+                            indexes.append(int(k))
                             break
                 else:
                     coord_Y_G = make_Y_G_links(coord)

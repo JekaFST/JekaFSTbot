@@ -58,10 +58,10 @@ def stop_session(task, bot):
     DB.update_put_updater_task(task.session_id, 'False')
     DB.update_use_channel(task.session_id, 'False')
     DB.update_session_activity(task.session_id, 'False')
-    bot.send_message(task.chat_id, 'Сессия остановлена')
     add_chat_ids_per_session = DB.get_add_chat_ids_for_main(task.session_id)
     for add_chat_id in add_chat_ids_per_session:
         DB.delete_add_chat_id(add_chat_id)
+    bot.send_message(task.chat_id, 'Сессия остановлена')
 
 
 def config(task, bot):
@@ -258,7 +258,6 @@ def start_updater(task, bot):
         bot.send_message(task.chat_id, 'Нельзя запустить слежение повторно или при неактивной сессии')
 
 
-# needs only session_id
 def updater_scheduler(chat_id, bot, main_vars, session_id):
     while not DB.get_stop_updater(session_id):
         if DB.get_put_updater_task(session_id):

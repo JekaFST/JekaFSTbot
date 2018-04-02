@@ -15,6 +15,7 @@ def execute_select_cur(sql):
         cur.execute(sql)
         return cur.fetchall()
     except psycopg2.DatabaseError as err:
+        db_conn.close()
         print 'DB error in the following query: "' + sql + '": ' + err.message
         return False
 
@@ -25,6 +26,7 @@ def execute_dict_select_cur(sql):
         cur.execute(sql)
         return cur.fetchall()
     except psycopg2.DatabaseError as err:
+        db_conn.close()
         print 'DB error in the following query: "' + sql + '": ' + err.message
         return False
 
@@ -36,6 +38,7 @@ def execute_insert_cur(sql):
         db_conn.commit()
         return True
     except psycopg2.DatabaseError as err:
+        db_conn.close()
         print 'DB error in the following query: "' + sql + '": ' + err.message
         return False
 
@@ -298,8 +301,8 @@ class DB(object):
     @staticmethod
     def insert_level(session_id, game_id, level):
         sql = """INSERT INTO levels
-                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, SectorsToClose, SectorsMessageId)
-                    VALUES (%s, %s, '%s', %s, %s, %s, False, Null, Null)
+                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent)
+                    VALUES (%s, %s, '%s', %s, %s, %s, False)
                 """ % (session_id, level['LevelId'], game_id, level['Number'], level['IsPassed'], level['Dismissed'])
         return execute_insert_cur(sql)
 
@@ -369,7 +372,7 @@ class DB(object):
         sql = """UPDATE SessionConfig
                     SET locations = '%s'
                     WHERE sessionid = %s
-                  """ % (locations, session_id)
+                  """ % (json.dumps(locations), session_id)
         return execute_insert_cur(sql)
 
     @staticmethod
@@ -382,7 +385,7 @@ class DB(object):
 
     @staticmethod
     def get_help_ids_per_game(session_id, game_id):
-        sql = """SELECT HelpId FROM helps
+        sql = """SELECT HintId FROM helps
                     WHERE sessionid = %s AND gameid = '%s'
                     """ % (session_id, game_id)
         rows = execute_select_cur(sql)
@@ -403,6 +406,7 @@ class DB(object):
                     """ % (session_id, game_id)
         rows = execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
+
     @staticmethod
     def insert_sector(session_id, game_id, sector_id):
         sql = """INSERT INTO sectors
@@ -466,7 +470,7 @@ class DB(object):
 
     @staticmethod
     def get_message_not_sent(session_id, game_id, message_id):
-        sql = "SELECT messagenotsent FROM Messages WHERE sessionid = %s AND gameid = %s AND messageid = %s" % \
+        sql = "SELECT messagenotsent FROM Messages WHERE sessionid = %s AND gameid = '%s' AND messageid = %s" % \
               (session_id, game_id, message_id)
         rows = execute_select_cur(sql)
         return rows[0][0]
@@ -475,13 +479,13 @@ class DB(object):
     def update_message_not_sent(session_id, game_id, message_id, active):
         sql = """UPDATE Messages
                 SET messagenotsent = %s
-                WHERE sessionid = %s AND gameid = %s AND messageid = %s
+                WHERE sessionid = %s AND gameid = '%s' AND messageid = %s
                 """ % (active, session_id, game_id, message_id)
         execute_insert_cur(sql)
 
     @staticmethod
     def get_answer_info_not_sent(session_id, game_id, sector_id):
-        sql = "SELECT answerinfonotsent FROM Sectors WHERE sessionid = %s AND gameid = %s AND sectorid = %s" % \
+        sql = "SELECT answerinfonotsent FROM Sectors WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s" % \
               (session_id, game_id, sector_id)
         rows = execute_select_cur(sql)
         return rows[0][0]
@@ -490,13 +494,13 @@ class DB(object):
     def update_answer_info_not_sent(session_id, game_id, sector_id, active):
         sql = """UPDATE Sectors
                 SET answerinfonotsent = %s
-                WHERE sessionid = %s AND gameid = %s AND sectorid = %s
+                WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
                 """ % (active, session_id, game_id, sector_id)
         execute_insert_cur(sql)
 
     @staticmethod
     def get_answer_info_not_sent(session_id, game_id, sector_id):
-        sql = "SELECT answerinfonotsent FROM Sectors WHERE sessionid = %s AND gameid = %s AND sectorid = %s" % \
+        sql = "SELECT answerinfonotsent FROM Sectors WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s" % \
               (session_id, game_id, sector_id)
         rows = execute_select_cur(sql)
         return rows[0][0]
@@ -505,13 +509,13 @@ class DB(object):
     def update_answer_info_not_sent(session_id, game_id, sector_id, active):
         sql = """UPDATE Sectors
                 SET answerinfonotsent = %s
-                WHERE sessionid = %s AND gameid = %s AND sectorid = %s
+                WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
                 """ % (active, session_id, game_id, sector_id)
         execute_insert_cur(sql)
 
     @staticmethod
     def get_help_not_sent(session_id, game_id, help_id):
-        sql = "SELECT notsent FROM Helps WHERE sessionid = %s AND gameid = %s AND hintid = %s" % \
+        sql = "SELECT notsent FROM Helps WHERE sessionid = %s AND gameid = '%s' AND hintid = %s" % \
               (session_id, game_id, help_id)
         rows = execute_select_cur(sql)
         return rows[0][0]
@@ -520,13 +524,13 @@ class DB(object):
     def update_help_not_sent(session_id, game_id, help_id, active):
         sql = """UPDATE Helps
                 SET notsent = %s
-                WHERE sessionid = %s AND gameid = %s AND hintid = %s
+                WHERE sessionid = %s AND gameid = '%s' AND hintid = %s
                 """ % (active, session_id, game_id, help_id)
         execute_insert_cur(sql)
 
     @staticmethod
     def get_help_time_not_sent(session_id, game_id, help_id):
-        sql = "SELECT timenotsent FROM Helps WHERE sessionid = %s AND gameid = %s AND hintid = %s" % \
+        sql = "SELECT timenotsent FROM Helps WHERE sessionid = %s AND gameid = '%s' AND hintid = %s" % \
               (session_id, game_id, help_id)
         rows = execute_select_cur(sql)
         return rows[0][0]
@@ -535,13 +539,13 @@ class DB(object):
     def update_help_time_not_sent(session_id, game_id, help_id, active):
         sql = """UPDATE Helps
                 SET timenotsent = %s
-                WHERE sessionid = %s AND gameid = %s AND hintid = %s
+                WHERE sessionid = %s AND gameid = '%s' AND hintid = %s
                 """ % (active, session_id, game_id, help_id)
         execute_insert_cur(sql)
 
     @staticmethod
     def get_bonus_info_not_sent(session_id, game_id, bonus_id):
-        sql = "SELECT infonotsent FROM Bonuses WHERE sessionid = %s AND gameid = %s AND bonusid = %s" % \
+        sql = "SELECT infonotsent FROM Bonuses WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s" % \
               (session_id, game_id, bonus_id)
         rows = execute_select_cur(sql)
         return rows[0][0]
@@ -550,13 +554,13 @@ class DB(object):
     def update_bonus_info_not_sent(session_id, game_id, bonus_id, active):
         sql = """UPDATE Bonuses
                 SET infonotsent = %s
-                WHERE sessionid = %s AND gameid = %s AND bonusid = %s
+                WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
                 """ % (active, session_id, game_id, bonus_id)
         execute_insert_cur(sql)
 
     @staticmethod
     def get_bonus_award_not_sent(session_id, game_id, bonus_id):
-        sql = "SELECT awardnotsent FROM Bonuses WHERE sessionid = %s AND gameid = %s AND bonusid = %s" % \
+        sql = "SELECT awardnotsent FROM Bonuses WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s" % \
               (session_id, game_id, bonus_id)
         rows = execute_select_cur(sql)
         return rows[0][0]
@@ -565,6 +569,36 @@ class DB(object):
     def update_bonus_award_not_sent(session_id, game_id, bonus_id, active):
         sql = """UPDATE Bonuses
                 SET awardnotsent = %s
-                WHERE sessionid = %s AND gameid = %s AND bonusid = %s
+                WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
                 """ % (active, session_id, game_id, bonus_id)
         execute_insert_cur(sql)
+
+    @staticmethod
+    def get_dismissed_level_ids(session_id, game_id):
+        sql = """SELECT LevelId FROM levels
+                    WHERE sessionid = %s AND gameid = '%s' AND dismissed = True
+                    """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def update_dismissed_level(session_id, game_id, level_id, active):
+        sql = """UPDATE Levels
+                SET dismissed = %s
+                WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
+                """ % (active, session_id, game_id, level_id)
+        execute_insert_cur(sql)
+
+
+# def get_locations():
+#     sql = "SELECT data FROM json_test WHERE sessionid = -1001135150893"
+#     try:
+#         cur = db_conn.cursor()
+#         cur.execute(sql)
+#         return cur.fetchall()
+#     except psycopg2.DatabaseError as err:
+#         print 'DB error in the following query: "' + sql + '": ' + err.message
+#         return False
+#
+# locations = get_locations()
+# print locations
