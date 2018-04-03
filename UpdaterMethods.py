@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import threading
 import json
-from DBMethods import DB
+from DBMethods import DB, DBSession
 from SessionMethods import get_current_level, get_storm_level, get_storm_levels, get_current_game_model
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
     send_bonus_award_answer, send_adm_message, close_live_locations
@@ -32,11 +32,11 @@ def linear_updater(chat_id, bot, session_id):
             if i == 0:
                 continue
             bot.send_message(chat_id, 'Exception - updater не смог загрузить уровень(-вни)')
-            DB.update_put_updater_task(session_id, 'True')
+            DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
             return
 
     if not loaded_level:
-        DB.update_put_updater_task(session_id, 'True')
+        DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
         return
 
     try:
@@ -47,7 +47,7 @@ def linear_updater(chat_id, bot, session_id):
     except Exception:
         bot.send_message(chat_id, 'Exception - updater не смог вытащить элементы '
                                   '(сектора|бонусы|подсказки) загруженного уровня')
-        DB.update_put_updater_task(session_id, 'True')
+        DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
         return
 
     if not DB.get_current_level_id(session_id):
@@ -70,7 +70,7 @@ def linear_updater(chat_id, bot, session_id):
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог прислать информацию об АПе')
 
-        DB.update_put_updater_task(session_id, 'True')
+        DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
         return
 
     if loaded_level['LevelId'] != session['currlevelid']:
@@ -93,7 +93,7 @@ def linear_updater(chat_id, bot, session_id):
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог прислать информацию об АПе')
 
-        DB.update_put_updater_task(session_id, 'True')
+        DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
         return
 
     DB.update_currlevelid(session_id, loaded_level['LevelId'])
@@ -130,7 +130,7 @@ def linear_updater(chat_id, bot, session_id):
     except Exception as err:
         bot.send_message(chat_id, 'Exception - не удалось выполнить слежение')
 
-    DB.update_put_updater_task(session_id, 'True')
+    DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
 
 
 # def storm_updater(chat_id, bot, session_id):

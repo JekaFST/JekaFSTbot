@@ -79,113 +79,25 @@ class DBSession(object):
         return execute_insert_cur(sql)
 
     @staticmethod
-    def update_gameid(sessionid, game_id):
+    def update_text_field(sessionid, header, value):
         sql = """UPDATE SessionConfig
-                    SET gameid = %s
-                    WHERE sessionid = %s
-                  """ % (game_id, sessionid)
+                        SET %s = '%s'
+                        WHERE sessionid = %s
+                      """ % (header, value, sessionid)
         return execute_insert_cur(sql)
 
     @staticmethod
-    def get_game_id(sessionid):
-        sql = "SELECT gameid FROM SessionConfig WHERE sessionid = %s" % sessionid
+    def get_field_value(sessionid, header):
+        sql = "SELECT %s FROM SessionConfig WHERE sessionid = %s" % (header, sessionid)
         rows = execute_select_cur(sql)
         return rows[0][0]
 
     @staticmethod
-    def update_login(sessionid, login):
+    def update_bool_flag(sessionid, header, value):
         sql = """UPDATE SessionConfig
-                    SET login = '%s'
-                    WHERE sessionid = %s
-                  """ % (login, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_password(sessionid, password):
-        sql = """UPDATE SessionConfig
-                    SET password = '%s'
-                    WHERE sessionid = %s
-                  """ % (password, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_domain(sessionid, domain):
-        sql = """UPDATE SessionConfig
-                    SET endomain = '%s'
-                    WHERE sessionid = %s
-                  """ % (domain, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_cookie(sessionid, cookie):
-        sql = """UPDATE SessionConfig
-                    SET cookie = '%s'
-                    WHERE sessionid = %s
-                  """ % (cookie, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_cookie(sessionid):
-        sql = "SELECT cookie FROM SessionConfig WHERE sessionid = %s" % sessionid
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_session_activity(sessionid, active):
-        sql = """UPDATE SessionConfig
-                SET Active = %s
+                SET %s = %s
                 WHERE sessionid = %s
-                """ % (active, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_session_activity(sessionid):
-        sql = "SELECT active FROM SessionConfig WHERE sessionid = %s" % sessionid
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def get_en_domain(sessionid):
-        sql = "SELECT endomain FROM SessionConfig WHERE sessionid = %s" % sessionid
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_stop_updater(sessionid, active):
-        sql = """UPDATE SessionConfig
-                SET stopupdater = %s
-                WHERE sessionid = %s
-                """ % (active, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_put_updater_task(sessionid, active):
-        sql = """UPDATE SessionConfig
-                SET putupdatertask = %s
-                WHERE sessionid = %s
-                """ % (active, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_use_channel(sessionid, active):
-        sql = """UPDATE SessionConfig
-                SET usechannel = %s
-                WHERE sessionid = %s
-                """ % (active, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_game_model_status(sessionid):
-        sql = "SELECT gamemodelstatus FROM SessionConfig WHERE sessionid = %s" % sessionid
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_game_model_status(sessionid, game_model_status):
-        sql = """UPDATE SessionConfig
-                SET gamemodelstatus = '%s'
-                WHERE sessionid = %s
-                """ % (game_model_status, sessionid)
+                """ % (header, value, sessionid)
         return execute_insert_cur(sql)
 
     @staticmethod
@@ -381,116 +293,6 @@ class DB(object):
                 SET gameurl = '%s', gameurljs = '%s', loginurl = '%s'
                 WHERE sessionid = %s
               """ % (urls['game_url'], urls['game_url_js'], urls['login_url'], sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_gameid(sessionid, game_id):
-        sql = """UPDATE SessionConfig
-                    SET gameid = %s
-                    WHERE sessionid = %s
-                  """ % (game_id, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_game_id(sessionid):
-        sql = "SELECT gameid FROM SessionConfig WHERE sessionid = %s" % sessionid
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_login(sessionid, login):
-        sql = """UPDATE SessionConfig
-                    SET login = '%s'
-                    WHERE sessionid = %s
-                  """ % (login, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_password(sessionid, password):
-        sql = """UPDATE SessionConfig
-                    SET password = '%s'
-                    WHERE sessionid = %s
-                  """ % (password, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_domain(sessionid, domain):
-        sql = """UPDATE SessionConfig
-                    SET endomain = '%s'
-                    WHERE sessionid = %s
-                  """ % (domain, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_cookie(sessionid, cookie):
-        sql = """UPDATE SessionConfig
-                    SET cookie = '%s'
-                    WHERE sessionid = %s
-                  """ % (cookie, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_cookie(sessionid):
-        sql = "SELECT cookie FROM SessionConfig WHERE sessionid = %s" % sessionid
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_session_activity(sessionid, active):
-        sql = """UPDATE SessionConfig
-                SET Active = %s
-                WHERE sessionid = %s
-                """ % (active, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_session_activity(sessionid):
-        sql = "SELECT active FROM SessionConfig WHERE sessionid = %s" % sessionid
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def get_en_domain(sessionid):
-        sql = "SELECT endomain FROM SessionConfig WHERE sessionid = %s" % sessionid
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_stop_updater(sessionid, active):
-        sql = """UPDATE SessionConfig
-                SET stopupdater = %s
-                WHERE sessionid = %s
-                """ % (active, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_put_updater_task(sessionid, active):
-        sql = """UPDATE SessionConfig
-                SET putupdatertask = %s
-                WHERE sessionid = %s
-                """ % (active, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_use_channel(sessionid, active):
-        sql = """UPDATE SessionConfig
-                SET usechannel = %s
-                WHERE sessionid = %s
-                """ % (active, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_game_model_status(sessionid):
-        sql = "SELECT gamemodelstatus FROM SessionConfig WHERE sessionid = %s" % sessionid
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_game_model_status(sessionid, game_model_status):
-        sql = """UPDATE SessionConfig
-                SET gamemodelstatus = '%s'
-                WHERE sessionid = %s
-                """ % (game_model_status, sessionid)
         return execute_insert_cur(sql)
 
     @staticmethod

@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, \
     send_adm_message
 from Const import game_wrong_statuses, urls
-from DBMethods import DB
+from DBMethods import DB, DBSession
 
 
 def compile_urls(session_id, chat_id, bot, game_id, en_domain):
@@ -58,7 +58,7 @@ def launch_session(session, bot, chat_id):
                 'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
                 'и запустите репстинг в канал /start_channel\r\n' \
                 'для остановки репостинга в канал введите /stop_channel'
-    if DB.update_session_activity(session['sessionid'], 'True'):
+    if DBSession.update_bool_flag(session['sessionid'], 'active', 'True'):
         bot.send_message(chat_id, reply)
 
 
@@ -92,7 +92,7 @@ def upd_session_cookie(session, bot, chat_id):
         reply = 'Бот не залогинился, попробуйте еще раз'
         bot.send_message(chat_id, reply)
         return False
-    if DB.update_cookie(session['sessionid'], cookie):
+    if DBSession.update_text_field(session['sessionid'], 'cookie', cookie):
         return True
     else:
         return False
@@ -139,13 +139,13 @@ def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=
             if i == 0:
                 continue
             if "Your requests have been classified as robot's requests." in response.text:
-                DB.update_stop_updater(session['sessionid'], 'True')
+                DBSession.update_bool_flag(session['sessionid'], 'stopupdater', 'True')
                 reply = 'Сработала защита движка от повторяющихся запросов.' \
                         ' Необходимо перелогиниться и перезапустить апдейтер.\r\n/login_to_en\r\n/start_updater'
                 bot.send_message(chat_id, reply)
                 return False
             else:
-                DB.update_stop_updater(session['sessionid'], 'True')
+                DBSession.update_bool_flag(session['sessionid'], 'stopupdater', 'True')
                 bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
                 return False
 
@@ -160,9 +160,9 @@ def check_game_model(game_model, session_id, bot, chat_id, from_updater=False):
     loaded_game_wrong_status = None
     if game_model['Event'] in game_wrong_statuses.keys():
         if game_model['Event'] == 17:
-            DB.update_stop_updater(session_id, 'True')
-            DB.update_use_channel(session_id, 'False')
-            DB.update_session_activity(session_id, 'False')
+            DBSession.update_bool_flag(session_id, 'stopupdater', 'True')
+            DBSession.update_bool_flag(session_id, 'usechannel', 'False')
+            DBSession.update_bool_flag(session_id, 'active', 'False')
             DB.drop_session_vars(session_id)
             loaded_game_wrong_status = game_wrong_statuses.keys[17] + '\r\nСессия остановлена, переменные сброшены'
         else:
@@ -172,8 +172,8 @@ def check_game_model(game_model, session_id, bot, chat_id, from_updater=False):
     else:
         loaded_game_wrong_status = 'Состояние игры не соответствует ни одному из ожидаемых. Проверьте настройки бота'
 
-    if not from_updater or not DB.get_game_model_status == loaded_game_wrong_status:
-        DB.update_game_model_status(session_id, loaded_game_wrong_status)
+    if not from_updater or not DBSession.get_field_value(session_id, 'gamemodelstatus') == loaded_game_wrong_status:
+        DBSession.update_text_field(session_id, 'gamemodelstatus', loaded_game_wrong_status)
         bot.send_message(chat_id, loaded_game_wrong_status)
 
     return False

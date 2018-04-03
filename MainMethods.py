@@ -5,7 +5,7 @@ import time
 import re
 import telebot
 from CommonMethods import close_live_locations
-from DBMethods import DB
+from DBMethods import DB, DBSession
 from MainClasses import Task
 from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
     send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session, \
@@ -54,10 +54,10 @@ def start(task, bot):
 
 
 def stop_session(task, bot):
-    DB.update_stop_updater(task.session_id, 'True')
-    DB.update_put_updater_task(task.session_id, 'False')
-    DB.update_use_channel(task.session_id, 'False')
-    DB.update_session_activity(task.session_id, 'False')
+    DBSession.update_bool_flag(task.session_id, 'stopupdater', 'True')
+    DBSession.update_bool_flag(task.session_id, 'putupdatertask' 'False')
+    DBSession.update_bool_flag(task.session_id, 'usechannel', 'False')
+    DBSession.update_bool_flag(task.session_id, 'active', 'False')
     add_chat_ids_per_session = DB.get_add_chat_ids_for_main(task.session_id)
     for add_chat_id in add_chat_ids_per_session:
         DB.delete_add_chat_id(add_chat_id)
@@ -74,8 +74,8 @@ def config(task, bot):
 
 
 def set_login(task, bot):
-    if not DB.get_session_activity(task.session_id):
-        reply = 'Логин успешно задан' if DB.update_login(task.session_id, task.new_login) \
+    if not DBSession.get_field_value(task.session_id, 'active'):
+        reply = 'Логин успешно задан' if DBSession.update_text_field(task.session_id, 'login', task.new_login) \
             else 'Логин не задан, повторите'
         bot.send_message(task.chat_id, reply)
     else:
@@ -83,8 +83,8 @@ def set_login(task, bot):
 
 
 def set_password(task, bot):
-    if not DB.get_session_activity(task.session_id):
-        reply = 'Пароль успешно задан' if DB.update_password(task.session_id, task.new_password) \
+    if not DBSession.get_field_value(task.session_id, 'active'):
+        reply = 'Пароль успешно задан' if DBSession.update_text_field(task.session_id, 'password', task.new_password) \
             else 'Пароль не задан, повторите'
         bot.send_message(task.chat_id, reply)
     else:
@@ -92,10 +92,10 @@ def set_password(task, bot):
 
 
 def set_domain(task, bot):
-    if not DB.get_session_activity(task.session_id):
+    if not DBSession.get_field_value(task.session_id, 'active'):
         if 'http://' not in task.new_domain:
             task.new_domain = 'http://' + task.new_domain
-        reply = 'Домен успешно задан' if DB.update_domain(task.session_id, task.new_domain) \
+        reply = 'Домен успешно задан' if DBSession.update_text_field(task.session_id, 'endomain', task.new_domain) \
             else 'Домен не задан, повторите (/domain http://demo.en.cx)'
         bot.send_message(task.chat_id, reply)
     else:
@@ -103,8 +103,8 @@ def set_domain(task, bot):
 
 
 def set_game_id(task, bot):
-    if not DB.get_session_activity(task.session_id):
-        if DB.update_gameid(task.session_id, task.new_game_id):
+    if not DBSession.get_field_value(task.session_id, 'active'):
+        if DBSession.update_text_field(task.session_id, 'gameid', task.new_game_id):
             DB.drop_session_vars(task.session_id)
             reply = 'Игра успешно задана. Переменные сброшены'
         else:
@@ -245,9 +245,9 @@ def send_auth_messages(task, bot):
 
 
 def start_updater(task, bot):
-    if DB.get_session_activity(task.session_id) and task.chat_id not in task.main_vars.updater_schedulers_dict.keys():
-        DB.update_stop_updater(task.session_id, 'False')
-        DB.update_put_updater_task(task.session_id, 'True')
+    if DBSession.get_field_value(task.session_id, 'active') and task.chat_id not in task.main_vars.updater_schedulers_dict.keys():
+        DBSession.update_bool_flag(task.session_id, 'stopupdater', 'False')
+        DBSession.update_bool_flag(task.session_id, 'putupdatertask' 'True')
         name = 'updater_%s' % task.chat_id
         task.main_vars.updater_schedulers_dict[task.chat_id] = threading.Thread(name=name, target=updater_scheduler,
                                                                                 args=(task.chat_id, bot, task.main_vars,
@@ -264,7 +264,7 @@ def updater_scheduler(chat_id, bot, main_vars, session_id):
             time.sleep(DB.get_delay(session_id))
             updater_task = Task(chat_id, 'updater', session_id=session_id, updaters_dict=main_vars.updaters_dict)
             main_vars.task_queue.append(updater_task)
-            DB.update_put_updater_task(session_id, 'False')
+            DBSession.update_bool_flag(session_id, 'putupdatertask' 'False')
     else:
         bot.send_message(chat_id, 'Слежение остановлено')
         if chat_id in main_vars.updater_schedulers_dict.keys():
@@ -279,9 +279,9 @@ def set_updater_delay(task, bot):
 
 
 def stop_updater(task, bot):
-    if DB.get_session_activity(task.session_id):
-        DB.update_stop_updater(task.session_id, 'True')
-        DB.update_put_updater_task(task.session_id, 'False')
+    if DBSession.get_field_value(task.session_id, 'active'):
+        DBSession.update_bool_flag(task.session_id, 'stopupdater', 'True')
+        DBSession.update_bool_flag(task.session_id, 'putupdatertask' 'False')
 
 
 def set_channel_name(task, bot):
@@ -291,12 +291,12 @@ def set_channel_name(task, bot):
 
 
 def start_channel(task, bot):
-    if DB.update_use_channel(task.session_id, 'True'):
+    if DBSession.update_bool_flag(task.session_id, 'usechannel', 'True'):
         bot.send_message(task.chat_id, 'Постинг в канал разрешен')
 
 
 def stop_channel(task, bot):
-    if DB.update_use_channel(task.session_id, 'False'):
+    if DBSession.update_bool_flag(task.session_id, 'usechannel', 'False'):
         bot.send_message(task.chat_id, 'Постинг в канал запрещен')
 
 
