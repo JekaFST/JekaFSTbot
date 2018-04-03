@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 from bs4 import BeautifulSoup
-from DBMethods import DB
+from DBMethods import DB, DBSession
 
 
 def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm, parse=True):
@@ -64,7 +64,7 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
         except Exception:
             bot.send_message(chat_id, 'Exception - бот не смог отправить ссылки')
 
-    locations = DB.get_locations(session_id)
+    locations = DBSession.get_locations(session_id)
     if locations and indexes:
         try:
             for i in indexes:
@@ -151,7 +151,7 @@ def handle_coords(text, session_id, from_udater, storm):
     if coords:
         if from_udater and not storm:
             for coord in coords:
-                locations = DB.get_locations(session_id)
+                locations = DBSession.get_locations(session_id)
                 i = 1 if not locations else len(locations.keys()) + 1
                 coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(i) + '</b>'
                 text = text.replace(coord, coord_Y_G)
@@ -162,7 +162,7 @@ def handle_coords(text, session_id, from_udater, storm):
 
         elif not from_udater and not storm:
             for coord in coords:
-                locations = DB.get_locations(session_id)
+                locations = DBSession.get_locations(session_id)
                 if coord in locations.values():
                     for k, v in locations.items():
                         if coord == v:

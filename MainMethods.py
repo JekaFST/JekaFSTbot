@@ -105,7 +105,7 @@ def set_domain(task, bot):
 def set_game_id(task, bot):
     if not DBSession.get_field_value(task.session_id, 'active'):
         if DBSession.update_text_field(task.session_id, 'gameid', task.new_game_id):
-            DB.drop_session_vars(task.session_id)
+            DBSession.drop_session_vars(task.session_id)
             reply = 'Игра успешно задана. Переменные сброшены'
         else:
             reply = 'game_id не задан, urls не сгенерированы. Ошибка SQL'
@@ -259,9 +259,9 @@ def start_updater(task, bot):
 
 
 def updater_scheduler(chat_id, bot, main_vars, session_id):
-    while not DB.get_stop_updater(session_id):
-        if DB.get_put_updater_task(session_id):
-            time.sleep(DB.get_delay(session_id))
+    while not DBSession.get_field_value(session_id, 'stopupdater'):
+        if DBSession.get_field_value(session_id, 'putupdatertask'):
+            time.sleep(DBSession.get_field_value(session_id, 'delay'))
             updater_task = Task(chat_id, 'updater', session_id=session_id, updaters_dict=main_vars.updaters_dict)
             main_vars.task_queue.append(updater_task)
             DBSession.update_bool_flag(session_id, 'putupdatertask' 'False')
@@ -286,7 +286,8 @@ def stop_updater(task, bot):
 
 def set_channel_name(task, bot):
     new_channel_name = "@" + task.new_channel_name if "@" not in task.new_channel_name else task.new_channel_name
-    reply = 'Канал успешно задан' if DB.update_channel_name(task.session_id, new_channel_name) else 'Канал не задан, повторите'
+    reply = 'Канал успешно задан' if DBSession.update_text_field(task.session_id, 'channelname', new_channel_name) \
+        else 'Канал не задан, повторите'
     bot.send_message(task.chat_id, reply)
 
 

@@ -79,6 +79,21 @@ class DBSession(object):
         return execute_insert_cur(sql)
 
     @staticmethod
+    def drop_session_vars(session_id):
+        sql = """UPDATE SessionConfig
+                SET CurrLevelId = NULL, GameURL = NULL, GameURLjs = NULL, LoginURL = NULL, StormGame = NULL,
+                SendCodes = True, GameModelStatus = '', PutUpdaterTask = Null, StopUpdater = NULL
+                WHERE sessionid = %s
+              """ % session_id
+        execute_insert_cur(sql)
+
+    @staticmethod
+    def get_locations(session_id):
+        sql = "SELECT locations FROM SessionConfig WHERE sessionid = %s" % session_id
+        rows = execute_select_cur(sql)
+        return json.loads(rows[0][0])
+
+    @staticmethod
     def update_text_field(sessionid, header, value):
         sql = """UPDATE SessionConfig
                         SET %s = '%s'
@@ -101,73 +116,18 @@ class DBSession(object):
         return execute_insert_cur(sql)
 
     @staticmethod
-    def update_storm_game(sessionid, active):
+    def update_int_field(sessionid, header, value):
         sql = """UPDATE SessionConfig
-                SET StormGame = %s
+                SET %s = %s
                 WHERE sessionid = %s
-                """ % (active, sessionid)
+                """ % (header, value, sessionid)
         return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_currlevelid(sessionid, currlevelid):
-        sql = """UPDATE SessionConfig
-                SET currlevelid = %s
-                WHERE sessionid = %s
-                """ % (currlevelid, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def drop_session_vars(session_id):
-        sql = """UPDATE SessionConfig
-                    SET CurrLevelId = NULL, GameURL = NULL, GameURLjs = NULL, LoginURL = NULL, StormGame = NULL,
-                    SendCodes = True, GameModelStatus = '', PutUpdaterTask = Null, StopUpdater = NULL
-                    WHERE sessionid = %s
-                    """ % session_id
-        execute_insert_cur(sql)
-
-    @staticmethod
-    def update_channel_name(session_id, channel_name):
-        sql = """UPDATE SessionConfig
-                        SET channelname = '%s'
-                        WHERE sessionid = %s
-                      """ % (channel_name, session_id)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_stop_updater(session_id):
-        sql = "SELECT stopupdater FROM SessionConfig WHERE sessionid = %s" % session_id
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def get_put_updater_task(session_id):
-        sql = "SELECT putupdatertask FROM SessionConfig WHERE sessionid = %s" % session_id
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def get_delay(session_id):
-        sql = "SELECT delay FROM SessionConfig WHERE sessionid = %s" % session_id
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def get_current_level_id(session_id):
-        sql = "SELECT delay FROM SessionConfig WHERE sessionid = %s" % session_id
-        rows = execute_select_cur(sql)
-        return rows[0][0]
 
     @staticmethod
     def get_storm_game(session_id):
         sql = "SELECT stormgame FROM SessionConfig WHERE sessionid = %s" % session_id
         rows = execute_select_cur(sql)
         return rows[0][0]
-
-    @staticmethod
-    def get_locations(session_id):
-        sql = "SELECT locations FROM SessionConfig WHERE sessionid = %s" % session_id
-        rows = execute_select_cur(sql)
-        return json.loads(rows[0][0])
 
     @staticmethod
     def update_locations(session_id, locations):
@@ -296,37 +256,12 @@ class DB(object):
         return execute_insert_cur(sql)
 
     @staticmethod
-    def update_storm_game(sessionid, active):
-        sql = """UPDATE SessionConfig
-                SET StormGame = %s
-                WHERE sessionid = %s
-                """ % (active, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_currlevelid(sessionid, currlevelid):
-        sql = """UPDATE SessionConfig
-                SET currlevelid = %s
-                WHERE sessionid = %s
-                """ % (currlevelid, sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
     def insert_level(session_id, game_id, level):
         sql = """INSERT INTO levels
                     (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent)
                     VALUES (%s, %s, '%s', %s, %s, %s, False)
                 """ % (session_id, level['LevelId'], game_id, level['Number'], level['IsPassed'], level['Dismissed'])
         return execute_insert_cur(sql)
-
-    @staticmethod
-    def drop_session_vars(session_id):
-        sql = """UPDATE SessionConfig
-                    SET CurrLevelId = NULL, GameURL = NULL, GameURLjs = NULL, LoginURL = NULL, StormGame = NULL,
-                    SendCodes = True, GameModelStatus = '', PutUpdaterTask = Null, StopUpdater = NULL
-                    WHERE sessionid = %s
-                    """ % session_id
-        execute_insert_cur(sql)
 
     @staticmethod
     def get_level_ids_per_game(session_id, game_id):
@@ -337,48 +272,10 @@ class DB(object):
         return [row[0] for row in rows] if rows else list()
 
     @staticmethod
-    def update_channel_name(session_id, channel_name):
-        sql = """UPDATE SessionConfig
-                    SET channelname = '%s'
-                    WHERE sessionid = %s
-                  """ % (channel_name, session_id)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_stop_updater(session_id):
-        sql = "SELECT stopupdater FROM SessionConfig WHERE sessionid = %s" % session_id
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def get_put_updater_task(session_id):
-        sql = "SELECT putupdatertask FROM SessionConfig WHERE sessionid = %s" % session_id
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def get_delay(session_id):
-        sql = "SELECT delay FROM SessionConfig WHERE sessionid = %s" % session_id
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def get_current_level_id(session_id):
-        sql = "SELECT delay FROM SessionConfig WHERE sessionid = %s" % session_id
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
     def get_storm_game(session_id):
         sql = "SELECT stormgame FROM SessionConfig WHERE sessionid = %s" % session_id
         rows = execute_select_cur(sql)
         return rows[0][0]
-
-    @staticmethod
-    def get_locations(session_id):
-        sql = "SELECT locations FROM SessionConfig WHERE sessionid = %s" % session_id
-        rows = execute_select_cur(sql)
-        return json.loads(rows[0][0])
 
     @staticmethod
     def update_locations(session_id, locations):

@@ -108,15 +108,15 @@ def initiate_session_vars(session, bot, chat_id, from_updater=False):
         for level in storm_levels:
             if level['LevelId'] not in existing_levels:
                 DB.insert_level(session['sessionid'], session['gameid'], level)
-        DB.update_storm_game(session['sessionid'], 'True')
+        DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'True')
         return None, True
     elif game_model:
         current_level_info = game_model['Level']
-        DB.update_currlevelid(session['sessionid'], current_level_info['LevelId'])
+        DBSession.update_int_field(session['sessionid'], 'currlevelid', current_level_info['LevelId'])
         existing_levels = DB.get_level_ids_per_game(session['sessionid'], session['gameid'])
         if current_level_info['LevelId'] not in existing_levels:
             DB.insert_level(session['sessionid'], session['gameid'], current_level_info)
-        DB.update_storm_game(session['sessionid'], 'False')
+        DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'False')
         return True, None
     else:
         return None, None
@@ -163,7 +163,7 @@ def check_game_model(game_model, session_id, bot, chat_id, from_updater=False):
             DBSession.update_bool_flag(session_id, 'stopupdater', 'True')
             DBSession.update_bool_flag(session_id, 'usechannel', 'False')
             DBSession.update_bool_flag(session_id, 'active', 'False')
-            DB.drop_session_vars(session_id)
+            DBSession.drop_session_vars(session_id)
             loaded_game_wrong_status = game_wrong_statuses.keys[17] + '\r\nСессия остановлена, переменные сброшены'
         else:
             for k, v in game_wrong_statuses.items():

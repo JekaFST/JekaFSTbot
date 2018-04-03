@@ -50,8 +50,8 @@ def linear_updater(chat_id, bot, session_id):
         DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
         return
 
-    if not DB.get_current_level_id(session_id):
-        DB.update_currlevelid(session_id, loaded_level['LevelId'])
+    if not DBSession.get_field_value(session_id, 'currlevelid'):
+        DBSession.update_int_field(session_id, 'currlevelid', loaded_level['LevelId'])
         try:
             insert_level_details_in_db(session_id, session['gameid'], loaded_level['Helps'], loaded_level['Bonuses'],
                                    loaded_level['Sectors'], loaded_level['Messages'])
@@ -74,7 +74,7 @@ def linear_updater(chat_id, bot, session_id):
         return
 
     if loaded_level['LevelId'] != session['currlevelid']:
-        DB.update_currlevelid(session_id, loaded_level['LevelId'])
+        DBSession.update_int_field(session_id, 'currlevelid', loaded_level['LevelId'])
         try:
             insert_level_details_in_db(session_id, session['gameid'], loaded_level['Helps'], loaded_level['Bonuses'],
                                    loaded_level['Sectors'], loaded_level['Messages'])
@@ -96,7 +96,7 @@ def linear_updater(chat_id, bot, session_id):
         DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
         return
 
-    DB.update_currlevelid(session_id, loaded_level['LevelId'])
+    DBSession.update_int_field(session_id, 'currlevelid', loaded_level['LevelId'])
 
     try:
         if not loaded_level['Timeout'] == 0 and not DB.get_time_to_up_sent(session_id, loaded_level['LevelId'])\
