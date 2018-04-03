@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from DBMethods import DB
+from DBMethods import DB, DBSession
 
 
 class MainVars(object):
@@ -25,7 +25,7 @@ class Validations(object):
 
     @staticmethod
     def check_session_available(chat_id, bot):
-        sessions_ids = DB.get_sessions_ids()
+        sessions_ids = DBSession.get_sessions_ids()
         if chat_id in sessions_ids or DB.get_main_chat_id_via_add(chat_id) in sessions_ids:
             return True
         else:
@@ -105,7 +105,7 @@ class Task(object):
     def get_session(chat_id, main_chat_ids):
         main_chat_id = chat_id if chat_id in main_chat_ids \
             else DB.get_main_chat_id_via_add(chat_id)
-        session = DB.get_session(main_chat_id)
+        session = DBSession.get_session(main_chat_id)
         return session
 
     # @staticmethod

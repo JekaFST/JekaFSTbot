@@ -15,7 +15,7 @@ def compile_urls(session_id, chat_id, bot, game_id, en_domain):
     session_urls['game_url'] = str(en_domain + urls['game_url_ending'] + game_id)
     session_urls['game_url_js'] = str(en_domain + urls['game_url_ending'] + game_id + urls['json'])
     session_urls['login_url'] = str(en_domain + urls['login_url_ending'])
-    if DB.update_session_urls(session_id, session_urls):
+    if DBSession.update_session_urls(session_id, session_urls):
         return True
     else:
         bot.send_message(chat_id, 'Ошибка SQL при создании URL игры')
@@ -66,7 +66,7 @@ def upd_session_cookie(session, bot, chat_id):
     try:
         if session['endomain'] not in session['loginurl']:
             if compile_urls(session['sessionid'], chat_id, bot, session['gameid'], session['endomain']):
-                session = DB.get_session(session['sessionid'])
+                session = DBSession.get_session(session['sessionid'])
             else:
                 return False
         response = requests.post(session['loginurl'], data={'Login': session['login'], 'Password': session['password']},
@@ -127,7 +127,7 @@ def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=
     for i in xrange(2):
         if not i == 0:
             _ = upd_session_cookie(session, bot, chat_id)
-            session = DB.get_session(session['sessionid'])
+            session = DBSession.get_session(session['sessionid'])
         if not storm_level_url:
             response = requests.get(session['gameurljs'], headers={'Cookie': session['cookie']})
         else:

@@ -17,9 +17,9 @@ from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_co
 
 def start(task, bot):
     config = DB.get_config_by_chat_id(task.chat_id)
-    sessions_ids = DB.get_sessions_ids()
+    sessions_ids = DBSession.get_sessions_ids()
     if task.chat_id not in sessions_ids and not config:
-        result = DB.insert_session(task.chat_id)
+        result = DBSession.insert_session(task.chat_id)
         if result:
             bot.send_message(task.chat_id, '<b>Сессия создана</b>\n'
                                            'Чтобы начать использовать бота, необходимо задать конфигурацию игры:\n'
@@ -33,7 +33,7 @@ def start(task, bot):
         else:
             bot.send_message(task.chat_id, 'Сессия не создана. Ошибка SQL')
     elif task.chat_id not in sessions_ids and config:
-        result = DB.insert_session(task.chat_id, login=config['login'], password=config['password'],
+        result = DBSession.insert_session(task.chat_id, login=config['login'], password=config['password'],
                                    en_domain=config['endomain'], channel_name=config['channelname'])
         if result:
             bot.send_message(task.chat_id, '<b>Сессия создана</b>\n'
@@ -65,7 +65,7 @@ def stop_session(task, bot):
 
 
 def config(task, bot):
-    session = DB.get_session(task.session_id)
+    session = DBSession.get_session(task.session_id)
     session_condition = 'Сессия активна' if session['active'] else 'Сессия не активна'
     channel_condition = '\r\nИмя канала задано' if session['channelname'] else '\r\nИмя канала не задано'
     reply = session_condition + '\r\nДомен: ' + session['endomain'] + '\r\nID игры: ' + session['gameid'] + \
@@ -115,7 +115,7 @@ def set_game_id(task, bot):
 
 
 def login(task, bot):
-    session = DB.get_session(task.session_id)
+    session = DBSession.get_session(task.session_id)
     if session['endomain'] and session['gameid'] and session['login'] and session['password']:
         login_to_en(session, bot, task.chat_id)
     else:
@@ -123,19 +123,19 @@ def login(task, bot):
 
 
 def start_session(task, bot):
-    session = DB.get_session(task.session_id)
+    session = DBSession.get_session(task.session_id)
     if not session['active']:
         if not session['cookie'] and session['endomain'] and session['gameid'] and session['login'] \
                 and session['password']:
             compile_urls(session['sessionid'], task.chat_id, bot, session['gameid'], session['endomain'])
-            session = DB.get_session(task.session_id)
+            session = DBSession.get_session(task.session_id)
             login_to_en(session, bot, task.chat_id)
-            session = DB.get_session(task.session_id)
+            session = DBSession.get_session(task.session_id)
             launch_session(session, bot, task.chat_id)
 
         elif session['cookie'] and session['gameid'] and session['login'] and session['password']:
             compile_urls(session['sessionid'], task.chat_id, bot, session['gameid'], session['endomain'])
-            session = DB.get_session(task.session_id)
+            session = DBSession.get_session(task.session_id)
             launch_session(session, bot, task.chat_id)
         else:
             bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана или бот не залогинен. '
@@ -146,7 +146,7 @@ def start_session(task, bot):
 
 
 def send_task(task, bot):
-    session = DB.get_session(task.session_id)
+    session = DBSession.get_session(task.session_id)
     if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить задание при неактивной сессии')
         return

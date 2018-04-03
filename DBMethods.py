@@ -94,6 +94,14 @@ class DBSession(object):
         return json.loads(rows[0][0])
 
     @staticmethod
+    def update_locations(session_id, locations):
+        sql = """UPDATE SessionConfig
+                        SET locations = '%s'
+                        WHERE sessionid = %s
+                      """ % (json.dumps(locations), session_id)
+        return execute_insert_cur(sql)
+
+    @staticmethod
     def update_text_field(sessionid, header, value):
         sql = """UPDATE SessionConfig
                         SET %s = '%s'
@@ -123,43 +131,8 @@ class DBSession(object):
                 """ % (header, value, sessionid)
         return execute_insert_cur(sql)
 
-    @staticmethod
-    def get_storm_game(session_id):
-        sql = "SELECT stormgame FROM SessionConfig WHERE sessionid = %s" % session_id
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_locations(session_id, locations):
-        sql = """UPDATE SessionConfig
-                        SET locations = '%s'
-                        WHERE sessionid = %s
-                      """ % (json.dumps(locations), session_id)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_sectors_to_close(session_id, sectors_to_close):
-        sql = """UPDATE SessionConfig
-                        SET sectorstoclose = '%s'
-                        WHERE sessionid = %s
-                      """ % (sectors_to_close, session_id)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_sectors_message_id(session_id, sectors_message_id):
-        sql = """UPDATE SessionConfig
-                        SET sectorsmessageid = %s
-                        WHERE sessionid = %s
-                      """ % (sectors_message_id, session_id)
-        return execute_insert_cur(sql)
-
 
 class DB(object):
-    @staticmethod
-    def get_sessions_ids():
-        sql = "SELECT sessionid FROM sessionconfig"
-        rows = execute_select_cur(sql)
-        return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_tags_list():
@@ -228,34 +201,6 @@ class DB(object):
         return [row[0] for row in rows] if rows else list()
 
     @staticmethod
-    def insert_session(main_chat_id, login=None, password=None, en_domain=None, channel_name=None):
-        use_channel = True if channel_name else False
-        login = "'" + login + "'" if login else "''"
-        password = "'" + password + "'" if password else "''"
-        en_domain = "'" + en_domain + "'" if en_domain else "''"
-        channel_name = "'" + channel_name + "'" if channel_name else 'NULL'
-        sql = """INSERT INTO SessionConfig
-                (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, GameURLjs, LoginURL,
-                GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame, CurrLevelId, Locations)
-                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, '', %s, NULL, NULL, 2, True, NULL, NULL, '{}')
-              """ % (main_chat_id, login, password, en_domain, channel_name, use_channel)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_session(session_id):
-        sql = "SELECT * FROM SessionConfig WHERE sessionid = %s" % session_id
-        rows = execute_dict_select_cur(sql)
-        return rows[0] if rows else None
-
-    @staticmethod
-    def update_session_urls(sessionid, urls):
-        sql = """UPDATE SessionConfig
-                SET gameurl = '%s', gameurljs = '%s', loginurl = '%s'
-                WHERE sessionid = %s
-              """ % (urls['game_url'], urls['game_url_js'], urls['login_url'], sessionid)
-        return execute_insert_cur(sql)
-
-    @staticmethod
     def insert_level(session_id, game_id, level):
         sql = """INSERT INTO levels
                     (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent)
@@ -270,20 +215,6 @@ class DB(object):
                     """ % (session_id, game_id)
         rows = execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
-
-    @staticmethod
-    def get_storm_game(session_id):
-        sql = "SELECT stormgame FROM SessionConfig WHERE sessionid = %s" % session_id
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_locations(session_id, locations):
-        sql = """UPDATE SessionConfig
-                    SET locations = '%s'
-                    WHERE sessionid = %s
-                  """ % (json.dumps(locations), session_id)
-        return execute_insert_cur(sql)
 
     @staticmethod
     def insert_help(session_id, game_id, help_id):
@@ -347,22 +278,6 @@ class DB(object):
                     """ % (session_id, game_id)
         rows = execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
-
-    @staticmethod
-    def update_sectors_to_close(session_id, sectors_to_close):
-        sql = """UPDATE SessionConfig
-                    SET sectorstoclose = '%s'
-                    WHERE sessionid = %s
-                  """ % (sectors_to_close, session_id)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def update_sectors_message_id(session_id, sectors_message_id):
-        sql = """UPDATE SessionConfig
-                    SET sectorsmessageid = %s
-                    WHERE sessionid = %s
-                  """ % (sectors_message_id, session_id)
-        return execute_insert_cur(sql)
 
     @staticmethod
     def get_time_to_up_sent(session_id, level_id):
@@ -498,17 +413,3 @@ class DB(object):
                 WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
                 """ % (active, session_id, game_id, level_id)
         execute_insert_cur(sql)
-
-
-# def get_locations():
-#     sql = "SELECT data FROM json_test WHERE sessionid = -1001135150893"
-#     try:
-#         cur = db_conn.cursor()
-#         cur.execute(sql)
-#         return cur.fetchall()
-#     except psycopg2.DatabaseError as err:
-#         print 'DB error in the following query: "' + sql + '": ' + err.message
-#         return False
-#
-# locations = get_locations()
-# print locations

@@ -158,7 +158,7 @@ def handle_coords(text, session_id, from_udater, storm):
                 if i not in locations.keys():
                     indexes.append(i)
                 locations[str(i)] = coord
-                DB.update_locations(session_id, locations)
+                DBSession.update_locations(session_id, locations)
 
         elif not from_udater and not storm:
             for coord in coords:

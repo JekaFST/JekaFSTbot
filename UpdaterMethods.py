@@ -8,7 +8,7 @@ from CommonMethods import send_help, send_time_to_help, send_task, time_converte
 
 
 def updater(task, bot):
-    if not DB.get_storm_game(task.session_id):
+    if not DBSession.get_field_value(task.session_id, 'stormgame'):
         name = 'upd_thread_%s' % task.chat_id
         task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=linear_updater,
                                                             args=(task.chat_id, bot, task.session_id))
@@ -23,7 +23,7 @@ def updater(task, bot):
 
 
 def linear_updater(chat_id, bot, session_id):
-    session = DB.get_session(session_id)
+    session = DBSession.get_session(session_id)
     for i in xrange(2):
         try:
             loaded_level, levels = get_current_level(session, bot, chat_id, from_updater=True)
@@ -275,7 +275,7 @@ def send_up_info(session_id, loaded_level, number_of_levels, loaded_helps, loade
         bot.send_message(chat_id, 'Exception - updater не смог составить список секторов')
         sectors_to_close = 'Exception - updater не смог составить список секторов'
 
-    DB.update_sectors_to_close(session_id, sectors_to_close)
+    DBSession.update_text_field(session_id, 'sectorstoclose', sectors_to_close)
     return sectors_to_close
 
 
@@ -287,7 +287,7 @@ def send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, channe
         response = bot.send_message(channel_name, message, parse_mode='HTML')
     except Exception:
         response = bot.send_message(channel_name, 'Exception - updater не смог прислать не закрытые сектора')
-    DB.update_sectors_message_id(session_id, response.message_id)
+    DBSession.update_int_field(session_id, 'sectorsmessageid', response.message_id)
 
 
 def fill_help_statuses(loaded_helps, help_statuses):
@@ -418,7 +418,7 @@ def channel_sectors_editor(session_id, loaded_level, old_sectors_to_close, bot, 
         message = '<b>Осталось закрыть: %s из %s:</b>\r\n%s' % \
                   (str(codes_to_find), str(codes_all), new_sectors_to_close)
         bot.edit_message_text(message, channel_name, message_id, parse_mode='HTML')
-        DB.update_sectors_to_close(session_id, new_sectors_to_close)
+        DBSession.update_text_field(session_id, 'sectorstoclose', new_sectors_to_close)
 
 
 def get_sectors_to_close(sectors, get_sector_names=False):
