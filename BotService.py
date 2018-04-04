@@ -160,7 +160,6 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            # session = Task.get_session(message.chat.id, main_chat_ids)
             main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
@@ -173,8 +172,8 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
-            send_task_images_task = Task(message.chat.id, 'task_images', session=session)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
+            send_task_images_task = Task(message.chat.id, 'task_images', session_id=main_chat_id)
             main_vars.task_queue.append(send_task_images_task)
 
     @bot.message_handler(commands=['sectors'])
@@ -182,10 +181,10 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
-            send_all_sectors_task = Task(message.chat.id, 'send_sectors', session=session, storm_level_number=storm_level)
+            send_all_sectors_task = Task(message.chat.id, 'send_sectors', session_id=main_chat_id, storm_level_number=storm_level)
             main_vars.task_queue.append(send_all_sectors_task)
 
     @bot.message_handler(commands=['hints'])
@@ -193,10 +192,10 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
-            send_all_helps_task = Task(message.chat.id, 'send_helps', session=session, storm_level_number=storm_level)
+            send_all_helps_task = Task(message.chat.id, 'send_helps', session_id=main_chat_id, storm_level_number=storm_level)
             main_vars.task_queue.append(send_all_helps_task)
 
     @bot.message_handler(commands=['last_hint'])
@@ -204,10 +203,10 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
-            send_last_help_task = Task(message.chat.id, 'send_last_help', session=session, storm_level_number=storm_level)
+            send_last_help_task = Task(message.chat.id, 'send_last_help', session_id=main_chat_id, storm_level_number=storm_level)
             main_vars.task_queue.append(send_last_help_task)
 
     @bot.message_handler(commands=['bonuses'])
@@ -215,10 +214,10 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
-            send_all_bonuses_task = Task(message.chat.id, 'send_bonuses', session=session, storm_level_number=storm_level)
+            send_all_bonuses_task = Task(message.chat.id, 'send_bonuses', session_id=main_chat_id, storm_level_number=storm_level)
             main_vars.task_queue.append(send_all_bonuses_task)
 
     @bot.message_handler(commands=['unclosed_bonuses'])
@@ -226,10 +225,10 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
-            send_unclosed_bonuses_task = Task(message.chat.id, 'unclosed_bonuses', session=session, storm_level_number=storm_level)
+            send_unclosed_bonuses_task = Task(message.chat.id, 'unclosed_bonuses', session_id=main_chat_id, storm_level_number=storm_level)
             main_vars.task_queue.append(send_unclosed_bonuses_task)
 
     @bot.message_handler(commands=['messages'])
@@ -237,10 +236,10 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
-            send_auth_messages_task = Task(message.chat.id, 'send_messages', session=session, storm_level_number=storm_level)
+            send_auth_messages_task = Task(message.chat.id, 'send_messages', session_id=main_chat_id, storm_level_number=storm_level)
             main_vars.task_queue.append(send_auth_messages_task)
 
     @bot.message_handler(commands=['start_updater'])
@@ -258,9 +257,8 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
             new_delay = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0))
-            set_delay_task = Task(message.chat.id, 'delay', session=session, new_delay=new_delay)
+            set_delay_task = Task(message.chat.id, 'delay', session_id=message.chat.id, new_delay=new_delay)
             main_vars.task_queue.append(set_delay_task)
 
     @bot.message_handler(commands=['stop_updater'])
@@ -399,10 +397,11 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             if message.text[0] == '!':
                 code = re.findall(r'!\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
-                send_code_main_task = Task(message.chat.id, 'send_code_main', session=session, code=code, message_id=message.message_id)
+                send_code_main_task = Task(message.chat.id, 'send_code_main', session_id=main_chat_id, code=code,
+                                           message_id=message.message_id)
                 main_vars.task_queue.append(send_code_main_task)
 
     @bot.message_handler(regexp='\?\s*(.+)')
@@ -410,10 +409,11 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             if message.text[0] == '?':
                 code = re.findall(r'\?\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
-                send_code_bonus_task = Task(message.chat.id, 'send_code_bonus', session=session, code=code, message_id=message.message_id)
+                send_code_bonus_task = Task(message.chat.id, 'send_code_bonus', session_id=main_chat_id, code=code,
+                                            message_id=message.message_id)
                 main_vars.task_queue.append(send_code_bonus_task)
 
     @bot.message_handler(regexp='\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
@@ -425,7 +425,7 @@ def run_app(bot, main_vars):
         if allowed:
             coords = find_coords(message.text)
             if coords:
-                send_coords_task = Task(message.chat.id, 'send_code_bonus', coords=coords)
+                send_coords_task = Task(message.chat.id, 'send_coords', coords=coords)
                 main_vars.task_queue.append(send_coords_task)
 
     # Remove webhook, it fails sometimes the set if there is a previous webhook

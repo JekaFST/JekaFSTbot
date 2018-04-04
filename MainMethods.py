@@ -160,88 +160,95 @@ def send_task(task, bot):
 
 
 def send_task_images(task, bot):
-    if task.session.active:
-        send_task_images_to_chat(bot, task.chat_id, task.session)
-    else:
+    session = DBSession.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить задание при неактивной сессии')
+        return
+    send_task_images_to_chat(bot, task.chat_id, session)
 
 
 def send_all_sectors(task, bot):
-    if not task.session.active:
+    session = DBSession.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить сектора при неактивной сессии')
         return
-    if not task.session.storm_game:
-        send_all_sectors_to_chat(bot, task.chat_id, task.session)
+    if not session['stormgame']:
+        send_all_sectors_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:
             bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/sectors номер уровня</b>', parse_mode='HTML')
             return
-        send_all_sectors_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
+        send_all_sectors_to_chat_storm(bot, task.chat_id, session, task.storm_level_number)
 
 
 def send_all_helps(task, bot):
-    if not task.session.active:
+    session = DBSession.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить подсказки при неактивной сессии')
         return
-    if not task.session.storm_game:
-        send_all_helps_to_chat(bot, task.chat_id, task.session)
+    if not session['stormgame']:
+        send_all_helps_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:
             bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/helps номер уровня</b>', parse_mode='HTML')
             return
-        send_all_helps_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
+        send_all_helps_to_chat_storm(bot, task.chat_id, session, task.storm_level_number)
 
 
 def send_last_help(task, bot):
-    if not task.session.active:
+    session = DBSession.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить подсказку при неактивной сессии')
         return
-    if not task.session.storm_game:
-            send_last_help_to_chat(bot, task.chat_id, task.session)
+    if not session['stormgame']:
+            send_last_help_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:
             bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/last_help номер уровня</b>', parse_mode='HTML')
             return
-        send_last_help_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
+        send_last_help_to_chat_storm(bot, task.chat_id, session, task.storm_level_number)
 
 
 def send_all_bonuses(task, bot):
-    if not task.session.active:
+    session = DBSession.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить бонусы при неактивной сессии')
         return
-    if not task.session.storm_game:
-        send_all_bonuses_to_chat(bot, task.chat_id, task.session)
+    if not session['stormgame']:
+        send_all_bonuses_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:
             bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/bonuses номер уровня</b>', parse_mode='HTML')
             return
-        send_all_bonuses_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
+        send_all_bonuses_to_chat_storm(bot, task.chat_id, session, task.storm_level_number)
 
 
 def send_unclosed_bonuses(task, bot):
-    if not task.session.active:
+    session = DBSession.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить не закрытые бонусы при неактивной сессии')
         return
-    if not task.session.storm_game:
-        send_unclosed_bonuses_to_chat(bot, task.chat_id, task.session)
+    if not session['stormgame']:
+        send_unclosed_bonuses_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:
             bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/unclosed_bonuses номер уровня</b>', parse_mode='HTML')
             return
-        send_unclosed_bonuses_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
+        send_unclosed_bonuses_to_chat_storm(bot, task.chat_id, session, task.storm_level_number)
 
 
 def send_auth_messages(task, bot):
-    if not task.session.active:
+    session = DBSession.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить сообщения от авторов при неактивной сессии')
         return
-    if not task.session.storm_game:
-        send_auth_messages_to_chat(bot, task.chat_id, task.session)
+    if not session['stormgame']:
+        send_auth_messages_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:
             bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>/messages номер уровня</b>', parse_mode='HTML')
             return
-        send_auth_messages_to_chat_storm(bot, task.chat_id, task.session, task.storm_level_number)
+        send_auth_messages_to_chat_storm(bot, task.chat_id, session, task.storm_level_number)
 
 
 def start_updater(task, bot):
@@ -273,8 +280,8 @@ def updater_scheduler(chat_id, bot, main_vars, session_id):
 
 
 def set_updater_delay(task, bot):
-    task.session.delay = task.new_delay
-    reply = 'Задержка успешно выставлена' if task.session.delay == task.new_delay else 'Задержка не обновлена, повторите'
+    reply = 'Задержка успешно выставлена' if DBSession.update_int_field(task.session_id, 'delay', task.new_delay) \
+        else 'Задержка не обновлена, повторите'
     bot.send_message(task.chat_id, reply)
 
 
@@ -302,14 +309,15 @@ def stop_channel(task, bot):
 
 
 def send_code_main(task, bot):
-    if not task.session.active:
+    session = DBSession.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя сдавать коды при неактивной сессии')
         return
-    if not task.session.send_codes:
+    if not session['sendcodes']:
         bot.send_message(task.chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
         return
-    if not task.session.storm_game:
-        send_code_to_level(task.code, bot, task.chat_id, task.message_id, task.session)
+    if not session['stormgame']:
+        send_code_to_level(task.code, bot, task.chat_id, task.message_id, session)
     else:
         try:
             level_number = re.findall(r'([\d]+)\s*!', task.code)[0]
@@ -318,18 +326,19 @@ def send_code_main(task, bot):
             bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>!номер уровня!код</b>',
                              reply_to_message_id=task.message_id, parse_mode='HTML')
             return
-        send_code_to_storm_level(code, level_number, bot, task.chat_id, task.message_id, task.session)
+        send_code_to_storm_level(code, level_number, bot, task.chat_id, task.message_id, session)
 
 
 def send_code_bonus(task, bot):
-    if not task.session.active:
+    session = DBSession.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя сдавать коды при неактивной сессии')
         return
-    if not task.session.send_codes:
+    if not session['sendcodes']:
         bot.send_message(task.chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
         return
-    if not task.session.storm_game:
-        send_code_to_level(task.code, bot, task.chat_id, task.message_id, task.session, bonus_only=True)
+    if not session['stormgame']:
+        send_code_to_level(task.code, bot, task.chat_id, task.message_id, session, bonus_only=True)
     else:
         try:
             level_number = re.findall(r'([\d]+)\s*\?', task.code)[0]
@@ -338,7 +347,7 @@ def send_code_bonus(task, bot):
             bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>?номер уровня?код</b>',
                              reply_to_message_id=task.message_id, parse_mode='HTML')
             return
-        send_code_to_storm_level(code, level_number, bot, task.chat_id, task.message_id, task.session, bonus_only=True)
+        send_code_to_storm_level(code, level_number, bot, task.chat_id, task.message_id, session, bonus_only=True)
 
 
 def send_coords(task, bot):
