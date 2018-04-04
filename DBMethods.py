@@ -205,6 +205,22 @@ class DBHelps(object):
         return [row[0] for row in rows] if rows else list()
 
     @staticmethod
+    def get_not_sent_help_ids_per_game(session_id, game_id):
+        sql = """SELECT HintId FROM helps
+                            WHERE sessionid = %s AND gameid = '%s' AND notsent = True
+                            """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def get_time_not_sent_help_ids_per_game(session_id, game_id):
+        sql = """SELECT HintId FROM helps
+                            WHERE sessionid = %s AND gameid = '%s' AND timenotsent = True
+                            """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
     def get_field_value(session_id, game_id, help_id, header):
         sql = "SELECT %s FROM Helps WHERE sessionid = %s AND gameid = '%s' AND hintid = %s" % \
               (header, session_id, game_id, help_id)
@@ -233,6 +249,22 @@ class DBBonuses(object):
     def get_bonus_ids_per_game(session_id, game_id):
         sql = """SELECT BonusId FROM bonuses
                         WHERE sessionid = %s AND gameid = '%s'
+                        """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def get_award_not_sent_bonus_ids_per_game(session_id, game_id):
+        sql = """SELECT BonusId FROM bonuses
+                        WHERE sessionid = %s AND gameid = '%s' AND awardnotsent = True
+                        """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def get_info_not_sent_bonus_ids_per_game(session_id, game_id):
+        sql = """SELECT BonusId FROM bonuses
+                        WHERE sessionid = %s AND gameid = '%s' AND infonotsent = True
                         """ % (session_id, game_id)
         rows = execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
@@ -271,6 +303,14 @@ class DBSectors(object):
         return [row[0] for row in rows] if rows else list()
 
     @staticmethod
+    def get_answer_info_not_sent_sector_ids_per_game(session_id, game_id):
+        sql = """SELECT SectorId FROM sectors
+                    WHERE sessionid = %s AND gameid = '%s' AND answerinfonotsent = True
+                    """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
     def get_answer_info_not_sent(session_id, game_id, sector_id):
         sql = "SELECT answerinfonotsent FROM Sectors WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s" % \
               (session_id, game_id, sector_id)
@@ -300,6 +340,14 @@ class DBMessages(object):
         sql = """SELECT MessageId FROM messages
                     WHERE sessionid = %s AND gameid = '%s'
                     """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def get_not_sent_message_ids_per_game(session_id, game_id):
+        sql = """SELECT MessageId FROM messages
+                        WHERE sessionid = %s AND gameid = '%s' AND messagenotsent = True
+                        """ % (session_id, game_id)
         rows = execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
 
