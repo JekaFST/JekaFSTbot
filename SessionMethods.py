@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, \
     send_adm_message
 from Const import game_wrong_statuses, urls
-from DBMethods import DB, DBSession
+from DBMethods import DB, DBSession, DBLevels
 
 
 def compile_urls(session_id, chat_id, bot, game_id, en_domain):
@@ -104,18 +104,18 @@ def initiate_session_vars(session, bot, chat_id, from_updater=False):
     if game_model and game_model['LevelSequence'] == 3:
         levels = game_model['Levels']
         storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater)
-        existing_levels = DB.get_level_ids_per_game(session['sessionid'], session['gameid'])
+        existing_levels = DBLevels.get_level_ids_per_game(session['sessionid'], session['gameid'])
         for level in storm_levels:
             if level['LevelId'] not in existing_levels:
-                DB.insert_level(session['sessionid'], session['gameid'], level)
+                DBLevels.insert_level(session['sessionid'], session['gameid'], level)
         DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'True')
         return None, True
     elif game_model:
         current_level_info = game_model['Level']
         DBSession.update_int_field(session['sessionid'], 'currlevelid', current_level_info['LevelId'])
-        existing_levels = DB.get_level_ids_per_game(session['sessionid'], session['gameid'])
+        existing_levels = DBLevels.get_level_ids_per_game(session['sessionid'], session['gameid'])
         if current_level_info['LevelId'] not in existing_levels:
-            DB.insert_level(session['sessionid'], session['gameid'], current_level_info)
+            DBLevels.insert_level(session['sessionid'], session['gameid'], current_level_info)
         DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'False')
         return True, None
     else:

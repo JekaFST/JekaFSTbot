@@ -132,8 +132,187 @@ class DBSession(object):
         return execute_insert_cur(sql)
 
 
-class DB(object):
+class DBLevels(object):
+    @staticmethod
+    def insert_level(session_id, game_id, level):
+        sql = """INSERT INTO levels
+                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent)
+                    VALUES (%s, %s, '%s', %s, %s, %s, False)
+                """ % (session_id, level['LevelId'], game_id, level['Number'], level['IsPassed'], level['Dismissed'])
+        return execute_insert_cur(sql)
 
+    @staticmethod
+    def get_dismissed_level_ids(session_id, game_id):
+        sql = """SELECT LevelId FROM levels
+                    WHERE sessionid = %s AND gameid = '%s' AND dismissed = True
+                    """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def update_dismissed_level(session_id, game_id, level_id, active):
+        sql = """UPDATE Levels
+                SET dismissed = %s
+                WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
+                """ % (active, session_id, game_id, level_id)
+        execute_insert_cur(sql)
+
+    @staticmethod
+    def get_level_ids_per_game(session_id, game_id):
+        sql = """SELECT LevelId FROM Levels
+                    WHERE sessionid = %s AND gameid = '%s'
+                    """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def get_time_to_up_sent(session_id, level_id):
+        sql = "SELECT timetoupsent FROM Levels WHERE sessionid = %s AND levelid = %s" % (session_id, level_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_time_to_up_sent(session_id, level_id, active):
+        sql = """UPDATE Levels
+                SET timetoupsent = %s
+                WHERE sessionid = %s AND levelid = %s
+                """ % (active, session_id, level_id)
+        execute_insert_cur(sql)
+
+
+class DBHelps(object):
+    @staticmethod
+    def insert_help(session_id, game_id, help_id):
+        sql = """INSERT INTO helps
+                        (SessionId, HintId, GameId, NotSent, TimeNotSent)
+                        VALUES (%s, %s, '%s', True, True)
+                    """ % (session_id, help_id, game_id)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_help_ids_per_game(session_id, game_id):
+        sql = """SELECT HintId FROM helps
+                        WHERE sessionid = %s AND gameid = '%s'
+                        """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def get_field_value(session_id, game_id, help_id, header):
+        sql = "SELECT %s FROM Helps WHERE sessionid = %s AND gameid = '%s' AND hintid = %s" % \
+              (header, session_id, game_id, help_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_bool_flag(session_id, game_id, help_id, header, value):
+        sql = """UPDATE Helps
+                    SET %s = %s
+                    WHERE sessionid = %s AND gameid = '%s' AND hintid = %s
+                    """ % (header, value, session_id, game_id, help_id)
+        execute_insert_cur(sql)
+
+
+class DBBonuses(object):
+    @staticmethod
+    def insert_bonus(session_id, game_id, bonus_id):
+        sql = """INSERT INTO bonuses
+                        (SessionId, BonusId, GameId, InfoNotSent, AwardNotSent)
+                        VALUES (%s, %s, '%s', True, True)
+                    """ % (session_id, bonus_id, game_id)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_bonus_ids_per_game(session_id, game_id):
+        sql = """SELECT BonusId FROM bonuses
+                        WHERE sessionid = %s AND gameid = '%s'
+                        """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def get_field_value(session_id, game_id, bonus_id, header):
+        sql = "SELECT %s FROM Bonuses WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s" % \
+              (header, session_id, game_id, bonus_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_bool_flag(session_id, game_id, bonus_id, header, value):
+        sql = """UPDATE Bonuses
+                SET %s = %s
+                WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
+                """ % (header, value, session_id, game_id, bonus_id)
+        execute_insert_cur(sql)
+
+
+class DBSectors(object):
+    @staticmethod
+    def insert_sector(session_id, game_id, sector_id):
+        sql = """INSERT INTO sectors
+                    (SessionId, SectorId, GameId, AnswerInfoNotSent)
+                    VALUES (%s, %s, '%s', True)
+                """ % (session_id, sector_id, game_id)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_sector_ids_per_game(session_id, game_id):
+        sql = """SELECT SectorId FROM sectors
+                    WHERE sessionid = %s AND gameid = '%s'
+                    """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def get_answer_info_not_sent(session_id, game_id, sector_id):
+        sql = "SELECT answerinfonotsent FROM Sectors WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s" % \
+              (session_id, game_id, sector_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_answer_info_not_sent(session_id, game_id, sector_id, active):
+        sql = """UPDATE Sectors
+                SET answerinfonotsent = %s
+                WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
+                """ % (active, session_id, game_id, sector_id)
+        execute_insert_cur(sql)
+
+
+class DBMessages(object):
+    @staticmethod
+    def insert_message(session_id, game_id, message_id):
+        sql = """INSERT INTO messages
+                    (SessionId, MessageId, GameId, MessageNotSent)
+                    VALUES (%s, %s, '%s', True)
+                """ % (session_id, message_id, game_id)
+        return execute_insert_cur(sql)
+
+    @staticmethod
+    def get_message_ids_per_game(session_id, game_id):
+        sql = """SELECT MessageId FROM messages
+                    WHERE sessionid = %s AND gameid = '%s'
+                    """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def get_message_not_sent(session_id, game_id, message_id):
+        sql = "SELECT messagenotsent FROM Messages WHERE sessionid = %s AND gameid = '%s' AND messageid = %s" % \
+              (session_id, game_id, message_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def update_message_not_sent(session_id, game_id, message_id, active):
+        sql = """UPDATE Messages
+                SET messagenotsent = %s
+                WHERE sessionid = %s AND gameid = '%s' AND messageid = %s
+                """ % (active, session_id, game_id, message_id)
+        execute_insert_cur(sql)
+
+
+class DB(object):
     @staticmethod
     def get_tags_list():
         sql = "SELECT DISTINCT * FROM TagsToCut"
@@ -199,217 +378,3 @@ class DB(object):
         sql = "SELECT AddChatId FROM AllowedChats WHERE ChatId = %s AND AddChatId IS NOT NULL" % str(main_chat_id)
         rows = execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
-
-    @staticmethod
-    def insert_level(session_id, game_id, level):
-        sql = """INSERT INTO levels
-                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent)
-                    VALUES (%s, %s, '%s', %s, %s, %s, False)
-                """ % (session_id, level['LevelId'], game_id, level['Number'], level['IsPassed'], level['Dismissed'])
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_level_ids_per_game(session_id, game_id):
-        sql = """SELECT LevelId FROM Levels
-                    WHERE sessionid = %s AND gameid = '%s'
-                    """ % (session_id, game_id)
-        rows = execute_select_cur(sql)
-        return [row[0] for row in rows] if rows else list()
-
-    @staticmethod
-    def insert_help(session_id, game_id, help_id):
-        sql = """INSERT INTO helps
-                    (SessionId, HintId, GameId, NotSent, TimeNotSent)
-                    VALUES (%s, %s, '%s', True, True)
-                """ % (session_id, help_id, game_id)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_help_ids_per_game(session_id, game_id):
-        sql = """SELECT HintId FROM helps
-                    WHERE sessionid = %s AND gameid = '%s'
-                    """ % (session_id, game_id)
-        rows = execute_select_cur(sql)
-        return [row[0] for row in rows] if rows else list()
-
-    @staticmethod
-    def insert_bonus(session_id, game_id, bonus_id):
-        sql = """INSERT INTO bonuses
-                    (SessionId, BonusId, GameId, InfoNotSent, AwardNotSent)
-                    VALUES (%s, %s, '%s', True, True)
-                """ % (session_id, bonus_id, game_id)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_bonus_ids_per_game(session_id, game_id):
-        sql = """SELECT BonusId FROM bonuses
-                    WHERE sessionid = %s AND gameid = '%s'
-                    """ % (session_id, game_id)
-        rows = execute_select_cur(sql)
-        return [row[0] for row in rows] if rows else list()
-
-    @staticmethod
-    def insert_sector(session_id, game_id, sector_id):
-        sql = """INSERT INTO sectors
-                    (SessionId, SectorId, GameId, AnswerInfoNotSent)
-                    VALUES (%s, %s, '%s', True)
-                """ % (session_id, sector_id, game_id)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_sector_ids_per_game(session_id, game_id):
-        sql = """SELECT SectorId FROM sectors
-                    WHERE sessionid = %s AND gameid = '%s'
-                    """ % (session_id, game_id)
-        rows = execute_select_cur(sql)
-        return [row[0] for row in rows] if rows else list()
-    @staticmethod
-    def insert_message(session_id, game_id, message_id):
-        sql = """INSERT INTO messages
-                    (SessionId, MessageId, GameId, MessageNotSent)
-                    VALUES (%s, %s, '%s', True)
-                """ % (session_id, message_id, game_id)
-        return execute_insert_cur(sql)
-
-    @staticmethod
-    def get_message_ids_per_game(session_id, game_id):
-        sql = """SELECT MessageId FROM messages
-                    WHERE sessionid = %s AND gameid = '%s'
-                    """ % (session_id, game_id)
-        rows = execute_select_cur(sql)
-        return [row[0] for row in rows] if rows else list()
-
-    @staticmethod
-    def get_time_to_up_sent(session_id, level_id):
-        sql = "SELECT timetoupsent FROM Levels WHERE sessionid = %s AND levelid = %s" % (session_id, level_id)
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_time_to_up_sent(session_id, level_id, active):
-        sql = """UPDATE Levels
-                SET timetoupsent = %s
-                WHERE sessionid = %s AND levelid = %s
-                """ % (active, session_id, level_id)
-        execute_insert_cur(sql)
-
-    @staticmethod
-    def get_message_not_sent(session_id, game_id, message_id):
-        sql = "SELECT messagenotsent FROM Messages WHERE sessionid = %s AND gameid = '%s' AND messageid = %s" % \
-              (session_id, game_id, message_id)
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_message_not_sent(session_id, game_id, message_id, active):
-        sql = """UPDATE Messages
-                SET messagenotsent = %s
-                WHERE sessionid = %s AND gameid = '%s' AND messageid = %s
-                """ % (active, session_id, game_id, message_id)
-        execute_insert_cur(sql)
-
-    @staticmethod
-    def get_answer_info_not_sent(session_id, game_id, sector_id):
-        sql = "SELECT answerinfonotsent FROM Sectors WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s" % \
-              (session_id, game_id, sector_id)
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_answer_info_not_sent(session_id, game_id, sector_id, active):
-        sql = """UPDATE Sectors
-                SET answerinfonotsent = %s
-                WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
-                """ % (active, session_id, game_id, sector_id)
-        execute_insert_cur(sql)
-
-    @staticmethod
-    def get_answer_info_not_sent(session_id, game_id, sector_id):
-        sql = "SELECT answerinfonotsent FROM Sectors WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s" % \
-              (session_id, game_id, sector_id)
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_answer_info_not_sent(session_id, game_id, sector_id, active):
-        sql = """UPDATE Sectors
-                SET answerinfonotsent = %s
-                WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
-                """ % (active, session_id, game_id, sector_id)
-        execute_insert_cur(sql)
-
-    @staticmethod
-    def get_help_not_sent(session_id, game_id, help_id):
-        sql = "SELECT notsent FROM Helps WHERE sessionid = %s AND gameid = '%s' AND hintid = %s" % \
-              (session_id, game_id, help_id)
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_help_not_sent(session_id, game_id, help_id, active):
-        sql = """UPDATE Helps
-                SET notsent = %s
-                WHERE sessionid = %s AND gameid = '%s' AND hintid = %s
-                """ % (active, session_id, game_id, help_id)
-        execute_insert_cur(sql)
-
-    @staticmethod
-    def get_help_time_not_sent(session_id, game_id, help_id):
-        sql = "SELECT timenotsent FROM Helps WHERE sessionid = %s AND gameid = '%s' AND hintid = %s" % \
-              (session_id, game_id, help_id)
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_help_time_not_sent(session_id, game_id, help_id, active):
-        sql = """UPDATE Helps
-                SET timenotsent = %s
-                WHERE sessionid = %s AND gameid = '%s' AND hintid = %s
-                """ % (active, session_id, game_id, help_id)
-        execute_insert_cur(sql)
-
-    @staticmethod
-    def get_bonus_info_not_sent(session_id, game_id, bonus_id):
-        sql = "SELECT infonotsent FROM Bonuses WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s" % \
-              (session_id, game_id, bonus_id)
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_bonus_info_not_sent(session_id, game_id, bonus_id, active):
-        sql = """UPDATE Bonuses
-                SET infonotsent = %s
-                WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
-                """ % (active, session_id, game_id, bonus_id)
-        execute_insert_cur(sql)
-
-    @staticmethod
-    def get_bonus_award_not_sent(session_id, game_id, bonus_id):
-        sql = "SELECT awardnotsent FROM Bonuses WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s" % \
-              (session_id, game_id, bonus_id)
-        rows = execute_select_cur(sql)
-        return rows[0][0]
-
-    @staticmethod
-    def update_bonus_award_not_sent(session_id, game_id, bonus_id, active):
-        sql = """UPDATE Bonuses
-                SET awardnotsent = %s
-                WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
-                """ % (active, session_id, game_id, bonus_id)
-        execute_insert_cur(sql)
-
-    @staticmethod
-    def get_dismissed_level_ids(session_id, game_id):
-        sql = """SELECT LevelId FROM levels
-                    WHERE sessionid = %s AND gameid = '%s' AND dismissed = True
-                    """ % (session_id, game_id)
-        rows = execute_select_cur(sql)
-        return [row[0] for row in rows] if rows else list()
-
-    @staticmethod
-    def update_dismissed_level(session_id, game_id, level_id, active):
-        sql = """UPDATE Levels
-                SET dismissed = %s
-                WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
-                """ % (active, session_id, game_id, level_id)
-        execute_insert_cur(sql)
