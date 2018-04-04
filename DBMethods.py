@@ -331,7 +331,7 @@ class DB(object):
         sql = """
                 INSERT INTO TagsToCut (Tag)
                 VALUES ('%s')""" % tag_to_add
-        execute_insert_cur(sql)
+        return execute_insert_cur(sql)
 
     @staticmethod
     def get_main_bot_token():

@@ -304,8 +304,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
-            enable_codes_task = Task(message.chat.id, 'codes_on', session=session)
+            enable_codes_task = Task(message.chat.id, 'codes_on', session_id=message.chat.id)
             main_vars.task_queue.append(enable_codes_task)
 
     @bot.message_handler(commands=['codes_off'])
@@ -314,8 +313,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
-            disable_codes_task = Task(message.chat.id, 'codes_off', session=session)
+            disable_codes_task = Task(message.chat.id, 'codes_off', session_id=message.chat.id)
             main_vars.task_queue.append(disable_codes_task)
 
     @bot.message_handler(commands=['add_tag'])
@@ -324,8 +322,7 @@ def run_app(bot, main_vars):
             bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
             return
         tag_to_add = re.findall(r'/add_tag\s*(.+)', str(message.text.encode('utf-8')))[0]
-        DB.insert_tag_in_tags_list(tag_to_add)
-        if tag_to_add in DB.get_tags_list():
+        if DB.insert_tag_in_tags_list(tag_to_add):
             bot.send_message(message.chat.id, 'Тег успешно добавлен в обработчик')
         else:
             bot.send_message(message.chat.id, 'Тег не добавлен в обработчикб повторите попытку')

@@ -293,9 +293,12 @@ def stop_updater(task, bot):
 
 def set_channel_name(task, bot):
     new_channel_name = "@" + task.new_channel_name if "@" not in task.new_channel_name else task.new_channel_name
-    reply = 'Канал успешно задан' if DBSession.update_text_field(task.session_id, 'channelname', new_channel_name) \
-        else 'Канал не задан, повторите'
-    bot.send_message(task.chat_id, reply)
+    if DBSession.update_text_field(task.session_id, 'channelname', new_channel_name):
+        bot.send_message(task.chat_id, 'Канал успешно задан')
+        if DBSession.update_bool_flag(task.session_id, 'usechannel', 'True'):
+            bot.send_message(task.chat_id, 'Постинг в канал разрешен')
+    else:
+        bot.send_message(task.chat_id, 'Канал не задан, повторите')
 
 
 def start_channel(task, bot):
@@ -371,12 +374,12 @@ def reset_join(task, bot):
 
 
 def enable_codes(task, bot):
-    task.session.send_codes = True
+    DBSession.update_bool_flag(task.session_id, 'sendcodes', 'True')
     bot.send_message(task.chat_id, 'Сдача кодов включена')
 
 
 def disable_codes(task, bot):
-    task.session.send_codes = False
+    DBSession.update_bool_flag(task.session_id, 'sendcodes', 'False')
     bot.send_message(task.chat_id, 'Сдача кодов выключена')
 
 
