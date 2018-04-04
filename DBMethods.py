@@ -5,52 +5,47 @@ import psycopg2.extras
 
 # DATABASE_URL = os.environ['DATABASE_URL']
 # db_conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-# DATABASE_URL = 'jdbc:postgresql://localhost:5432/JekaFSTbot_base'
-
-
-def connect():
-    return psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
-# db_conn = psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
+db_conn = psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
 
 
 def execute_select_cur(sql):
-    db_conn = connect()
+    cur = db_conn.cursor()
     try:
-        cur = db_conn.cursor()
         cur.execute(sql)
         result = cur.fetchall()
-        db_conn.close()
+        cur.close()
         return result
     except psycopg2.DatabaseError as err:
-        db_conn.close()
+        cur.close()
+        db_conn.rollback()
         print 'DB error in the following query: "' + sql + '": ' + err.message
         return False
 
 
 def execute_dict_select_cur(sql):
-    db_conn = connect()
+    cur = db_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
-        cur = db_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute(sql)
         result = cur.fetchall()
-        db_conn.close()
+        cur.close()
         return result
     except psycopg2.DatabaseError as err:
-        db_conn.close()
+        cur.close()
+        db_conn.rollback()
         print 'DB error in the following query: "' + sql + '": ' + err.message
         return False
 
 
 def execute_insert_cur(sql):
-    db_conn = connect()
+    cur = db_conn.cursor()
     try:
-        cur = db_conn.cursor()
         cur.execute(sql)
         db_conn.commit()
-        db_conn.close()
+        cur.close()
         return True
     except psycopg2.DatabaseError as err:
-        db_conn.close()
+        cur.close()
+        db_conn.rollback()
         print 'DB error in the following query: "' + sql + '": ' + err.message
         return False
 

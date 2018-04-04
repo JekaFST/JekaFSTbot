@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import threading
 import json
-from DBMethods import DB, DBSession, DBLevels, DBHelps, DBBonuses, DBSectors, DBMessages
+from DBMethods import DBSession, DBLevels, DBHelps, DBBonuses, DBSectors, DBMessages
 from SessionMethods import get_current_level, get_storm_level, get_storm_levels, get_current_game_model
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
     send_bonus_award_answer, send_adm_message, close_live_locations
@@ -321,78 +321,78 @@ def fill_message_statuses(loaded_messages, message_statuses, sent_messages):
 
 
 def sectors_parcer(session_id, game_id, loaded_sectors, codes_to_find, bot, chat_id, levelmark=None, storm=False):
-    if loaded_sectors:
-        existing_sectors = DBSectors.get_sector_ids_per_game(session_id, game_id)
+    # if loaded_sectors:
+    existing_sectors = DBSectors.get_sector_ids_per_game(session_id, game_id)
 
-        for sector in loaded_sectors:
-            if sector['SectorId'] not in existing_sectors:
-                DBSectors.insert_sector(session_id, game_id, sector['SectorId'])
+    for sector in loaded_sectors:
+        if sector['SectorId'] not in existing_sectors:
+            DBSectors.insert_sector(session_id, game_id, sector['SectorId'])
 
-            if sector['IsAnswered'] and DBSectors.get_answer_info_not_sent(session_id, game_id, sector['SectorId']):
+        if sector['IsAnswered'] and DBSectors.get_answer_info_not_sent(session_id, game_id, sector['SectorId']):
 
-                code = sector['Answer']['Answer'].encode('utf-8')
-                player = sector['Answer']['Login'].encode('utf-8')
-                name = sector['Name'].encode('utf-8')
-                codes_all = len(loaded_sectors)
-                sectors_to_close = get_sectors_to_close(loaded_sectors)
-                message = '<b>с-р: ' + name + ' - </b>' + '\xE2\x9C\x85' + '<b> (' + player + ': ' + code + ')</b>' \
-                          '\r\nОсталось закрыть: %s из %s:\r\n%s' % (str(codes_to_find), str(codes_all),
-                                                                     sectors_to_close)
-                if storm:
-                    message = levelmark + '\r\n' + message
-                bot.send_message(chat_id, message, parse_mode='HTML')
-                DBSectors.update_answer_info_not_sent(session_id, game_id, sector['SectorId'], 'False')
+            code = sector['Answer']['Answer'].encode('utf-8')
+            player = sector['Answer']['Login'].encode('utf-8')
+            name = sector['Name'].encode('utf-8')
+            codes_all = len(loaded_sectors)
+            sectors_to_close = get_sectors_to_close(loaded_sectors)
+            message = '<b>с-р: ' + name + ' - </b>' + '\xE2\x9C\x85' + '<b> (' + player + ': ' + code + ')</b>' \
+                      '\r\nОсталось закрыть: %s из %s:\r\n%s' % (str(codes_to_find), str(codes_all),
+                                                                 sectors_to_close)
+            if storm:
+                message = levelmark + '\r\n' + message
+            bot.send_message(chat_id, message, parse_mode='HTML')
+            DBSectors.update_answer_info_not_sent(session_id, game_id, sector['SectorId'], 'False')
 
 
 def help_parcer(session_id, game_id, loaded_helps, bot, chat_id, channel_name, use_channel, levelmark=None, storm=False):
-    if loaded_helps:
-        existing_helps = DBHelps.get_help_ids_per_game(session_id, game_id)
-        for help in loaded_helps:
-            if help['HelpId'] not in existing_helps:
-                DBHelps.insert_help(session_id, game_id, help['HelpId'])
+    # if loaded_helps:
+    existing_helps = DBHelps.get_help_ids_per_game(session_id, game_id)
+    for help in loaded_helps:
+        if help['HelpId'] not in existing_helps:
+            DBHelps.insert_help(session_id, game_id, help['HelpId'])
 
-            if DBHelps.get_field_value(session_id, game_id, help['HelpId'], 'notsent') and help['HelpText'] is not None:
-                DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'notsent', 'False')
-                DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'timenotsent', 'False')
-                send_help(help, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
-                if channel_name and use_channel:
-                    send_help(help, bot, channel_name, session_id, storm=storm, levelmark=levelmark)
-                continue
-            if DBHelps.get_field_value(session_id, game_id, help['HelpId'], 'timenotsent') and help['RemainSeconds'] <= 180:
-                DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'timenotsent', 'False')
-                send_time_to_help(help, bot, chat_id, levelmark, storm)
+        if DBHelps.get_field_value(session_id, game_id, help['HelpId'], 'notsent') and help['HelpText'] is not None:
+            DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'notsent', 'False')
+            DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'timenotsent', 'False')
+            send_help(help, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
+            if channel_name and use_channel:
+                send_help(help, bot, channel_name, session_id, storm=storm, levelmark=levelmark)
+            continue
+        if DBHelps.get_field_value(session_id, game_id, help['HelpId'], 'timenotsent') and help['RemainSeconds'] <= 180:
+            DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'timenotsent', 'False')
+            send_time_to_help(help, bot, chat_id, levelmark, storm)
 
 
 def bonus_parcer(session_id, game_id, loaded_bonuses, bot, chat_id, levelmark=None, storm=False):
-    if loaded_bonuses:
-        existing_bonuses = DBBonuses.get_bonus_ids_per_game(session_id, game_id)
-        for bonus in loaded_bonuses:
-            if bonus['BonusId'] not in existing_bonuses:
-                DBBonuses.insert_bonus(session_id, game_id, bonus['BonusId'])
+    # if loaded_bonuses:
+    existing_bonuses = DBBonuses.get_bonus_ids_per_game(session_id, game_id)
+    for bonus in loaded_bonuses:
+        if bonus['BonusId'] not in existing_bonuses:
+            DBBonuses.insert_bonus(session_id, game_id, bonus['BonusId'])
 
-            if bonus['IsAnswered'] and DBBonuses.get_field_value(session_id, game_id, bonus['BonusId'], 'awardnotsent'):
-                DBBonuses.update_bool_flag(session_id, game_id, bonus['BonusId'], 'awardnotsent', 'False')
-                DBBonuses.update_bool_flag(session_id, game_id, bonus['BonusId'], 'infonotsent', 'False')
-                send_bonus_award_answer(bonus, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
-                continue
-            if DBBonuses.get_field_value(session_id, game_id, bonus['BonusId'], 'infonotsent') and bonus['Task'] and not bonus['Expired']:
-                DBBonuses.update_bool_flag(session_id, game_id, bonus['BonusId'], 'infonotsent', 'False')
-                if not storm:
-                    send_bonus_info(bonus, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
+        if bonus['IsAnswered'] and DBBonuses.get_field_value(session_id, game_id, bonus['BonusId'], 'awardnotsent'):
+            DBBonuses.update_bool_flag(session_id, game_id, bonus['BonusId'], 'awardnotsent', 'False')
+            DBBonuses.update_bool_flag(session_id, game_id, bonus['BonusId'], 'infonotsent', 'False')
+            send_bonus_award_answer(bonus, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
+            continue
+        if DBBonuses.get_field_value(session_id, game_id, bonus['BonusId'], 'infonotsent') and bonus['Task'] and not bonus['Expired']:
+            DBBonuses.update_bool_flag(session_id, game_id, bonus['BonusId'], 'infonotsent', 'False')
+            if not storm:
+                send_bonus_info(bonus, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
 
 
 def message_parcer(session_id, game_id, loaded_messages, bot, chat_id, channel_name, use_channel, levelmark=None, storm=False):
-    if loaded_messages:
-        existing_messages = DBMessages.get_message_ids_per_game(session_id, game_id)
-        for message in loaded_messages:
-            if message['MessageId'] not in existing_messages:
-                DBMessages.insert_message(session_id, game_id, message['MessageId'])
+    # if loaded_messages:
+    existing_messages = DBMessages.get_message_ids_per_game(session_id, game_id)
+    for message in loaded_messages:
+        if message['MessageId'] not in existing_messages:
+            DBMessages.insert_message(session_id, game_id, message['MessageId'])
 
-            if DBMessages.get_message_not_sent(session_id, game_id, message['MessageId']):
-                DBMessages.update_message_not_sent(session_id, game_id, message['MessageId'], 'False')
-                send_adm_message(message, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
-                if channel_name and use_channel:
-                    send_adm_message(message, bot, channel_name, session_id, storm=storm, levelmark=levelmark)
+        if DBMessages.get_message_not_sent(session_id, game_id, message['MessageId']):
+            DBMessages.update_message_not_sent(session_id, game_id, message['MessageId'], 'False')
+            send_adm_message(message, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
+            if channel_name and use_channel:
+                send_adm_message(message, bot, channel_name, session_id, storm=storm, levelmark=levelmark)
 
 
 def levels_parcer(session_id, game_id, levels, bot, chat_id):
