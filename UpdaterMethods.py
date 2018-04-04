@@ -352,14 +352,14 @@ def help_parcer(session_id, game_id, loaded_helps, bot, chat_id, channel_name, u
                 DBHelps.insert_help(session_id, game_id, help['HelpId'])
 
             if DBHelps.get_field_value(session_id, game_id, help['HelpId'], 'notsent') and help['HelpText'] is not None:
-                DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'notsent' 'False')
-                DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'timenotsent' 'False')
+                DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'notsent', 'False')
+                DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'timenotsent', 'False')
                 send_help(help, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
                 if channel_name and use_channel:
                     send_help(help, bot, channel_name, session_id, storm=storm, levelmark=levelmark)
                 continue
             if DBHelps.get_field_value(session_id, game_id, help['HelpId'], 'timenotsent') and help['RemainSeconds'] <= 180:
-                DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'timenotsent' 'False')
+                DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'timenotsent', 'False')
                 send_time_to_help(help, bot, chat_id, levelmark, storm)
 
 

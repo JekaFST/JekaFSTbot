@@ -55,7 +55,7 @@ def start(task, bot):
 
 def stop_session(task, bot):
     DBSession.update_bool_flag(task.session_id, 'stopupdater', 'True')
-    DBSession.update_bool_flag(task.session_id, 'putupdatertask' 'False')
+    DBSession.update_bool_flag(task.session_id, 'putupdatertask', 'False')
     DBSession.update_bool_flag(task.session_id, 'usechannel', 'False')
     DBSession.update_bool_flag(task.session_id, 'active', 'False')
     add_chat_ids_per_session = DB.get_add_chat_ids_for_main(task.session_id)
@@ -247,7 +247,7 @@ def send_auth_messages(task, bot):
 def start_updater(task, bot):
     if DBSession.get_field_value(task.session_id, 'active') and task.chat_id not in task.main_vars.updater_schedulers_dict.keys():
         DBSession.update_bool_flag(task.session_id, 'stopupdater', 'False')
-        DBSession.update_bool_flag(task.session_id, 'putupdatertask' 'True')
+        DBSession.update_bool_flag(task.session_id, 'putupdatertask', 'True')
         name = 'updater_%s' % task.chat_id
         task.main_vars.updater_schedulers_dict[task.chat_id] = threading.Thread(name=name, target=updater_scheduler,
                                                                                 args=(task.chat_id, bot, task.main_vars,
@@ -264,7 +264,7 @@ def updater_scheduler(chat_id, bot, main_vars, session_id):
             time.sleep(DBSession.get_field_value(session_id, 'delay'))
             updater_task = Task(chat_id, 'updater', session_id=session_id, updaters_dict=main_vars.updaters_dict)
             main_vars.task_queue.append(updater_task)
-            DBSession.update_bool_flag(session_id, 'putupdatertask' 'False')
+            DBSession.update_bool_flag(session_id, 'putupdatertask', 'False')
     else:
         bot.send_message(chat_id, 'Слежение остановлено')
         if chat_id in main_vars.updater_schedulers_dict.keys():
@@ -281,7 +281,7 @@ def set_updater_delay(task, bot):
 def stop_updater(task, bot):
     if DBSession.get_field_value(task.session_id, 'active'):
         DBSession.update_bool_flag(task.session_id, 'stopupdater', 'True')
-        DBSession.update_bool_flag(task.session_id, 'putupdatertask' 'False')
+        DBSession.update_bool_flag(task.session_id, 'putupdatertask', 'False')
 
 
 def set_channel_name(task, bot):

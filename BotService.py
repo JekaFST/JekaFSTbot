@@ -269,8 +269,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot) \
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
-            stop_updater_task = Task(message.chat.id, 'stop_updater', session=session)
+            stop_updater_task = Task(message.chat.id, 'stop_updater', session_id=message.chat.id)
             main_vars.task_queue.append(stop_updater_task)
 
     @bot.message_handler(commands=['set_channel_name'])
