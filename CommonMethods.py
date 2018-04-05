@@ -2,7 +2,7 @@
 import json
 import datetime as datetime
 import telebot
-from DBMethods import DB
+from DBMethods import DB, DBSession
 from TextConvertingMethods import send_object_text
 
 
@@ -71,33 +71,34 @@ def send_adm_message(message, bot, chat_id, session_id, from_updater=False, stor
     send_object_text(message_text, message_header, bot, chat_id, session_id, from_updater, storm)
 
 
-def close_live_locations(chat_id, bot, session, point=None):
+def close_live_locations(chat_id, bot, session, ll_message_ids, point=None):
     if not point:
-        for k, v in session.live_location_message_ids.items():
-            if k == 0:
+        for k, v in ll_message_ids.items():
+            if int(k == 0):
                 try:
-                    bot.stop_message_live_location(chat_id, v)
+                    bot.stop_message_live_location(chat_id, int(v))
                 except Exception as e:
                     response_text = json.loads(e.result.text)['description'].encode('utf-8')
                     if "message can't be edited" in response_text:
-                        del session.live_location_message_ids[k]
-            elif k > 15:
+                        del ll_message_ids[k]
+            elif int(k) > 15:
                 continue
             else:
                 try:
-                    telebot.TeleBot(DB.get_location_bot_token_by_number(k)).stop_message_live_location(chat_id, v)
+                    telebot.TeleBot(DB.get_location_bot_token_by_number(k)).stop_message_live_location(chat_id, int(v))
                 except Exception as e:
                     response_text = json.loads(e.result.text)['description'].encode('utf-8')
                     if "message can't be edited" in response_text:
-                        del session.live_location_message_ids[k]
-            session.live_location_message_ids = dict()
+                        del ll_message_ids[k]
+        DBSession.update_json_field(session['sessionid'], 'llmessageids', {})
     else:
-        if point in session.live_location_message_ids.keys():
+        if point in ll_message_ids.keys():
             try:
-                bot.stop_message_live_location(chat_id, session.live_location_message_ids[point])
+                bot.stop_message_live_location(chat_id, int(ll_message_ids[point]))
             except Exception as e:
                 response_text = json.loads(e.result.text)['description'].encode('utf-8')
                 if "message can't be edited" in response_text:
-                    del session.live_location_message_ids[point]
+                    del ll_message_ids[point]
+            DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
         else:
             bot.send_message(chat_id, 'Live location с таким номером не поставлен')

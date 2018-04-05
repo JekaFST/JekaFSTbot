@@ -332,14 +332,14 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
             seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))
             duration = int(seconds[0]) if seconds else None
-            send_live_location_task = Task(message.chat.id, 'live_location', session=session, coords=coords, duration=duration)
+            send_live_location_task = Task(message.chat.id, 'live_location', session_id=main_chat_id, coords=coords, duration=duration)
             main_vars.task_queue.append(send_live_location_task)
 
     @bot.message_handler(commands=['stop_ll'])
@@ -347,10 +347,10 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             point_number = re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
-            point = int(point_number.group(0)) if point_number else None
-            stop_live_location_task = Task(message.chat.id, 'stop_live_location', session=session, point=point)
+            point = point_number.group(0) if point_number else None
+            stop_live_location_task = Task(message.chat.id, 'stop_live_location', session_id=main_chat_id, point=point)
             main_vars.task_queue.append(stop_live_location_task)
 
     @bot.message_handler(commands=['edit_ll'])
@@ -358,14 +358,14 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
             point_number = re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
             point = int(point_number.group(0)) if point_number else None
-            edit_live_location_task = Task(message.chat.id, 'edit_live_location', session=session, point=point, coords=coords)
+            edit_live_location_task = Task(message.chat.id, 'edit_live_location', session_id=main_chat_id, point=point, coords=coords)
             main_vars.task_queue.append(edit_live_location_task)
 
     @bot.message_handler(commands=['add_points_ll'])
@@ -373,12 +373,12 @@ def run_app(bot, main_vars):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
-            session = Task.get_session(message.chat.id, main_chat_ids)
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             points_dict = dict()
             points = re.findall(r'\d{1,2}\s*-\s*\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}|'
                                 r'\d{1,2}\s*-\s*\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}', str(message.text.encode('utf-8')))
             for point in points:
-                i = int(re.findall(r'(\d{1,2})\s*-', point)[0])
+                i = re.findall(r'(\d{1,2})\s*-', point)[0]
                 points_dict[i] = re.findall(r'\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}|'
                                             r'\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}', point)[0]
             if not points_dict:
@@ -386,7 +386,7 @@ def run_app(bot, main_vars):
                                                   '1 - корды\n2 - корды\n...\nn - корды')
             seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))
             duration = int(seconds[0]) if seconds else None
-            add_points_ll_task = Task(message.chat.id, 'add_points_ll', session=session, points_dict=points_dict, duration=duration)
+            add_points_ll_task = Task(message.chat.id, 'add_points_ll', session_id=main_chat_id, points_dict=points_dict, duration=duration)
             main_vars.task_queue.append(add_points_ll_task)
 
     @bot.message_handler(regexp='!\s*(.+)')

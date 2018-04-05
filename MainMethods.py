@@ -384,32 +384,38 @@ def disable_codes(task, bot):
 
 
 def send_live_locations(task, bot):
-    if not task.session.active:
+    session = DBSession.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя отправлять live location при неактивной сессии')
         return
-    if not task.session.locations and not task.coords:
+    locations = json.loads(session['locations'])
+    ll_message_ids = json.loads(session['llmessageids'])
+    if not locations and not task.coords:
         bot.send_message(task.chat_id, 'Нет координат для отправки')
         return
-    if task.coords and 0 in task.session.live_location_message_ids.keys():
+    if task.coords and 0 in ll_message_ids.keys():
         bot.send_message(task.chat_id, 'Live_location основного бота уже отправлена')
         return
     if task.coords:
-        send_live_locations_to_chat(bot, task.chat_id, task.session, coords=task.coords, duration=task.duration)
+        send_live_locations_to_chat(bot, task.chat_id, session, locations, ll_message_ids, coords=task.coords,
+                                    duration=task.duration)
         return
-    if task.session.live_location_message_ids:
+    if ll_message_ids:
         bot.send_message(task.chat_id, 'Live_location уровня уже отправлена(-ы)')
         return
-    send_live_locations_to_chat(bot, task.chat_id, task.session)
+    send_live_locations_to_chat(bot, task.chat_id, session, locations, ll_message_ids)
 
 
 def stop_live_locations(task, bot):
-    if not task.session.active:
+    session = DBSession.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя остановить live location при неактивной сессии')
         return
-    if not task.session.live_location_message_ids:
+    ll_message_ids = json.loads(session['llmessageids'])
+    if not ll_message_ids:
         bot.send_message(task.chat_id, 'Live location не отправлена')
         return
-    close_live_locations(task.chat_id, bot, task.session, point=task.point)
+    close_live_locations(task.chat_id, bot, session, ll_message_ids, point=task.point)
 
 
 def edit_live_locations(task, bot):

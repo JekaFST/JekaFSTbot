@@ -158,14 +158,14 @@ def handle_coords(text, session_id, from_udater, storm):
                 if i not in locations.keys():
                     indexes.append(i)
                 locations[str(i)] = coord
-                DBSession.update_locations(session_id, locations)
+                DBSession.update_json_field(session_id, 'locations', locations)
 
         elif not from_udater and not storm:
             for coord in coords:
                 locations = DBSession.get_locations(session_id)
                 if coord in locations.values():
                     for k, v in locations.items():
-                        if coord == v:
+                        if coord == str(v):
                             coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(k) + '</b>'
                             text = text.replace(coord, coord_Y_G)
                             indexes.append(int(k))

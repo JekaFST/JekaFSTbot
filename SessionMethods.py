@@ -522,7 +522,7 @@ def send_task_images(level, bot, chat_id):
             bot.send_photo(chat_id, image)
 
 
-def send_live_locations_to_chat(bot, chat_id, session, coords=None, duration=None, custom_points=None):
+def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids, coords=None, duration=None, custom_points=None):
     not_in_chat_bots = list()
     if not custom_points:
         if not coords:
@@ -531,35 +531,36 @@ def send_live_locations_to_chat(bot, chat_id, session, coords=None, duration=Non
                 bot.send_message(chat_id, 'Уровень изменился. '
                                           'Повторите команду, если хотите поставить live_location для нового уровня')
                 return
-            for k, v in session.locations.items():
-                if k > 15:
+            for k, v in locations.items():
+                if int(k) > 15:
                     continue
-                latitude = re.findall(r'\d\d\.\d{4,7}', v)[0]
-                longitude = re.findall(r'\d\d\.\d{4,7}', v)[1]
+                latitude = re.findall(r'\d\d\.\d{4,7}', str(v))[0]
+                longitude = re.findall(r'\d\d\.\d{4,7}', str(v))[1]
                 live_period = level['TimeoutSecondsRemain'] if level['TimeoutSecondsRemain'] else 10800
                 try:
                     response = telebot.TeleBot(DB.get_location_bot_token_by_number(k)).send_location(
                         chat_id, latitude, longitude, live_period=live_period)
-                    session.live_location_message_ids[k] = response.message_id
+                    ll_message_ids[k] = str(response.message_id)
                 except Exception as e:
                     response_text = json.loads(e.result.text)['description'].encode('utf-8')
                     if "chat not found" in response_text:
                         not_in_chat_bots.append(k)
                     else:
-                        bot.send_message(chat_id, 'Live location точки %s не отправлена.\r\n%s' % (str(k)),
-                                         response_text)
+                        bot.send_message(chat_id, 'Live location точки %s не отправлена.\r\n%s' % (k, response_text))
             if not_in_chat_bots:
                 bot.send_message(chat_id, 'Live location для следующих точек не отправлен: %s.\r\n'
                                           'В чате нет соответствующего(-их) бота(-ов)' % str(not_in_chat_bots))
+            DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
         else:
             latitude = re.findall(r'\d\d\.\d{4,7}', str(coords))[0]
             longitude = re.findall(r'\d\d\.\d{4,7}', str(coords))[1]
             live_period = duration if duration else 10800
             response = bot.send_location(chat_id, latitude, longitude, live_period=live_period)
-            session.live_location_message_ids[0] = response.message_id
+            ll_message_ids['0'] = str(response.message_id)
+            DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
     else:
         for k, v in custom_points.items():
-            if k > 15:
+            if int(k) > 15:
                 bot.send_message(chat_id, 'Нельзя поставить точку с номером %s. Доступные номера: 1-15' % k)
                 continue
             latitude = re.findall(r'\d\d\.\d{4,7}', v)[0]
@@ -568,7 +569,7 @@ def send_live_locations_to_chat(bot, chat_id, session, coords=None, duration=Non
             try:
                 response = telebot.TeleBot(DB.get_location_bot_token_by_number(k)).send_location(
                     chat_id, latitude, longitude, live_period=live_period)
-                session.live_location_message_ids[k] = response.message_id
+                ll_message_ids[k] = str(response.message_id)
             except Exception as e:
                 response_text = json.loads(e.result.text)['description'].encode('utf-8')
                 if "chat not found" in response_text:
@@ -579,3 +580,4 @@ def send_live_locations_to_chat(bot, chat_id, session, coords=None, duration=Non
         if not_in_chat_bots:
             bot.send_message(chat_id, 'Live location для следующих точек не отправлен: %s.\r\n'
                                       'В чате нет соответствующего(-их) бота(-ов)' % str(not_in_chat_bots))
+        DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)

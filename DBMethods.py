@@ -66,8 +66,8 @@ class DBSession(object):
         channel_name = "'" + channel_name + "'" if channel_name else 'NULL'
         sql = """INSERT INTO SessionConfig
                 (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, GameURLjs, LoginURL,
-                GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame, CurrLevelId, Locations)
-                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, '', %s, NULL, NULL, 2, True, NULL, NULL, '{}')
+                GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame, CurrLevelId, Locations, llmessageids)
+                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, '', %s, NULL, NULL, 2, True, NULL, NULL, '{}', '{}')
               """ % (main_chat_id, login, password, en_domain, channel_name, use_channel)
         return execute_insert_cur(sql)
 
@@ -101,11 +101,11 @@ class DBSession(object):
         return json.loads(rows[0][0])
 
     @staticmethod
-    def update_locations(session_id, locations):
+    def update_json_field(session_id, header, value):
         sql = """UPDATE SessionConfig
-                        SET locations = '%s'
+                        SET %s = '%s'
                         WHERE sessionid = %s
-                      """ % (json.dumps(locations), session_id)
+                      """ % (header, json.dumps(value), session_id)
         return execute_insert_cur(sql)
 
     @staticmethod
@@ -389,7 +389,7 @@ class DB(object):
 
     @staticmethod
     def get_location_bot_token_by_number(number):
-        sql = "SELECT BotToken FROM BotTokens WHERE type = 'location' and number = '%s'" % str(number)
+        sql = "SELECT BotToken FROM BotTokens WHERE type = 'location' and number = '%s'" % number
         rows = execute_select_cur(sql)
         return rows[0][0]
 
@@ -433,3 +433,7 @@ class DB(object):
         sql = "SELECT AddChatId FROM AllowedChats WHERE ChatId = %s AND AddChatId IS NOT NULL" % str(main_chat_id)
         rows = execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
+
+session = DBSession.get_session(-1001135150893)
+locations = json.loads('{}')
+print locations
