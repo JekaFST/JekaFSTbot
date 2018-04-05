@@ -24,7 +24,7 @@ while True:
     for task in main_vars.task_queue:
         try:
             TaskMethodMap.run_task(task, bot)
-        except Exception as e:
+        except Exception as err:
             bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду %s' % task.type)
-            print e
+            print err
         main_vars.task_queue.remove(task)

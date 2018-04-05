@@ -166,7 +166,7 @@ def handle_coords(text, session_id, from_udater, storm):
                 if coord in locations.values():
                     for k, v in locations.items():
                         if coord == v:
-                            coord_Y_G = make_Y_G_links(coord) + ' - <b>' + k + '</b>'
+                            coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(k) + '</b>'
                             text = text.replace(coord, coord_Y_G)
                             indexes.append(int(k))
                             break
