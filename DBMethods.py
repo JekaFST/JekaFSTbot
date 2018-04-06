@@ -157,11 +157,19 @@ class DBLevels(object):
         return [row[0] for row in rows] if rows else list()
 
     @staticmethod
-    def update_dismissed_level(session_id, game_id, level_id, active):
+    def get_passed_level_ids(session_id, game_id):
+        sql = """SELECT LevelId FROM levels
+                        WHERE sessionid = %s AND gameid = '%s' AND ispassed = True
+                        """ % (session_id, game_id)
+        rows = execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def update_bool_field(session_id, game_id, level_id, header, active):
         sql = """UPDATE Levels
-                SET dismissed = %s
-                WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
-                """ % (active, session_id, game_id, level_id)
+                SET %s = %s
+                WHERE sessionid = %s AND gameid = '%s' AND levelid = %s
+                """ % (header, active, session_id, game_id, level_id)
         execute_insert_cur(sql)
 
     @staticmethod
@@ -433,7 +441,3 @@ class DB(object):
         sql = "SELECT AddChatId FROM AllowedChats WHERE ChatId = %s AND AddChatId IS NOT NULL" % str(main_chat_id)
         rows = execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
-
-session = DBSession.get_session(-1001135150893)
-locations = json.loads('{}')
-print locations
