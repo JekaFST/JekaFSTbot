@@ -94,7 +94,8 @@ def close_live_locations(chat_id, bot, session, ll_message_ids, point=None):
     else:
         if point in ll_message_ids.keys():
             try:
-                bot.stop_message_live_location(chat_id, int(ll_message_ids[point]))
+                telebot.TeleBot(DB.get_location_bot_token_by_number(point)).stop_message_live_location(chat_id, int(ll_message_ids[point]))
+                del ll_message_ids[point]
             except Exception as e:
                 response_text = json.loads(e.result.text)['description'].encode('utf-8')
                 if "message can't be edited" in response_text:

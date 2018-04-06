@@ -371,7 +371,7 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
     code_request = generate_code_request(level, code, bonus_only)
 
     response = requests.post(session['gameurljs'], data=code_request,
-                             headers={'Cookie': session.config['cookie']})
+                             headers={'Cookie': session['cookie']})
     try:
         response_json = json.loads(response.text)
     except Exception:
@@ -527,7 +527,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
     if not custom_points:
         if not coords:
             level, _ = get_current_level(session, bot, chat_id)
-            if level['LevelId'] != session.current_level['LevelId']:
+            if level['LevelId'] != session['currlevelid']:
                 bot.send_message(chat_id, 'Уровень изменился. '
                                           'Повторите команду, если хотите поставить live_location для нового уровня')
                 return

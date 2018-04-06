@@ -348,8 +348,8 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
             main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
-            point_number = re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
-            point = point_number.group(0) if point_number else None
+            point_number = re.findall(r'\s+(\d{1,2})', str(message.text.encode('utf-8')))
+            point = point_number[0] if point_number else None
             stop_live_location_task = Task(message.chat.id, 'stop_live_location', session_id=main_chat_id, point=point)
             main_vars.task_queue.append(stop_live_location_task)
 
@@ -363,8 +363,8 @@ def run_app(bot, main_vars):
                                 r'\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
                                 r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
-            point_number = re.search(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
-            point = int(point_number.group(0)) if point_number else None
+            point_number = re.findall(r'\s(\d{1,2})\s', str(message.text.encode('utf-8')))
+            point = point_number[0] if point_number else None
             edit_live_location_task = Task(message.chat.id, 'edit_live_location', session_id=main_chat_id, point=point, coords=coords)
             main_vars.task_queue.append(edit_live_location_task)
 
@@ -429,8 +429,8 @@ def run_app(bot, main_vars):
     bot.remove_webhook()
 
     # Set webhook
-    # bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
-    bot.set_webhook(url='https://c59938d3.ngrok.io/webhook')
+    bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
+    # bot.set_webhook(url='https://a90fdeea.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():
