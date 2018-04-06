@@ -393,7 +393,7 @@ def send_live_locations(task, bot):
     if not locations and not task.coords:
         bot.send_message(task.chat_id, 'Нет координат для отправки')
         return
-    if task.coords and 0 in ll_message_ids.keys():
+    if task.coords and '0' in ll_message_ids.keys():
         bot.send_message(task.chat_id, 'Live_location основного бота уже отправлена')
         return
     if task.coords:
@@ -419,37 +419,43 @@ def stop_live_locations(task, bot):
 
 
 def edit_live_locations(task, bot):
-    if not task.session.active:
+    session = DBSession.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя редактировать live location при неактивной сессии')
         return
-    if not task.session.live_location_message_ids:
+    ll_message_ids = json.loads(session['llmessageids'])
+    if not ll_message_ids:
         bot.send_message(task.chat_id, 'Live location не отправлена')
         return
     if not task.point:
-        if 0 in task.session.live_location_message_ids.keys():
+        if '0' in ll_message_ids.keys():
             for coord in task.coords:
                 latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
                 longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-                bot.edit_message_live_location(latitude, longitude, task.chat_id, task.session.live_location_message_ids[0])
+                bot.edit_message_live_location(latitude, longitude, task.chat_id, int(ll_message_ids['0']))
         else:
             bot.send_message(task.chat_id, 'Live location основного бота не отправлена. Чтобы изменить координаты точки, '
-                                      'надо указать ее номер перед координатами '
-                                      '(/edit_ll-пробел-номер-пробел-новые координаты)')
+                                           'надо указать ее номер перед координатами '
+                                           '(/edit_ll-пробел-номер-пробел-новые координаты)')
     else:
-        if task.point in task.session.live_location_message_ids.keys():
+        if task.point in ll_message_ids.keys():
             for coord in task.coords:
                 latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
                 longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
                 telebot.TeleBot(DB.get_location_bot_token_by_number(task.point)).edit_message_live_location(
-                    latitude, longitude, task.chat_id, task.session.live_location_message_ids[task.point])
+                    latitude, longitude, task.chat_id, int(ll_message_ids[task.point]))
         else:
             bot.send_message(task.chat_id, 'Проверьте номер точки - соответствующая live location не найдена)')
 
 
 def add_custom_live_locations(task, bot):
-    if not task.session.active:
+    session = DBSession.get_session(task.session_id)
+    if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя отправлять live location при неактивной сессии')
         return
-    if task.session.live_location_message_ids:
-        close_live_locations(task.chat_id, bot, task.session)
-    send_live_locations_to_chat(bot, task.chat_id, task.session, custom_points=task.points_dict, duration=task.duration)
+    locations = json.loads(session['locations'])
+    ll_message_ids = json.loads(session['llmessageids'])
+    if ll_message_ids:
+        close_live_locations(task.chat_id, bot, task.session, ll_message_ids)
+    send_live_locations_to_chat(bot, task.chat_id, task.session, locations, ll_message_ids,
+                                custom_points=task.points_dict, duration=task.duration)

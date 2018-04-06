@@ -50,18 +50,17 @@ def linear_updater(chat_id, bot, session_id):
         DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
         return
 
-    if not DBSession.get_field_value(session_id, 'currlevelid'):
+    if not DBSession.get_field_value(session_id, 'currlevelid') or loaded_level['LevelId'] != session['currlevelid']:
         DBSession.update_int_field(session_id, 'currlevelid', loaded_level['LevelId'])
         try:
             insert_level_details_in_db(session_id, session['gameid'], loaded_level['Helps'], loaded_level['Bonuses'],
-                                   loaded_level['Sectors'], loaded_level['Messages'])
+                                       loaded_level['Sectors'], loaded_level['Messages'])
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог заполнить статусы элементов')
-        # needs to be refactored
-        # try:
-        #     reset_live_locations(chat_id, bot, session)
-        # except Exception:
-        #     bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
+        try:
+            reset_live_locations(chat_id, bot, session)
+        except Exception:
+            bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
         try:
             sectors_to_close = send_up_info(session_id, loaded_level, len(levels), loaded_helps, loaded_bonuses, bot,
                                             chat_id, session['channelname'], session['usechannel'])
@@ -73,34 +72,33 @@ def linear_updater(chat_id, bot, session_id):
         DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
         return
 
-    if loaded_level['LevelId'] != session['currlevelid']:
-        DBSession.update_int_field(session_id, 'currlevelid', loaded_level['LevelId'])
-        try:
-            insert_level_details_in_db(session_id, session['gameid'], loaded_level['Helps'], loaded_level['Bonuses'],
-                                   loaded_level['Sectors'], loaded_level['Messages'])
-        except Exception:
-            bot.send_message(chat_id, 'Exception - updater не смог заполнить статусы элементов')
-        # needs to be refactored
-        # try:
-        #     reset_live_locations(chat_id, bot, session)
-        # except Exception:
-        #     bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
-        try:
-            sectors_to_close = send_up_info(session_id, loaded_level, len(levels), loaded_helps, loaded_bonuses, bot,
-                                            chat_id, session['channelname'], session['usechannel'])
-            if session['channelname'] and session['usechannel']:
-                send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, session['channelname'], session_id)
-        except Exception:
-            bot.send_message(chat_id, 'Exception - updater не смог прислать информацию об АПе')
-
-        DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
-        return
+    # if loaded_level['LevelId'] != session['currlevelid']:
+    #     DBSession.update_int_field(session_id, 'currlevelid', loaded_level['LevelId'])
+    #     try:
+    #         insert_level_details_in_db(session_id, session['gameid'], loaded_level['Helps'], loaded_level['Bonuses'],
+    #                                    loaded_level['Sectors'], loaded_level['Messages'])
+    #     except Exception:
+    #         bot.send_message(chat_id, 'Exception - updater не смог заполнить статусы элементов')
+    #     try:
+    #         reset_live_locations(chat_id, bot, session)
+    #     except Exception:
+    #         bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
+    #     try:
+    #         sectors_to_close = send_up_info(session_id, loaded_level, len(levels), loaded_helps, loaded_bonuses, bot,
+    #                                         chat_id, session['channelname'], session['usechannel'])
+    #         if session['channelname'] and session['usechannel']:
+    #             send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, session['channelname'], session_id)
+    #     except Exception:
+    #         bot.send_message(chat_id, 'Exception - updater не смог прислать информацию об АПе')
+    #
+    #     DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
+    #     return
 
     DBSession.update_int_field(session_id, 'currlevelid', loaded_level['LevelId'])
 
     try:
-        if not loaded_level['Timeout'] == 0 and not DBLevels.get_time_to_up_sent(session_id, loaded_level['LevelId'])\
-                and loaded_level['TimeoutSecondsRemain'] <= 300:
+        if not loaded_level['Timeout'] == 0 and loaded_level['TimeoutSecondsRemain'] <= 300 \
+                and not DBLevels.get_time_to_up_sent(session_id, loaded_level['LevelId']):
             message = 'До автоперехода < 5 мин'
             bot.send_message(chat_id, message)
             DBLevels.update_time_to_up_sent(session_id, loaded_level['LevelId'], 'True')
@@ -236,9 +234,9 @@ def reset_level_vars():
 
 
 def reset_live_locations(chat_id, bot, session):
-    session.locations = dict()
-    if session.live_location_message_ids:
-        close_live_locations(chat_id, bot, session)
+    ll_message_ids = json.loads(session['llmessageids'])
+    if ll_message_ids:
+        close_live_locations(chat_id, bot, session, ll_message_ids)
 
 
 def send_up_info(session_id, loaded_level, number_of_levels, loaded_helps, loaded_bonuses, bot, chat_id, channel_name, use_channel, block=''):

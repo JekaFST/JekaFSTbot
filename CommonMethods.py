@@ -74,7 +74,7 @@ def send_adm_message(message, bot, chat_id, session_id, from_updater=False, stor
 def close_live_locations(chat_id, bot, session, ll_message_ids, point=None):
     if not point:
         for k, v in ll_message_ids.items():
-            if int(k == 0):
+            if int(k) == 0:
                 try:
                     bot.stop_message_live_location(chat_id, int(v))
                 except Exception as e:
