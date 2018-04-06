@@ -8,22 +8,22 @@ from CommonMethods import send_help, send_time_to_help, send_task, time_converte
 
 
 def updater(task, bot):
-    if not DBSession.get_field_value(task.session_id, 'stormgame'):
+    session = DBSession.get_session(session_id)
+    if not session['stormgame']:
         name = 'upd_thread_%s' % task.chat_id
         task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=linear_updater,
-                                                            args=(task.chat_id, bot, task.session_id))
+                                                            args=(task.chat_id, bot, session))
         task.updaters_dict[task.chat_id].start()
         return
     else:
         # name = 'upd_thread_%s' % task.chat_id
         # task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=storm_updater,
-        #                                                     args=(task.chat_id, bot, task.session_id))
+        #                                                     args=(task.chat_id, bot, session))
         # task.updaters_dict[task.chat_id].start()
         return
 
 
-def linear_updater(chat_id, bot, session_id):
-    session = DBSession.get_session(session_id)
+def linear_updater(chat_id, bot, session):
     for i in xrange(2):
         try:
             loaded_level, levels = get_current_level(session, bot, chat_id, from_updater=True)
@@ -32,11 +32,11 @@ def linear_updater(chat_id, bot, session_id):
             if i == 0:
                 continue
             bot.send_message(chat_id, 'Exception - updater не смог загрузить уровень(-вни)')
-            DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
+            DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
             return
 
     if not loaded_level:
-        DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
+        DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
         return
 
     try:
@@ -47,14 +47,14 @@ def linear_updater(chat_id, bot, session_id):
     except Exception:
         bot.send_message(chat_id, 'Exception - updater не смог вытащить элементы '
                                   '(сектора|бонусы|подсказки) загруженного уровня')
-        DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
+        DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
         return
 
-    if not DBSession.get_field_value(session_id, 'currlevelid') or loaded_level['LevelId'] != session['currlevelid']:
-        DBSession.update_int_field(session_id, 'currlevelid', loaded_level['LevelId'])
+    if not DBSession.get_field_value(session['sessionid'], 'currlevelid') or loaded_level['LevelId'] != session['currlevelid']:
+        DBSession.update_int_field(session['sessionid'], 'currlevelid', loaded_level['LevelId'])
         try:
-            insert_level_details_in_db(session_id, session['gameid'], loaded_level['Helps'], loaded_level['Bonuses'],
-                                       loaded_level['Sectors'], loaded_level['Messages'])
+            insert_level_details_in_db(session['sessionid'], session['gameid'], loaded_level['Helps'],
+                                       loaded_level['Bonuses'], loaded_level['Sectors'], loaded_level['Messages'])
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог заполнить статусы элементов')
         try:
@@ -62,14 +62,14 @@ def linear_updater(chat_id, bot, session_id):
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
         try:
-            sectors_to_close = send_up_info(session_id, loaded_level, len(levels), loaded_helps, loaded_bonuses, bot,
-                                            chat_id, session['channelname'], session['usechannel'])
+            sectors_to_close = send_up_info(session['sessionid'], loaded_level, len(levels), loaded_helps,
+                                            loaded_bonuses, bot, chat_id, session['channelname'], session['usechannel'])
             if session['channelname'] and session['usechannel']:
-                send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, session['channelname'], session_id)
+                send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, session['channelname'], session['sessionid'])
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог прислать информацию об АПе')
 
-        DBSession.update_bool_flag(session_id, 'putupdatertask', 'True')
+        DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
         return
 
     # if loaded_level['LevelId'] != session['currlevelid']:

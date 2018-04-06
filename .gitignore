@@ -11,3 +11,4 @@ ngrok.exe
 .idea/vcs.xml
 *.pyc
 .idea/inspectionProfiles/Project_Default.xml
+.idea/JekaFSTbot.iml
