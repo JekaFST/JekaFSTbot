@@ -329,6 +329,12 @@ def message_parcer(session_id, game_id, loaded_messages, bot, chat_id, channel_n
 
 
 def levels_parcer(session_id, game_id, dismissed_level_ids, levels, bot, chat_id, storm=False):
+    existing_levels = DBLevels.get_level_ids_per_game(session_id, game_id)
+    for level in levels:
+        if level['LevelId'] not in existing_levels:
+            DBLevels.insert_level(session_id, game_id, level) if storm \
+                else DBLevels.insert_level(session_id, game_id, level, breif=True)
+            dismissed_level_ids = DBLevels.get_dismissed_level_ids(session_id, game_id)
     for level in levels:
         if level['Dismissed'] and level['LevelId'] not in dismissed_level_ids:
             text = '\xE2\x9D\x97 <b>Уровень %s, "%s" - снят</b> \xE2\x9D\x97' % (str(level['LevelNumber']),

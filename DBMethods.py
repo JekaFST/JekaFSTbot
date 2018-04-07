@@ -147,11 +147,12 @@ class DBSession(object):
 
 class DBLevels(object):
     @staticmethod
-    def insert_level(session_id, game_id, level):
+    def insert_level(session_id, game_id, level, breif=False):
+        number = level['Number'] if not breif else level['LevelNumber']
         sql = """INSERT INTO levels
                     (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent)
                     VALUES (%s, %s, '%s', %s, %s, %s, False)
-                """ % (session_id, level['LevelId'], game_id, level['Number'], level['IsPassed'], level['Dismissed'])
+                """ % (session_id, level['LevelId'], game_id, number, level['IsPassed'], level['Dismissed'])
         return execute_insert_cur(sql)
 
     @staticmethod
