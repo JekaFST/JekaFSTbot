@@ -26,6 +26,9 @@ def login_to_en(session, bot, chat_id):
     got_cookies = upd_session_cookie(session, bot, chat_id)
     if got_cookies:
         bot.send_message(chat_id, 'Бот успешно залогинился')
+        return True
+    else:
+        return False
 
 
 def launch_session(session, bot, chat_id):

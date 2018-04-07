@@ -86,8 +86,11 @@ def config(task, bot):
 
 def set_login(task, bot):
     if not DBSession.get_field_value(task.session_id, 'active'):
-        reply = 'Логин успешно задан' if DBSession.update_text_field(task.session_id, 'login', task.new_login) \
-            else 'Логин не задан, повторите'
+        if DBSession.update_text_field(task.session_id, 'login', task.new_login):
+            reply = 'Логин успешно задан'
+            DBSession.update_text_field(task.session_id, 'cookie', '')
+        else:
+            reply = 'Логин не задан, повторите'
         bot.send_message(task.chat_id, reply)
     else:
         bot.send_message(task.chat_id, 'Нельзя менять логин при активной сессии')
@@ -95,8 +98,11 @@ def set_login(task, bot):
 
 def set_password(task, bot):
     if not DBSession.get_field_value(task.session_id, 'active'):
-        reply = 'Пароль успешно задан' if DBSession.update_text_field(task.session_id, 'password', task.new_password) \
-            else 'Пароль не задан, повторите'
+        if DBSession.update_text_field(task.session_id, 'password', task.new_password):
+            reply = 'Пароль успешно задан'
+            DBSession.update_text_field(task.session_id, 'cookie', '')
+        else:
+            reply = 'Пароль не задан, повторите'
         bot.send_message(task.chat_id, reply)
     else:
         bot.send_message(task.chat_id, 'Нельзя менять пароль при активной сессии')
@@ -136,21 +142,15 @@ def login(task, bot):
 def start_session(task, bot):
     session = DBSession.get_session(task.session_id)
     if not session['active']:
-        if not session['cookie'] and session['endomain'] and session['gameid'] and session['login'] \
-                and session['password']:
+        if session['endomain'] and session['gameid'] and session['login'] and session['password']:
             compile_urls(session['sessionid'], task.chat_id, bot, session['gameid'], session['endomain'])
             session = DBSession.get_session(task.session_id)
-            login_to_en(session, bot, task.chat_id)
-            session = DBSession.get_session(task.session_id)
-            launch_session(session, bot, task.chat_id)
-
-        elif session['cookie'] and session['gameid'] and session['login'] and session['password']:
-            compile_urls(session['sessionid'], task.chat_id, bot, session['gameid'], session['endomain'])
+            if not login_to_en(session, bot, task.chat_id):
+                return
             session = DBSession.get_session(task.session_id)
             launch_session(session, bot, task.chat_id)
         else:
-            bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана или бот не залогинен. '
-                                           'Проверьте домен, id игры, логин и пароль.')
+            bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль.')
     else:
         bot.send_message(task.chat_id, 'Сессия уже активирована. Если у вас проблемы со слежением - попробуйте '
                                        '/stop_updater, затем /start_updater')
