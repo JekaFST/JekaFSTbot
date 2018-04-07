@@ -115,8 +115,9 @@ def initiate_session_vars(session, bot, chat_id, from_updater=False):
         current_level_info = game_model['Level']
         DBSession.update_int_field(session['sessionid'], 'currlevelid', current_level_info['LevelId'])
         existing_levels = DBLevels.get_level_ids_per_game(session['sessionid'], session['gameid'])
-        if current_level_info['LevelId'] not in existing_levels:
-            DBLevels.insert_level(session['sessionid'], session['gameid'], current_level_info)
+        for level in game_model['Levels']:
+            if level['LevelId'] not in existing_levels:
+                DBLevels.insert_level(session['sessionid'], session['gameid'], level, breif=True)
         DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'False')
         return True, None
     else:
