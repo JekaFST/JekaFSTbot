@@ -29,9 +29,9 @@ def run_app(bot, main_vars):
         if message.chat.id in main_chat_ids:
             bot.send_message(message.chat.id, 'Данный чат уже разрешен для работы с ботом')
             return
+        title = str(message.chat.title.encode('utf-8')) if message.chat.title else ''
         text = '<b>%s</b> запрашивает разрешение на работу с ботом из чата "%s"\r\nchat_id: %s' % \
-               (str(message.from_user.username.encode('utf-8')), str(message.chat.title.encode('utf-8')),
-                str(message.chat.id))
+               (str(message.from_user.username.encode('utf-8')), title, str(message.chat.id))
         bot.send_message(45839899, text, parse_mode='HTML')
 
     @bot.message_handler(commands=['join'])
@@ -389,7 +389,7 @@ def run_app(bot, main_vars):
             add_points_ll_task = Task(message.chat.id, 'add_points_ll', session_id=main_chat_id, points_dict=points_dict, duration=duration)
             main_vars.task_queue.append(add_points_ll_task)
 
-    @bot.message_handler(regexp='!\s*(.+)')
+    @bot.message_handler(regexp='^!\s*(.+)')
     def main_code_processor(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
@@ -401,7 +401,7 @@ def run_app(bot, main_vars):
                                            message_id=message.message_id)
                 main_vars.task_queue.append(send_code_main_task)
 
-    @bot.message_handler(regexp='\?\s*(.+)')
+    @bot.message_handler(regexp='^\?\s*(.+)')
     def bonus_code_processor(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
@@ -429,8 +429,8 @@ def run_app(bot, main_vars):
     bot.remove_webhook()
 
     # Set webhook
-    bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
-    # bot.set_webhook(url='https://a90fdeea.ngrok.io/webhook')
+    # bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
+    bot.set_webhook(url='https://09cdfb69.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():

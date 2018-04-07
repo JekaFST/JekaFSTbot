@@ -100,16 +100,3 @@ class Task(object):
         self.point = point
         self.points_dict = points_dict
         self.add_chat_ids_per_session = add_chat_ids_per_session
-
-    @staticmethod
-    def get_session(chat_id, main_chat_ids):
-        main_chat_id = chat_id if chat_id in main_chat_ids \
-            else DB.get_main_chat_id_via_add(chat_id)
-        session = DBSession.get_session(main_chat_id)
-        return session
-
-    # @staticmethod
-    # def get_session_id(chat_id, main_chat_ids):
-    #     main_chat_id = chat_id if chat_id in main_chat_ids else DB.get_main_chat_id_via_add(chat_id)
-    #     session_id = DB.get_session_id(main_chat_id)
-    #     return session_id

@@ -3,9 +3,9 @@ import os
 import json
 import psycopg2.extras
 
-DATABASE_URL = os.environ['DATABASE_URL']
-db_conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-# db_conn = psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
+# DATABASE_URL = os.environ['DATABASE_URL']
+# db_conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+db_conn = psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
 
 
 def execute_select_cur(sql):
@@ -76,6 +76,12 @@ class DBSession(object):
         sql = "SELECT * FROM SessionConfig WHERE sessionid = %s" % session_id
         rows = execute_dict_select_cur(sql)
         return rows[0] if rows else None
+
+    @staticmethod
+    def get_all_sessions():
+        sql = "SELECT * FROM SessionConfig"
+        rows = execute_dict_select_cur(sql)
+        return rows if rows else list()
 
     @staticmethod
     def update_session_urls(sessionid, urls):
@@ -441,3 +447,14 @@ class DB(object):
         sql = "SELECT AddChatId FROM AllowedChats WHERE ChatId = %s AND AddChatId IS NOT NULL" % str(main_chat_id)
         rows = execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def cleanup_for_ended_game(session_id, game_id):
+        sql = """
+                DELETE FROM levels WHERE sessionid = %s AND gameid = '%s'
+                DELETE FROM sectors WHERE sessionid = %s AND gameid = '%s'
+                DELETE FROM bonuses WHERE sessionid = %s AND gameid = '%s'
+                DELETE FROM helps WHERE sessionid = %s AND gameid = '%s'
+                DELETE FROM messages WHERE sessionid = %s AND gameid = '%s'
+                """ % (session_id, game_id, session_id, game_id, session_id, game_id, session_id, game_id, session_id, game_id)
+        execute_insert_cur(sql)

@@ -98,7 +98,7 @@ def upd_session_cookie(session, bot, chat_id):
 
 
 def initiate_session_vars(session, bot, chat_id, from_updater=False):
-    game_model = get_current_game_model(session, bot, chat_id, from_updater) # session sent
+    game_model = get_current_game_model(session, bot, chat_id, from_updater)
     if game_model and game_model['LevelSequence'] == 3:
         levels = game_model['Levels']
         storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater)
@@ -146,21 +146,22 @@ def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=
                 bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
                 return False
 
-    game_model = check_game_model(response_json, session['sessionid'], bot, chat_id, from_updater)
+    game_model = check_game_model(response_json, session, bot, chat_id, from_updater)
     return game_model
 
 
-def check_game_model(game_model, session_id, bot, chat_id, from_updater=False):
+def check_game_model(game_model, session, bot, chat_id, from_updater=False):
     if game_model['Event'] == 0:
         return game_model
 
     loaded_game_wrong_status = None
     if game_model['Event'] in game_wrong_statuses.keys():
         if game_model['Event'] == 17:
-            DBSession.update_bool_flag(session_id, 'stopupdater', 'True')
-            DBSession.update_bool_flag(session_id, 'usechannel', 'False')
-            DBSession.update_bool_flag(session_id, 'active', 'False')
-            DBSession.drop_session_vars(session_id)
+            DBSession.update_bool_flag(session['sessionid'], 'stopupdater', 'True')
+            DBSession.update_bool_flag(session['sessionid'], 'usechannel', 'False')
+            DBSession.update_bool_flag(session['sessionid'], 'active', 'False')
+            DBSession.drop_session_vars(session['sessionid'])
+            DB.cleanup_for_ended_game(session['sessionid'], session['gameid'])
             loaded_game_wrong_status = game_wrong_statuses.keys[17] + '\r\nСессия остановлена, переменные сброшены'
         else:
             for k, v in game_wrong_statuses.items():
@@ -169,8 +170,8 @@ def check_game_model(game_model, session_id, bot, chat_id, from_updater=False):
     else:
         loaded_game_wrong_status = 'Состояние игры не соответствует ни одному из ожидаемых. Проверьте настройки бота'
 
-    if not from_updater or not DBSession.get_field_value(session_id, 'gamemodelstatus') == loaded_game_wrong_status:
-        DBSession.update_text_field(session_id, 'gamemodelstatus', loaded_game_wrong_status)
+    if not from_updater or not DBSession.get_field_value(session['sessionid'], 'gamemodelstatus') == loaded_game_wrong_status:
+        DBSession.update_text_field(session['sessionid'], 'gamemodelstatus', loaded_game_wrong_status)
         bot.send_message(chat_id, loaded_game_wrong_status)
 
     return False
@@ -377,7 +378,7 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
     except Exception:
         bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
         return
-    game_model = check_game_model(response_json, session['sessionid'], bot, chat_id)
+    game_model = check_game_model(response_json, session, bot, chat_id)
     if not game_model:
         return
     if is_repeat_code:

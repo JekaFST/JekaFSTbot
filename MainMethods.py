@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from SessionMethods import *
 import json
 import threading
 import time
@@ -7,12 +8,22 @@ import telebot
 from CommonMethods import close_live_locations
 from DBMethods import DB, DBSession
 from MainClasses import Task
-from SessionMethods import compile_urls, login_to_en, send_task_to_chat, send_code_to_level, send_all_sectors_to_chat, \
-    send_all_helps_to_chat, send_last_help_to_chat, send_all_bonuses_to_chat, send_task_images_to_chat, launch_session, \
-    send_auth_messages_to_chat, send_unclosed_bonuses_to_chat, send_code_to_storm_level, send_task_to_chat_storm, \
-    send_all_helps_to_chat_storm, send_last_help_to_chat_storm, send_all_sectors_to_chat_storm, \
-    send_all_bonuses_to_chat_storm, send_unclosed_bonuses_to_chat_storm, send_auth_messages_to_chat_storm, \
-    send_live_locations_to_chat
+
+
+def reload_backup(bot, main_vars):
+    sessions = DBSession.get_all_sessions()
+    for session in sessions:
+        if not session['active']:
+            bot.send_message(session['sessionid'], 'Бот был перезагружен. Сессия не активна')
+            return
+        if get_current_game_model(session, bot, session['sessionid'], from_updater=False):
+            if not session['stopupdater']:
+                text = 'Бот был перезагружен. Игра в нормальном состоянии\r\nСлежение будет запущено автоматически'
+                start_updater_task = Task(session['sessionid'], 'start_updater', main_vars=main_vars, session_id=session['sessionid'])
+                main_vars.task_queue.append(start_updater_task)
+            else:
+                text = 'Бот был перезагружен. Игра в нормальном состоянии. Слежение выключено'
+            bot.send_message(session['sessionid'], text)
 
 
 def start(task, bot):
