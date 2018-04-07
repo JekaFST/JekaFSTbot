@@ -187,6 +187,7 @@ def storm_updater(chat_id, bot, session):
 
 
 def reset_live_locations(chat_id, bot, session):
+    DBSession.update_json_field(session['sessionid'], 'locations', {})
     ll_message_ids = json.loads(session['llmessageids'])
     if ll_message_ids:
         close_live_locations(chat_id, bot, session, ll_message_ids)

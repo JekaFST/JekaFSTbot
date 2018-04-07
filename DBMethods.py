@@ -3,9 +3,9 @@ import os
 import json
 import psycopg2.extras
 
-# DATABASE_URL = os.environ['DATABASE_URL']
-# db_conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-db_conn = psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
+DATABASE_URL = os.environ['DATABASE_URL']
+db_conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+# db_conn = psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
 
 
 def execute_select_cur(sql):
@@ -67,7 +67,7 @@ class DBSession(object):
         sql = """INSERT INTO SessionConfig
                 (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, GameURLjs, LoginURL,
                 GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame, CurrLevelId, Locations, llmessageids)
-                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, '', %s, NULL, NULL, 2, True, NULL, NULL, '{}', '{}')
+                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, '', %s, True, NULL, 2, True, NULL, NULL, '{}', '{}')
               """ % (main_chat_id, login, password, en_domain, channel_name, use_channel)
         return execute_insert_cur(sql)
 
@@ -95,7 +95,7 @@ class DBSession(object):
     def drop_session_vars(session_id):
         sql = """UPDATE SessionConfig
                 SET CurrLevelId = NULL, GameURL = NULL, GameURLjs = NULL, LoginURL = NULL, StormGame = NULL,
-                SendCodes = True, GameModelStatus = '', PutUpdaterTask = Null, StopUpdater = NULL
+                SendCodes = True, GameModelStatus = '', PutUpdaterTask = Null, StopUpdater = True
                 WHERE sessionid = %s
               """ % session_id
         execute_insert_cur(sql)
@@ -451,10 +451,10 @@ class DB(object):
     @staticmethod
     def cleanup_for_ended_game(session_id, game_id):
         sql = """
-                DELETE FROM levels WHERE sessionid = %s AND gameid = '%s'
-                DELETE FROM sectors WHERE sessionid = %s AND gameid = '%s'
-                DELETE FROM bonuses WHERE sessionid = %s AND gameid = '%s'
-                DELETE FROM helps WHERE sessionid = %s AND gameid = '%s'
-                DELETE FROM messages WHERE sessionid = %s AND gameid = '%s'
+                DELETE FROM levels WHERE sessionid = %s AND gameid = '%s';
+                DELETE FROM sectors WHERE sessionid = %s AND gameid = '%s';
+                DELETE FROM bonuses WHERE sessionid = %s AND gameid = '%s';
+                DELETE FROM helps WHERE sessionid = %s AND gameid = '%s';
+                DELETE FROM messages WHERE sessionid = %s AND gameid = '%s';
                 """ % (session_id, game_id, session_id, game_id, session_id, game_id, session_id, game_id, session_id, game_id)
         execute_insert_cur(sql)

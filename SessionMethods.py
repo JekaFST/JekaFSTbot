@@ -162,7 +162,7 @@ def check_game_model(game_model, session, bot, chat_id, from_updater=False):
             DBSession.update_bool_flag(session['sessionid'], 'active', 'False')
             DBSession.drop_session_vars(session['sessionid'])
             DB.cleanup_for_ended_game(session['sessionid'], session['gameid'])
-            loaded_game_wrong_status = game_wrong_statuses.keys[17] + '\r\nСессия остановлена, переменные сброшены'
+            loaded_game_wrong_status = game_wrong_statuses[17] + '\r\nСессия остановлена, переменные сброшены'
         else:
             for k, v in game_wrong_statuses.items():
                 if game_model['Event'] == k:

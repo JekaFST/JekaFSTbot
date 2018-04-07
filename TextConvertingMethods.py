@@ -85,7 +85,7 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
                 bot.send_message(chat_id, 'Exceprion - бот не смог отправить не пронумерованные координаты')
         else:
             try:
-                for l, coord in enumerate(incommon_coords):
+                for i, coord in enumerate(incommon_coords):
                     latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
                     longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
                     bot.send_venue(chat_id, latitude, longitude, coord + ' - ' + str(i + 1), '')
@@ -155,7 +155,7 @@ def handle_coords(text, session_id, from_udater, storm):
                 i = 1 if not locations else len(locations.keys()) + 1
                 coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(i) + '</b>'
                 text = text.replace(coord, coord_Y_G)
-                if i not in locations.keys():
+                if unicode(i) not in locations.keys():
                     indexes.append(i)
                 locations[str(i)] = coord
                 DBSession.update_json_field(session_id, 'locations', locations)
