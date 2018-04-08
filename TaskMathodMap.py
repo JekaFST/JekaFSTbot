@@ -1,3 +1,4 @@
+from ExceptionHandler import ExceptionHandler
 from MainMethods import *
 from UpdaterMethods import updater
 
@@ -42,5 +43,6 @@ task_method_dict = {
 
 class TaskMethodMap(object):
     @staticmethod
+    @ExceptionHandler.run_task_exception
     def run_task(task, bot):
         task_method_dict[task.type](task, bot)

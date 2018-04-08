@@ -25,9 +25,5 @@ reload_backup(bot, main_vars)
 
 while True:
     for task in main_vars.task_queue:
-        try:
-            TaskMethodMap.run_task(task, bot)
-        except Exception as err:
-            bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду %s' % task.type)
-            print err
+        TaskMethodMap.run_task(task, bot)
         main_vars.task_queue.remove(task)
