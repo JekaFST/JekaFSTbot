@@ -69,9 +69,7 @@ def stop_session(task, bot):
     DBSession.update_bool_flag(task.session_id, 'putupdatertask', 'False')
     DBSession.update_bool_flag(task.session_id, 'usechannel', 'False')
     DBSession.update_bool_flag(task.session_id, 'active', 'False')
-    add_chat_ids_per_session = DB.get_add_chat_ids_for_main(task.session_id)
-    for add_chat_id in add_chat_ids_per_session:
-        DB.delete_add_chat_id(add_chat_id)
+    DB.delete_add_chat_ids(task.session_id)
     bot.send_message(task.chat_id, 'Сессия остановлена')
 
 
@@ -378,7 +376,6 @@ def join(task, bot):
 
 
 def reset_join(task, bot):
-    # main_chat_id = DB.get_main_chat_id_via_add(add_chat_id)
     DB.delete_add_chat_id(task.add_chat_id)
     bot.send_message(task.chat_id, 'Взаимодействие с ботом через личный чат сброшено',
                      reply_to_message_id=task.message_id)

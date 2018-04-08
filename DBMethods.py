@@ -438,6 +438,11 @@ class DB(object):
         execute_insert_cur(sql)
 
     @staticmethod
+    def delete_add_chat_ids(session_id):
+        sql = "DELETE FROM AllowedChats WHERE chatid = %s AND AddChatId IS NOT NULL" % str(session_id)
+        execute_insert_cur(sql)
+
+    @staticmethod
     def get_main_chat_id_via_add(add_chat_id):
         sql = "SELECT ChatId FROM AllowedChats WHERE AddChatId = %s" % str(add_chat_id)
         rows = execute_select_cur(sql)
