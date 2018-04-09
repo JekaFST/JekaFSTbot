@@ -3,9 +3,9 @@ import os
 import json
 import psycopg2.extras
 
-DATABASE_URL = os.environ['DATABASE_URL']
-db_conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-# db_conn = psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
+# DATABASE_URL = os.environ['DATABASE_URL']
+# db_conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+db_conn = psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
 
 
 def execute_select_cur(sql):

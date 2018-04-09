@@ -429,8 +429,8 @@ def run_app(bot, main_vars):
     bot.remove_webhook()
 
     # Set webhook
-    bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
-    # bot.set_webhook(url='https://08884800.ngrok.io/webhook')
+    # bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
+    bot.set_webhook(url='https://08884800.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():

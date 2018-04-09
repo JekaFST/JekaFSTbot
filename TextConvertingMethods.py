@@ -13,9 +13,8 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
     if 'table' in text or 'script' in text or 'object' in text or 'audio' in text:
         text = 'В тексте найдены и вырезаны скрипты таблицы, аудию и/или иные объекты\r\n' \
                '\xE2\x9D\x97<b>Информация в чате может отличаться от движка</b>\xE2\x9D\x97\r\n' + text
-    text = cut_script(text, **{'bot': bot, 'chat_id': chat_id, 'message': header + '\r\nСкрипт не вырезан',
-                               'raw_text': raw_text})
-    text = cut_formatting(text, **{'tags_list': tags_list, 'bot': bot, 'chat_id': chat_id,
+
+    text = cut_formatting(text, **{'tags_list': tags_list, 'bot': bot, 'chat_id': chat_id, 'header': header,
                                    'message': header + '\r\nФорматирование не вырезано', 'raw_text': raw_text})
     text, images = cut_images(text, **{'bot': bot, 'chat_id': chat_id, 'message': header + '\r\nКартинки не вырезаны',
                                        'raw_text': raw_text})
@@ -91,6 +90,9 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
 
 @ExceptionHandler.text_exception_1_result
 def cut_formatting(text, **kwargs):
+    text = cut_tag(text, **{'tag': 'script', 'bot': kwargs['bot'], 'chat_id': kwargs['chat_id'],
+                            'message': kwargs['header'] + '\r\nСкрипт не вырезан', 'raw_text': kwargs['raw_text']})
+
     text = text.replace('&amp;', '&')
 
     br_tags_to_cut = ['<br/>', '<br />', '<br>']
@@ -101,7 +103,8 @@ def cut_formatting(text, **kwargs):
     for layout_tag in layout_tags_to_cut:
         text = text.replace(layout_tag, '')
 
-    text = cut_style(text, **{'bot': kwargs['bot'], 'chat_id': kwargs['chat_id'], 'message': 'Стили не вырезаны'})
+    text = cut_tag(text, **{'tag': 'style', 'bot': kwargs['bot'], 'chat_id': kwargs['chat_id'],
+                            'message': kwargs['header'] + '\r\nСтили не вырезаны', 'raw_text': kwargs['raw_text']})
     for tag in kwargs['tags_list']:
         text = cut_tag(text, **{'tag': tag, 'bot': kwargs['bot'], 'chat_id': kwargs['chat_id'],
                                 'message': 'Unparsed tag "%s" in chat_id: %s' % (tag, str(kwargs['chat_id'])),
@@ -265,30 +268,6 @@ def cut_tag(text, **kwargs):
         text = text.replace(tag_rep, '')
     text = text.replace('</%s>' % kwargs['tag'], '')
     text = text.replace('</%s>' % kwargs['tag'].upper(), '')
-
-    return text
-
-
-@ExceptionHandler.text_exception_1_result
-def cut_style(text, **kwargs):
-    soup = BeautifulSoup(text)
-    for rep in soup.find_all('style'):
-        string = str(rep.string)
-        text = text.replace(string, '')
-
-    style_rests = ['<style>', '<style >', '<style/>', '<style />', '<style"">', '</style>', '<style  />']
-    for style_rest in style_rests:
-        for st in re.findall(style_rest, text):
-            text = text.replace(st, '')
-
-    return text
-
-
-@ExceptionHandler.text_exception_1_result
-def cut_script(text, **kwargs):
-    soup = BeautifulSoup(text)
-    for script in soup.find_all('script'):
-        text = text.replace(str(script), '')
 
     return text
 
