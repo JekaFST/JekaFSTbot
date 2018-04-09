@@ -31,12 +31,12 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
                               'message': header + '\r\nТекст с не вырезанными ссылками и разметкой не отправлен'}):
         text, links = cut_links(text, **{'bot': bot, 'chat_id': chat_id, 'message': header + '\r\nСсылки не вырезаны',
                                          'raw_text': raw_text})
-    if not send_text(text, **{'header': header, 'bot': bot, 'chat_id': chat_id, 'parse_mode': 'HTML',
-                              'raw_text': raw_text, 'text_pieces': list(),
-                              'message': header + '\r\nТекст с вырезанными ссылками и разметкой не отправлен'}):
-        send_text(text, **{'header': header, 'bot': bot, 'chat_id': chat_id, 'parse_mode': None,
-                           'raw_text': raw_text, 'text_pieces': list(),
-                           'message': header + '\r\nТекст с вырезанными ссылками и без разметки не отправлен'})
+        if not send_text(text, **{'header': header, 'bot': bot, 'chat_id': chat_id, 'parse_mode': 'HTML',
+                                  'raw_text': raw_text, 'text_pieces': list(),
+                                  'message': header + '\r\nТекст с вырезанными ссылками и разметкой не отправлен'}):
+            send_text(text, **{'header': header, 'bot': bot, 'chat_id': chat_id, 'parse_mode': None,
+                               'raw_text': raw_text, 'text_pieces': list(),
+                               'message': header + '\r\nТекст с вырезанными ссылками и без разметки не отправлен'})
 
     if images:
         try:
