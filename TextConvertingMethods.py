@@ -2,47 +2,42 @@
 import re
 from bs4 import BeautifulSoup
 from DBMethods import DB, DBSession
+from ExceptionHandler import ExceptionHandler
 
 
-def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm, parse=True):
+def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm):
     tags_list = DB.get_tags_list()
-    text_pieces = list()
     raw_text = text
+    links = list()
 
     if 'table' in text or 'script' in text or 'object' in text or 'audio' in text:
         text = 'В тексте найдены и вырезаны скрипты таблицы, аудию и/или иные объекты\r\n' \
                '\xE2\x9D\x97<b>Информация в чате может отличаться от движка</b>\xE2\x9D\x97\r\n' + text
-    try:
-        text = cut_script(text)
-    except Exception:
-        bot.send_message(chat_id, header + '\r\nException - скрипт не вырезан')
-    try:
-        text = cut_formatting(text, tags_list, bot, chat_id)
-    except Exception:
-        bot.send_message(chat_id, header + '\r\nException - форматирование не вырезано')
-    try:
-        text, images = cut_images(text)
-    except Exception:
-        bot.send_message(chat_id, header + '\r\nException - картинки не вырезаны')
-        images = list()
-    try:
-        text, links = cut_links(text)
-    except Exception:
-        bot.send_message(chat_id, header + '\r\nException - ссылки не вырезаны')
-        links = list()
-    try:
-        text, indexes, incommon_coords = handle_coords(text, session_id, from_updater, storm)
-    except Exception:
-        bot.send_message(chat_id, header + '\r\nException - координаты не обработаны', parse_mode='HTML')
+    text = cut_script(text, **{'bot': bot, 'chat_id': chat_id, 'message': header + '\r\nСкрипт не вырезан',
+                               'raw_text': raw_text})
+    text = cut_formatting(text, **{'tags_list': tags_list, 'bot': bot, 'chat_id': chat_id,
+                                   'message': header + '\r\nФорматирование не вырезано', 'raw_text': raw_text})
+    text, images = cut_images(text, **{'bot': bot, 'chat_id': chat_id, 'message': header + '\r\nКартинки не вырезаны',
+                                       'raw_text': raw_text})
+    text = reformat_links(text, **{'bot': bot, 'chat_id': chat_id, 'message': header + '\r\nСсылки не вырезаны',
+                                   'raw_text': raw_text})
+    text, indexes, incommon_coords = handle_coords(text, session_id, from_updater, storm,
+                                                   **{'bot': bot, 'chat_id': chat_id,
+                                                      'message': header + '\r\nКоординаты не обработаны', 'raw_text': raw_text})
+    while '\r\n\r\n\r\n' in text:
+        text = text.replace('\r\n\r\n\r\n', '\r\n\r\n')
 
-    if len(text) > 7000:
-        text_pieces = cut_long_text_on_pieces(text, text_pieces)
-
-    if text_pieces:
-        for text in text_pieces:
-            send_text(text, header, bot, chat_id, parse, raw_text)
-    else:
-        send_text(text, header, bot, chat_id, parse, raw_text)
+    if not send_text(text, **{'header': header, 'bot': bot, 'chat_id': chat_id, 'parse_mode': 'HTML',
+                              'raw_text': raw_text, 'text_pieces': list(),
+                              'message': header + '\r\nТекст с не вырезанными ссылками и разметкой не отправлен'}):
+        text, links = cut_links(text, **{'bot': bot, 'chat_id': chat_id, 'message': header + '\r\nСсылки не вырезаны',
+                                         'raw_text': raw_text})
+    if not send_text(text, **{'header': header, 'bot': bot, 'chat_id': chat_id, 'parse_mode': 'HTML',
+                              'raw_text': raw_text, 'text_pieces': list(),
+                              'message': header + '\r\nТекст с вырезанными ссылками и разметкой не отправлен'}):
+        send_text(text, **{'header': header, 'bot': bot, 'chat_id': chat_id, 'parse_mode': None,
+                           'raw_text': raw_text, 'text_pieces': list(),
+                           'message': header + '\r\nТекст с вырезанными ссылками и без разметки не отправлен'})
 
     if images:
         try:
@@ -56,6 +51,7 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
                 bot.send_message(chat_id, text)
         except Exception:
             bot.send_message(chat_id, 'Exception - бот не смог отправить картинки')
+
     if links:
         try:
             for i, link in enumerate(links):
@@ -93,7 +89,8 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
                 bot.send_message(chat_id, 'Exceprion - бот не смог отправить координаты')
 
 
-def cut_formatting(text, tags_list, bot, chat_id):
+@ExceptionHandler.text_exception_1_result
+def cut_formatting(text, **kwargs):
     text = text.replace('&amp;', '&')
 
     br_tags_to_cut = ['<br/>', '<br />', '<br>']
@@ -104,8 +101,11 @@ def cut_formatting(text, tags_list, bot, chat_id):
     for layout_tag in layout_tags_to_cut:
         text = text.replace(layout_tag, '')
 
-    text = cut_style(text)
-    text = cut_tags(text, tags_list, bot, chat_id)
+    text = cut_style(text, **{'bot': kwargs['bot'], 'chat_id': kwargs['chat_id'], 'message': 'Стили не вырезаны'})
+    for tag in kwargs['tags_list']:
+        text = cut_tag(text, **{'tag': tag, 'bot': kwargs['bot'], 'chat_id': kwargs['chat_id'],
+                                'message': 'Unparsed tag "%s" in chat_id: %s' % (tag, str(kwargs['chat_id'])),
+                                'raw_text': kwargs['raw_text']})
 
     h_tags = re.findall(r'<h\d>', text)
     soup = BeautifulSoup(text)
@@ -116,7 +116,8 @@ def cut_formatting(text, tags_list, bot, chat_id):
     return text
 
 
-def cut_images(text):
+@ExceptionHandler.text_exception_2_results
+def cut_images(text, **kwargs):
     images = list()
     for i, img in enumerate(re.findall(r'<img[^>]*>', text)):
         soup = BeautifulSoup(img)
@@ -128,7 +129,8 @@ def cut_images(text):
     return text, images
 
 
-def handle_coords(text, session_id, from_udater, storm):
+@ExceptionHandler.text_exception_3_results
+def handle_coords(text, session_id, from_udater, storm, **kwargs):
     incommon_coords = list()
     indexes = list()
 
@@ -198,7 +200,6 @@ def make_Y_G_links(coord):
 
 
 def cut_long_text_on_pieces(text, text_pieces):
-
     while len(text) > 7000:
         text_pieces.append(text[:6999] + ' \xE2\x9C\x82')
         text = text.replace(text[:6999], '\xE2\x9C\x82 ')
@@ -207,35 +208,23 @@ def cut_long_text_on_pieces(text, text_pieces):
     return text_pieces
 
 
-def send_text(text, header, bot, chat_id, parse, raw_text):
-    while '\r\n\r\n\r\n' in text:
-        text = text.replace('\r\n\r\n\r\n', '\r\n\r\n')
-    links = re.findall(r'<a[^>]+>', text)
-    links_endings = [re.search(r'..>', link).group(0) for link in links]
-    tags = re.findall(r'<..|..>|..>$|<$', text)
-
-    for tag in tags:
-        if tag not in ['<b>', '</b', '<i>', '</i', '/b>', '/i>', '<a ', '</a', '/a>'] + links_endings:
-            parse = False
-            break
-
-    parse_mode = 'HTML' if parse else None
-    try:
-        bot.send_message(chat_id, header + '\r\n' + text, parse_mode=parse_mode, disable_web_page_preview=True)
-        if not parse:
-            bot.send_message(45839899, 'Unparsed text in chat_id: %s\r\n\r\n' % str(chat_id) + text,
-                             disable_web_page_preview=True)
-            with open("Exceptions_%s.txt" % str(chat_id), "a+") as raw_text_file:
-                raw_text_file.write('Unparsed text:\r\n' + raw_text + '\r\n\r\n')
-    except Exception:
-        bot.send_message(chat_id, header + '\r\nException - текст не отправлен', parse_mode='HTML')
-        with open("Exceptions_%s.txt" % str(chat_id), "a+") as raw_text_file:
-            raw_text_file.write('Exception on send_object_text:\r\n' + raw_text + '\r\n\r\n')
+@ExceptionHandler.send_text_exception
+def send_text(text, **kwargs):
+    text_pieces = kwargs['text_pieces']
+    if len(text) > 7000:
+        text_pieces = cut_long_text_on_pieces(text, text_pieces)
+    if text_pieces:
+        for text in text_pieces:
+            kwargs['bot'].send_message(kwargs['chat_id'], kwargs['header'] + '\r\n' + text,
+                                       parse_mode=kwargs['parse_mode'], disable_web_page_preview=True)
+    else:
+        kwargs['bot'].send_message(kwargs['chat_id'], kwargs['header'] + '\r\n' + text,
+                                   parse_mode=kwargs['parse_mode'], disable_web_page_preview=True)
+    return True
 
 
-def cut_links(text, cut=False):
-    links = list()
-
+@ExceptionHandler.text_exception_1_result
+def reformat_links(text, **kwargs):
     links_to_lower = re.findall(r'<A[^>]+>', text)
     for link in links_to_lower:
         soup = BeautifulSoup(link)
@@ -253,37 +242,35 @@ def cut_links(text, cut=False):
             soup = BeautifulSoup(link)
             for a in soup.find_all('a'):
                 text = text.replace(href, 'href="' + a.get('href').encode('utf-8') + '"')
+    return text
 
-    if cut:
-        soup = BeautifulSoup(text)
-        for i, ahref in enumerate(soup.find_all('a')):
-            link = '(link%s)' % i
-            links.append(ahref.get('href').encode('utf-8'))
-            str_ahref = str(ahref)
-            str_ahref = str_ahref.replace('&amp;', '&')
-            text = text.replace(str_ahref, ahref.text.encode('utf-8') + link)
+
+@ExceptionHandler.text_exception_2_results
+def cut_links(text, **kwargs):
+    links = list()
+    soup = BeautifulSoup(text)
+    for i, ahref in enumerate(soup.find_all('a')):
+        link = '(link%s)' % i
+        links.append(ahref.get('href').encode('utf-8'))
+        str_ahref = str(ahref)
+        str_ahref = str_ahref.replace('&amp;', '&')
+        text = text.replace(str_ahref, ahref.text.encode('utf-8') + link)
     return text, links
 
 
-def cut_tags(text, tags_list, bot, chat_id):
-    for tag in tags_list:
-        try:
-            tag_reps = re.findall(r'<%s[^>]*>|<%s[^>]*>' % (tag, tag.upper()), text)
-            for tag_rep in tag_reps:
-                text = text.replace(tag_rep, '')
-
-            text = text.replace('</%s>' % tag, '')
-            text = text.replace('</%s>' % tag.upper(), '')
-        except Exception:
-            bot.send_message(45839899, 'Unparsed tag "%s" in chat_id: %s\r\n\r\n' % (tag, str(chat_id)) + text,
-                             disable_web_page_preview=True)
-            with open("Exceptions_%s.txt" % str(chat_id), "a+") as raw_text_file:
-                raw_text_file.write('Unparsed tag "%s" in text:\r\n' % tag + text + '\r\n\r\n')
+@ExceptionHandler.text_exception_1_result
+def cut_tag(text, **kwargs):
+    tag_reps = re.findall(r'<%s[^>]*>|<%s[^>]*>' % (kwargs['tag'], kwargs['tag'].upper()), text)
+    for tag_rep in tag_reps:
+        text = text.replace(tag_rep, '')
+    text = text.replace('</%s>' % kwargs['tag'], '')
+    text = text.replace('</%s>' % kwargs['tag'].upper(), '')
 
     return text
 
 
-def cut_style(text):
+@ExceptionHandler.text_exception_1_result
+def cut_style(text, **kwargs):
     soup = BeautifulSoup(text)
     for rep in soup.find_all('style'):
         string = str(rep.string)
@@ -297,7 +284,8 @@ def cut_style(text):
     return text
 
 
-def cut_script(text):
+@ExceptionHandler.text_exception_1_result
+def cut_script(text, **kwargs):
     soup = BeautifulSoup(text)
     for script in soup.find_all('script'):
         text = text.replace(str(script), '')
