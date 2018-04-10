@@ -84,7 +84,7 @@ def run_app(bot, main_vars):
         allowed_game_ids = DB.get_allowed_game_ids(chat_id)
         if game_id not in allowed_game_ids:
             allowed_game_ids += game_id if not allowed_game_ids else ', ' + game_id
-            if DB.insert_allowed_game_ids(chat_id, allowed_game_ids):
+            if DB.update_allowed_game_ids(chat_id, allowed_game_ids):
                 bot.send_message(chat_id, 'Игра %s разрешена' % game_id)
             else:
                 bot.send_message(45839899, 'Игра не разрешена. Insert не выполнен')
@@ -453,7 +453,7 @@ def run_app(bot, main_vars):
 
     # Set webhook
     bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
-    # bot.set_webhook(url='https://08884800.ngrok.io/webhook')
+    # bot.set_webhook(url='https://7bc5e210.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():

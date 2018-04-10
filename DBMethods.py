@@ -461,7 +461,7 @@ class DB(object):
         return rows[0][0]
 
     @staticmethod
-    def insert_allowed_game_ids(main_chat_id, allowed_game_ids):
+    def update_allowed_game_ids(main_chat_id, allowed_game_ids):
         sql = "UPDATE AllowedChats SET AllowedGameIds = '%s' WHERE ChatId = %s AND AddChatId IS NULL" \
               % (allowed_game_ids, str(main_chat_id))
         return execute_insert_cur(sql)
