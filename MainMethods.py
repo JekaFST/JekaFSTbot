@@ -119,6 +119,10 @@ def set_domain(task, bot):
 
 def set_game_id(task, bot):
     if not DBSession.get_field_value(task.session_id, 'active'):
+        if not task.new_game_id in DB.get_allowed_game_ids(task.chat_id):
+            bot.send_message(task.chat_id, 'Данная игра не разрешена из этого чата\r\n'
+                                           'Запросить разрешение: /ask_to_add_gameid 26991')
+            return
         if DBSession.update_text_field(task.session_id, 'gameid', task.new_game_id):
             DBSession.drop_session_vars(task.session_id)
             reply = 'Игра успешно задана. Переменные сброшены'
@@ -370,9 +374,12 @@ def send_coords(task, bot):
 
 
 def join(task, bot):
-    DB.insert_add_chat_id(task.chat_id, task.add_chat_id)
-    bot.send_message(task.chat_id, 'Теперь вы можете работать с ботом через личный чат',
-                     reply_to_message_id=task.message_id)
+    if DB.insert_add_chat_id(task.chat_id, task.add_chat_id):
+        bot.send_message(task.chat_id, 'Теперь вы можете работать с ботом через личный чат',
+                         reply_to_message_id=task.message_id)
+    else:
+        bot.send_message(task.chat_id, 'Не удалось добавить личный чат для работы с ботом',
+                         reply_to_message_id=task.message_id)
 
 
 def reset_join(task, bot):
