@@ -15,6 +15,15 @@ class ExceptionHandler(object):
             return result
         return wrapped
 
+    @staticmethod
+    def reload_backup_exception(function):
+        def wrapped(bot, main_vars):
+            try:
+                function(bot, main_vars)
+            except Exception:
+                logging.exception("Exception в main - не удалось сделать reload backup")
+        return wrapped
+
     # @staticmethod
     # def text_exception_1_result(function):
     #     def wrapped(text, **kwargs):

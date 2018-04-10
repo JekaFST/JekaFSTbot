@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from ExceptionHandler import ExceptionHandler
 from SessionMethods import *
 import json
 import threading
@@ -10,9 +11,13 @@ from DBMethods import DB, DBSession
 from MainClasses import Task
 
 
+@ExceptionHandler.reload_backup_exception
 def reload_backup(bot, main_vars):
     sessions = DBSession.get_all_sessions()
     for session in sessions:
+        # response = bot.get_chat(chat_id=session['sessionid'])
+        # if response:
+        #     continue
         if not session['active']:
             bot.send_message(session['sessionid'], 'Бот был перезагружен. Сессия не активна')
             return
