@@ -424,13 +424,13 @@ class DB(object):
 
     @staticmethod
     def insert_main_chat_id(main_chat_id):
-        sql = "INSERT INTO AllowedChats (ChatId, AddChatId) VALUES (%s, %s)" % (str(main_chat_id), 'NULL')
-        execute_insert_cur(sql)
+        sql = "INSERT INTO AllowedChats (ChatId, AddChatId, AllowedGameIds) VALUES (%s, %s, '')" % (str(main_chat_id), 'NULL')
+        return execute_insert_cur(sql)
 
     @staticmethod
     def insert_add_chat_id(main_chat_id, add_chat_id):
-        sql = "INSERT INTO AllowedChats (ChatId, AddChatId) VALUES (%s, %s)" % (str(main_chat_id), str(add_chat_id))
-        execute_insert_cur(sql)
+        sql = "INSERT INTO AllowedChats (ChatId, AddChatId, AllowedGameIds) VALUES (%s, %s, '')" % (str(main_chat_id), str(add_chat_id))
+        return execute_insert_cur(sql)
 
     @staticmethod
     def delete_add_chat_id(add_chat_id):
@@ -453,6 +453,18 @@ class DB(object):
         sql = "SELECT AddChatId FROM AllowedChats WHERE ChatId = %s AND AddChatId IS NOT NULL" % str(main_chat_id)
         rows = execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def get_allowed_game_ids(main_chat_id):
+        sql = "SELECT AllowedGameIds FROM AllowedChats WHERE ChatId = %s AND AddChatId IS NULL" % str(main_chat_id)
+        rows = execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
+    def insert_allowed_game_ids(main_chat_id, allowed_game_ids):
+        sql = "UPDATE AllowedChats SET AllowedGameIds = '%s' WHERE ChatId = %s AND AddChatId IS NULL" \
+              % (allowed_game_ids, str(main_chat_id))
+        return execute_insert_cur(sql)
 
     @staticmethod
     def cleanup_for_ended_game(session_id, game_id):

@@ -34,6 +34,16 @@ def run_app(bot, main_vars):
                (str(message.from_user.username.encode('utf-8')), title, str(message.chat.id))
         bot.send_message(45839899, text, parse_mode='HTML')
 
+    @bot.message_handler(commands=['ask_to_add_gameid'])
+    def ask_to_add_gameid(message):
+        allowed, main_chat_ids, _ = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
+            title = str(message.chat.title.encode('utf-8')) if message.chat.title else ''
+            game_id = re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)
+            text = '<b>%s</b> запрашивает разрешение на игру %s для чата "%s"\r\nchat_id: %s' % \
+                   (str(message.from_user.username.encode('utf-8')), game_id, title, str(message.chat.id))
+            bot.send_message(45839899, text, parse_mode='HTML')
+
     @bot.message_handler(commands=['join'])
     def join_session(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -58,13 +68,26 @@ def run_app(bot, main_vars):
             bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
             return
         chat_id = int(re.search(r'[-\d]+', str(message.text.encode('utf-8'))).group(0))
-        DB.insert_main_chat_id(chat_id)
-        main_chat_ids, _ = DB.get_allowed_chat_ids()
-        if chat_id in main_chat_ids:
+        if DB.insert_main_chat_id(chat_id):
             bot.send_message(chat_id, 'Этот чат добавлен в список разрешенных для работы с ботом')
         else:
-            bot.send_message(chat_id, 'Этот чат не добавлен в список разрешенных для работы с ботом'
-                                      '\r\nДля повторного запроса введите /ask_for_permission')
+            bot.send_message(45839899, 'Этот чат не добавлен в список разрешенных для работы с ботом\r\n'
+                                       'Insert не выполнен')
+
+    @bot.message_handler(commands=['add_game_id'])
+    def add_game_id(message):
+        if message.chat.id != 45839899:
+            bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
+            return
+        chat_id = int(re.findall(r'-\s+([-\d]+)$', str(message.text.encode('utf-8')))[0])
+        game_id = re.findall(r'/add_game_id\s+(\d+)\s+-', str(message.text.encode('utf-8')))[0]
+        allowed_game_ids = DB.get_allowed_game_ids(chat_id)
+        if game_id not in allowed_game_ids:
+            allowed_game_ids += game_id if not allowed_game_ids else ', ' + game_id
+            if DB.insert_allowed_game_ids(chat_id, allowed_game_ids):
+                bot.send_message(chat_id, 'Игра %s разрешена' % game_id)
+            else:
+                bot.send_message(45839899, 'Игра не разрешена. Insert не выполнен')
 
     @bot.message_handler(commands=['start'])
     def start(message):
