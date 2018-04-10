@@ -78,6 +78,11 @@ class DBSession(object):
         return rows[0] if rows else None
 
     @staticmethod
+    def delete_session(session_id):
+        sql = "DELETE FROM SessionConfig WHERE sessionid = %s" % session_id
+        execute_insert_cur(sql)
+
+    @staticmethod
     def get_all_sessions():
         sql = "SELECT * FROM SessionConfig"
         rows = execute_dict_select_cur(sql)

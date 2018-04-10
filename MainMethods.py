@@ -15,12 +15,15 @@ from MainClasses import Task
 def reload_backup(bot, main_vars):
     sessions = DBSession.get_all_sessions()
     for session in sessions:
-        # response = bot.get_chat(chat_id=session['sessionid'])
-        # if response:
-        #     continue
+        try:
+            bot.get_chat(chat_id=session['sessionid'])
+        except Exception as err:
+            if err.result.status_code == 400 and 'chat not found' in err.message:
+                DBSession.delete_session(session['sessionid'])
+                continue
         if not session['active']:
             bot.send_message(session['sessionid'], 'Бот был перезагружен. Сессия не активна')
-            return
+            continue
         if get_current_game_model(session, bot, session['sessionid'], from_updater=False):
             if not session['stopupdater']:
                 text = 'Бот был перезагружен. Игра в нормальном состоянии\r\nСлежение будет запущено автоматически'
