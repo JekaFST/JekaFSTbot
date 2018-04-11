@@ -525,6 +525,8 @@ def send_task_images(level, bot, chat_id):
     if images:
         for image in images:
             bot.send_photo(chat_id, image)
+    else:
+        bot.send_message(chat_id, 'Картинки отсутствуют')
 
 
 def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids, coords=None, duration=None, custom_points=None):

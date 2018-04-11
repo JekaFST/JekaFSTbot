@@ -13,83 +13,46 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
     if 'table' in text or 'script' in text or 'object' in text or 'audio' in text:
         text = 'В тексте найдены и вырезаны скрипты таблицы, аудию и/или иные объекты\r\n' \
                '\xE2\x9D\x97<b>Информация в чате может отличаться от движка</b>\xE2\x9D\x97\r\n' + text
-    text = cut_script(text, **{'bot': bot, 'chat_id': chat_id, 'message': header + '\r\nСкрипт не вырезан',
-                               'raw_text': raw_text})
-    text = cut_formatting(text, **{'tags_list': tags_list, 'bot': bot, 'chat_id': chat_id,
-                                   'message': header + '\r\nФорматирование не вырезано', 'raw_text': raw_text})
-    text, images = cut_images(text, **{'bot': bot, 'chat_id': chat_id, 'message': header + '\r\nКартинки не вырезаны',
-                                       'raw_text': raw_text})
-    text = reformat_links(text, **{'bot': bot, 'chat_id': chat_id, 'message': header + '\r\nСсылки не вырезаны',
-                                   'raw_text': raw_text})
-    text, indexes, incommon_coords = handle_coords(text, session_id, from_updater, storm,
-                                                   **{'bot': bot, 'chat_id': chat_id,
-                                                      'message': header + '\r\nКоординаты не обработаны', 'raw_text': raw_text})
+
+    text, _, _ = cut_script(text, bot=bot, chat_id=chat_id, message=header + '\r\nСкрипт не вырезан', raw_text=raw_text,
+                            r2=None, r3=None)
+    text, _, _ = cut_formatting(text, tags_list=tags_list, bot=bot, chat_id=chat_id, raw_text=raw_text, r2=None, r3=None,
+                                message=header + '\r\nФорматирование не вырезано')
+    text, images, _ = cut_images(text, bot=bot, chat_id=chat_id, message=header + '\r\nКартинки не вырезаны', r2=list(),
+                                 r3=None, raw_text=raw_text)
+    text, _, _ = reformat_links(text, bot=bot, chat_id=chat_id, message=header + '\r\nСсылки не вырезаны', r2=None, r3=None,
+                                raw_text=raw_text)
+    text, indexes, incommon_coords = handle_coords(text, session_id=session_id, from_updater=from_updater, storm=storm,
+                                                   bot=bot, chat_id=chat_id, raw_text=raw_text, r2=list(), r3=list(),
+                                                   message=header + '\r\nКоординаты не обработаны')
     while '\r\n\r\n\r\n' in text:
         text = text.replace('\r\n\r\n\r\n', '\r\n\r\n')
 
-    if not send_text(text, **{'header': header, 'bot': bot, 'chat_id': chat_id, 'parse_mode': 'HTML',
-                              'raw_text': raw_text, 'text_pieces': list(),
-                              'message': header + '\r\nТекст с не вырезанными ссылками и разметкой не отправлен'}):
-        text, links = cut_links(text, **{'bot': bot, 'chat_id': chat_id, 'message': header + '\r\nСсылки не вырезаны',
-                                         'raw_text': raw_text})
-        if not send_text(text, **{'header': header, 'bot': bot, 'chat_id': chat_id, 'parse_mode': 'HTML',
-                                  'raw_text': raw_text, 'text_pieces': list(),
-                                  'message': header + '\r\nТекст с вырезанными ссылками и разметкой не отправлен'}):
-            send_text(text, **{'header': header, 'bot': bot, 'chat_id': chat_id, 'parse_mode': None,
-                               'raw_text': raw_text, 'text_pieces': list(),
-                               'message': header + '\r\nТекст с вырезанными ссылками и без разметки не отправлен'})
+    if not send_text(text, header=header, bot=bot, chat_id=chat_id, parse_mode='HTML', raw_text=raw_text, text_pieces=list(),
+                     message=header + '\r\nТекст с не вырезанными ссылками и разметкой не отправлен'):
+        text, links, _ = cut_links(text, bot=bot, chat_id=chat_id, message=header + '\r\nСсылки не вырезаны', r2=list(),
+                                   r3=None, raw_text=raw_text)
+        if not send_text(text, header=header, bot=bot, chat_id=chat_id, parse_mode='HTML', raw_text=raw_text,
+                         text_pieces=list(), message=header + '\r\nТекст с вырезанными ссылками и разметкой не отправлен'):
+            send_text(text, header=header, bot=bot, chat_id=chat_id, parse_mode='HTML', raw_text=raw_text, text_pieces=list(),
+                      message=header + '\r\nТекст с вырезанными ссылками и без разметки не отправлен')
 
     if images:
-        try:
-            if len(images) <= 10:
-                for i, image in enumerate(images):
-                    message = '(img%s)' % i
-                    bot.send_photo(chat_id, image, caption=message)
-            else:
-                text = 'Найдено %s изображений. Их отправка заблокирована\r\n' \
-                       'Для отправки всех изображений из задания введите /task_images' % str(len(images))
-                bot.send_message(chat_id, text)
-        except Exception:
-            bot.send_message(chat_id, 'Exception - бот не смог отправить картинки')
+        send_images(bot, chat_id, images=images, message='Exception - бот не смог отправить картинки')
 
     if links:
-        try:
-            for i, link in enumerate(links):
-                message = '(link%s)' % i
-                bot.send_message(chat_id, message + '\r\n' + link)
-        except Exception:
-            bot.send_message(chat_id, 'Exception - бот не смог отправить ссылки')
+        send_links(bot, chat_id, links=links, message='Exception - бот не смог отправить ссылки')
 
     locations = DBSession.get_locations(session_id)
     if locations and indexes:
-        try:
-            for i in indexes:
-                latitude = re.findall(r'\d\d\.\d{4,7}', locations[str(i)])[0]
-                longitude = re.findall(r'\d\d\.\d{4,7}', locations[str(i)])[1]
-                bot.send_venue(chat_id, latitude, longitude, locations[str(i)] + ' - ' + str(i), '')
-        except Exception:
-            bot.send_message(chat_id, 'Exceprion - бот не смог отправить координаты')
+        send_index_venue(bot, chat_id, indexes=indexes, locations=locations, message='Бот не смог отправить координаты')
 
     if incommon_coords:
-        if not storm:
-            try:
-                for coord in incommon_coords:
-                    latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
-                    longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-                    bot.send_venue(chat_id, latitude, longitude, coord, '')
-            except Exception:
-                bot.send_message(chat_id, 'Exceprion - бот не смог отправить не пронумерованные координаты')
-        else:
-            try:
-                for i, coord in enumerate(incommon_coords):
-                    latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
-                    longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-                    bot.send_venue(chat_id, latitude, longitude, coord + ' - ' + str(i + 1), '')
-            except Exception:
-                bot.send_message(chat_id, 'Exceprion - бот не смог отправить координаты')
+        send_incommon_coords(bot, chat_id, incommon_coords=incommon_coords, storm=storm,
+                             message='Бот не смог отправить координаты')
 
 
-@ExceptionHandler.text_exception_1_result
+@ExceptionHandler.convert_text_exception
 def cut_formatting(text, **kwargs):
     text = text.replace('&amp;', '&')
 
@@ -101,11 +64,10 @@ def cut_formatting(text, **kwargs):
     for layout_tag in layout_tags_to_cut:
         text = text.replace(layout_tag, '')
 
-    text = cut_style(text, **{'bot': kwargs['bot'], 'chat_id': kwargs['chat_id'], 'message': 'Стили не вырезаны'})
+    text, _, _ = cut_style(text, bot=kwargs['bot'], chat_id=kwargs['chat_id'], message='Стили не вырезаны', r2=None, r3=None)
     for tag in kwargs['tags_list']:
-        text = cut_tag(text, **{'tag': tag, 'bot': kwargs['bot'], 'chat_id': kwargs['chat_id'],
-                                'message': 'Unparsed tag "%s" in chat_id: %s' % (tag, str(kwargs['chat_id'])),
-                                'raw_text': kwargs['raw_text']})
+        text, _, _ = cut_tag(text, tag=tag, bot=kwargs['bot'], chat_id=kwargs['chat_id'], raw_text=kwargs['raw_text'],
+                       message='Unparsed tag "%s" in chat_id: %s' % (tag, str(kwargs['chat_id'])), r2=None, r3=None)
 
     h_tags = re.findall(r'<h\d>', text)
     soup = BeautifulSoup(text)
@@ -113,10 +75,10 @@ def cut_formatting(text, **kwargs):
         for h in soup.find_all('h%s' % h_tag[-2]):
             text = text.replace(str(h), h.text.encode('utf-8'))
 
-    return text
+    return text, None, None
 
 
-@ExceptionHandler.text_exception_2_results
+@ExceptionHandler.convert_text_exception
 def cut_images(text, **kwargs):
     images = list()
     for i, img in enumerate(re.findall(r'<img[^>]*>', text)):
@@ -126,11 +88,11 @@ def cut_images(text, **kwargs):
         image = '(img%s)' % i
         text = text.replace(img, image)
 
-    return text, images
+    return text, images, None
 
 
-@ExceptionHandler.text_exception_3_results
-def handle_coords(text, session_id, from_udater, storm, **kwargs):
+@ExceptionHandler.convert_text_exception
+def handle_coords(text, **kwargs):
     incommon_coords = list()
     indexes = list()
 
@@ -151,20 +113,20 @@ def handle_coords(text, session_id, from_udater, storm, **kwargs):
 
     coords = find_coords(text)
     if coords:
-        if from_udater and not storm:
+        if kwargs['from_updater'] and not kwargs['storm']:
             for coord in coords:
-                locations = DBSession.get_locations(session_id)
+                locations = DBSession.get_locations(kwargs['session_id'])
                 i = 1 if not locations else len(locations.keys()) + 1
                 coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(i) + '</b>'
                 text = text.replace(coord, coord_Y_G)
                 if unicode(i) not in locations.keys():
                     indexes.append(i)
                 locations[str(i)] = coord
-                DBSession.update_json_field(session_id, 'locations', locations)
+                DBSession.update_json_field(kwargs['session_id'], 'locations', locations)
 
-        elif not from_udater and not storm:
+        elif not kwargs['from_updater']and not kwargs['storm']:
             for coord in coords:
-                locations = DBSession.get_locations(session_id)
+                locations = DBSession.get_locations(kwargs['session_id'])
                 if coord in locations.values():
                     for k, v in locations.items():
                         if coord == str(v):
@@ -223,7 +185,7 @@ def send_text(text, **kwargs):
     return True
 
 
-@ExceptionHandler.text_exception_1_result
+@ExceptionHandler.convert_text_exception
 def reformat_links(text, **kwargs):
     links_to_lower = re.findall(r'<A[^>]+>', text)
     for link in links_to_lower:
@@ -242,10 +204,10 @@ def reformat_links(text, **kwargs):
             soup = BeautifulSoup(link)
             for a in soup.find_all('a'):
                 text = text.replace(href, 'href="' + a.get('href').encode('utf-8') + '"')
-    return text
+    return text, None, None
 
 
-@ExceptionHandler.text_exception_2_results
+@ExceptionHandler.convert_text_exception
 def cut_links(text, **kwargs):
     links = list()
     soup = BeautifulSoup(text)
@@ -255,10 +217,10 @@ def cut_links(text, **kwargs):
         str_ahref = str(ahref)
         str_ahref = str_ahref.replace('&amp;', '&')
         text = text.replace(str_ahref, ahref.text.encode('utf-8') + link)
-    return text, links
+    return text, links, None
 
 
-@ExceptionHandler.text_exception_1_result
+@ExceptionHandler.convert_text_exception
 def cut_tag(text, **kwargs):
     tag_reps = re.findall(r'<%s[^>]*>|<%s[^>]*>' % (kwargs['tag'], kwargs['tag'].upper()), text)
     for tag_rep in tag_reps:
@@ -266,10 +228,10 @@ def cut_tag(text, **kwargs):
     text = text.replace('</%s>' % kwargs['tag'], '')
     text = text.replace('</%s>' % kwargs['tag'].upper(), '')
 
-    return text
+    return text, None, None
 
 
-@ExceptionHandler.text_exception_1_result
+@ExceptionHandler.convert_text_exception
 def cut_style(text, **kwargs):
     soup = BeautifulSoup(text)
     for rep in soup.find_all('style'):
@@ -281,16 +243,16 @@ def cut_style(text, **kwargs):
         for st in re.findall(style_rest, text):
             text = text.replace(st, '')
 
-    return text
+    return text, None, None
 
 
-@ExceptionHandler.text_exception_1_result
+@ExceptionHandler.convert_text_exception
 def cut_script(text, **kwargs):
     soup = BeautifulSoup(text)
     for script in soup.find_all('script'):
         text = text.replace(str(script), '')
 
-    return text
+    return text, None, None
 
 
 def find_coords(text):
@@ -299,3 +261,44 @@ def find_coords(text):
                         r'\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
                         r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', text)
     return coords
+
+
+@ExceptionHandler.send_text_objects_exception
+def send_links(bot, chat_id, **kwargs):
+    for i, link in enumerate(kwargs['links']):
+        message = '(link%s)' % i
+        bot.send_message(chat_id, message + '\r\n' + link)
+
+
+@ExceptionHandler.send_text_objects_exception
+def send_images(bot, chat_id, **kwargs):
+    if len(kwargs['images']) <= 5:
+        for i, image in enumerate(kwargs['images']):
+            message = '(img%s)' % i
+            bot.send_photo(chat_id, image, caption=message)
+    else:
+        text = 'Найдено %s изображений. Их отправка заблокирована\r\n' \
+               'Для отправки всех изображений из задания введите /task_images' % str(len(kwargs['images']))
+        bot.send_message(chat_id, text)
+
+
+@ExceptionHandler.send_text_objects_exception
+def send_index_venue(bot, chat_id, **kwargs):
+    for i in kwargs['indexes']:
+        latitude = re.findall(r'\d\d\.\d{4,7}', kwargs['locations'][str(i)])[0]
+        longitude = re.findall(r'\d\d\.\d{4,7}', kwargs['locations'][str(i)])[1]
+        bot.send_venue(chat_id, latitude, longitude, kwargs['locations'][str(i)] + ' - ' + str(i), '')
+
+
+@ExceptionHandler.send_text_objects_exception
+def send_incommon_coords(bot, chat_id, **kwargs):
+    if not kwargs['storm']:
+        for coord in kwargs['incommon_coords']:
+            latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
+            longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
+            bot.send_venue(chat_id, latitude, longitude, coord, '')
+    else:
+        for i, coord in enumerate(kwargs['incommon_coords']):
+            latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
+            longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
+            bot.send_venue(chat_id, latitude, longitude, coord + ' - ' + str(i + 1), '')

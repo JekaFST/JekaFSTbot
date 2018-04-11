@@ -25,50 +25,19 @@ class ExceptionHandler(object):
         return wrapped
 
     @staticmethod
-    def text_exception_1_result(function):
+    def convert_text_exception(function):
         def wrapped(text, **kwargs):
-            result = text
+            r1 = text
+            r2 = kwargs['r2']
+            r3 = kwargs['r3']
             try:
-                result = function(text, **kwargs)
+                r1, r2, r3 = function(text, **kwargs)
             except Exception:
                 kwargs['bot'].send_message(kwargs['chat_id'], kwargs['message'], parse_mode='HTML')
                 kwargs['bot'].send_message(45839899, kwargs['message'] + '\r\n\r\nRAW TEXT\r\n' + kwargs['raw_text'],
                                            disable_web_page_preview=True)
                 logging.exception(kwargs['message'])
-            return result
-
-        return wrapped
-
-    @staticmethod
-    def text_exception_2_results(function):
-        def wrapped(text, **kwargs):
-            res_1 = text
-            res_2 = list()
-            try:
-                res_1, res_2 = function(text, **kwargs)
-            except Exception:
-                kwargs['bot'].send_message(kwargs['chat_id'], kwargs['message'], parse_mode='HTML')
-                kwargs['bot'].send_message(45839899, kwargs['message'] + '\r\n\r\nRAW TEXT\r\n' + kwargs['raw_text'],
-                                           disable_web_page_preview=True)
-                logging.exception(kwargs['message'])
-            return res_1, res_2
-
-        return wrapped
-
-    @staticmethod
-    def text_exception_3_results(function):
-        def wrapped(text, *args, **kwargs):
-            res_1 = text
-            res_2 = list()
-            res_3 = list()
-            try:
-                res_1, res_2, res_3 = function(text, *args, **kwargs)
-            except Exception:
-                kwargs['bot'].send_message(kwargs['chat_id'], kwargs['message'], parse_mode='HTML')
-                kwargs['bot'].send_message(45839899, kwargs['message'] + '\r\n\r\nRAW TEXT\r\n' + kwargs['raw_text'],
-                                           disable_web_page_preview=True)
-                logging.exception(kwargs['message'])
-            return res_1, res_2, res_3
+            return r1, r2, r3
 
         return wrapped
 
@@ -90,4 +59,14 @@ class ExceptionHandler(object):
                 logging.exception(kwargs['message'])
             return result
 
+        return wrapped
+
+    @staticmethod
+    def send_text_objects_exception(function):
+        def wrapped(bot, chat_id, **kwargs):
+            try:
+                function(bot, chat_id, **kwargs)
+            except Exception:
+                bot.send_message(chat_id, kwargs['message'])
+                logging.exception(kwargs['message'])
         return wrapped
