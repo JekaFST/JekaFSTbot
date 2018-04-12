@@ -221,17 +221,19 @@ def cut_links_change_small_symbol(text, **kwargs):
     links = list()
     links_indexes = list()
     links_text = list()
-    soup = BeautifulSoup(text)
-    for i, ahref in enumerate(soup.find_all('a')):
+
+    str_ahrefs = re.findall(r'<a\sh.+>.*</a>', text)
+    for i, str_ahref in enumerate(str_ahrefs):
         link = '(link%s)' % i
+        soup = BeautifulSoup(str_ahref)
+        ahref = soup.find_all('a')[0]
         links.append(ahref.get('href').encode('utf-8'))
-        str_ahref = str(ahref)
         str_ahref = str_ahref.replace('&amp;', '&')
         text = text.replace(str_ahref, ahref.text.encode('utf-8') + link)
         links_text.append(str_ahref)
         links_indexes.append(ahref.text.encode('utf-8') + link)
     text_cut_links = text
-    text = text.replace('<', '&#706')
+    text = text.replace('<', '&lt;')
     for i, link_index in enumerate(links_indexes):
         text = text.replace(link_index, links_text[i])
     return text, links, text_cut_links
