@@ -9,6 +9,7 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
     tags_list = DB.get_tags_list()
     raw_text = text
     links = list()
+    send_links = False
 
     if 'table' in text or 'script' in text or 'object' in text or 'audio' in text:
         text = 'В тексте найдены и вырезаны скрипты таблицы, аудию и/или иные объекты\r\n' \
@@ -29,19 +30,26 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
         text = text.replace('\r\n\r\n\r\n', '\r\n\r\n')
 
     if not send_text(text, header=header, bot=bot, chat_id=chat_id, parse_mode='HTML', raw_text=raw_text, text_pieces=list(),
-                     message=header + '\r\nТекст с не вырезанными ссылками и разметкой не отправлен'):
-        text, links, _ = cut_links(text, bot=bot, chat_id=chat_id, message=header + '\r\nСсылки не вырезаны', r2=list(),
-                                   r3=None, raw_text=raw_text)
-        if not send_text(text, header=header, bot=bot, chat_id=chat_id, parse_mode='HTML', raw_text=raw_text,
-                         text_pieces=list(), message=header + '\r\nТекст с вырезанными ссылками и разметкой не отправлен'):
-            send_text(text, header=header, bot=bot, chat_id=chat_id, parse_mode=None, raw_text=raw_text, text_pieces=list(),
-                      message=header + '\r\nТекст с вырезанными ссылками и без разметки не отправлен')
+                     message=header + '\r\nТекст с не вырезанными ссылками и разметкой не отправлен', send_to_chat=False):
+        text, links, text_cut_links = cut_links_change_small_symbol(text, bot=bot, chat_id=chat_id, raw_text=raw_text,
+                                                                    message=header + '\r\nСсылки не вырезаны', r2=list(), r3=text)
+        if not send_text(text, header=header, bot=bot, chat_id=chat_id, parse_mode='HTML', raw_text=raw_text, send_to_chat=False,
+                         text_pieces=list(), message=header + '\r\nТекст с вырезанным знаком меньше и разметкой не отправлен'):
+            if not send_text(text_cut_links, header=header, bot=bot, chat_id=chat_id, parse_mode='HTML',
+                             raw_text=raw_text, text_pieces=list(), send_to_chat=False,
+                             message=header + '\r\nТекст с вырезанными ссылками, знаком меньше и разметкой не отправлен'):
+                header_not_bold = header.replace('<b>', '')
+                header_not_bold = header_not_bold.replace('</b>', '')
+                send_text(text_cut_links, header=header_not_bold, bot=bot, chat_id=chat_id, parse_mode=None,
+                          raw_text=raw_text, text_pieces=list(), send_to_chat=True,
+                          message=header + '\r\nТекст с вырезанными ссылками и без разметки не отправлен')
+                send_links = True
 
     if images:
         send_images(bot, chat_id, images=images, message='Exception - бот не смог отправить картинки')
 
-    if links:
-        send_links(bot, chat_id, links=links, message='Exception - бот не смог отправить ссылки')
+    if links and send_links:
+        send_links_to_chat(bot, chat_id, links=links, message='Exception - бот не смог отправить ссылки')
 
     locations = DBSession.get_locations(session_id)
     if locations and indexes:
@@ -187,7 +195,8 @@ def send_text(text, **kwargs):
 
 @ExceptionHandler.convert_text_exception
 def reformat_links(text, **kwargs):
-    links_to_lower = re.findall(r'<A[^>]+>', text)
+    links_to_lower = re.findall(r'<A\sH[^>]+>|'
+                                r'<A\sh[^>]+>', text)
     for link in links_to_lower:
         soup = BeautifulSoup(link)
         for a in soup.find_all('a'):
@@ -208,8 +217,10 @@ def reformat_links(text, **kwargs):
 
 
 @ExceptionHandler.convert_text_exception
-def cut_links(text, **kwargs):
+def cut_links_change_small_symbol(text, **kwargs):
     links = list()
+    links_indexes = list()
+    links_text = list()
     soup = BeautifulSoup(text)
     for i, ahref in enumerate(soup.find_all('a')):
         link = '(link%s)' % i
@@ -217,7 +228,13 @@ def cut_links(text, **kwargs):
         str_ahref = str(ahref)
         str_ahref = str_ahref.replace('&amp;', '&')
         text = text.replace(str_ahref, ahref.text.encode('utf-8') + link)
-    return text, links, None
+        links_text.append(str_ahref)
+        links_indexes.append(ahref.text.encode('utf-8') + link)
+    text_cut_links = text
+    text = text.replace('<', '&#706')
+    for i, link_index in enumerate(links_indexes):
+        text = text.replace(link_index, links_text[i])
+    return text, links, text_cut_links
 
 
 @ExceptionHandler.convert_text_exception
@@ -264,10 +281,10 @@ def find_coords(text):
 
 
 @ExceptionHandler.send_text_objects_exception
-def send_links(bot, chat_id, **kwargs):
+def send_links_to_chat(bot, chat_id, **kwargs):
     for i, link in enumerate(kwargs['links']):
         message = '(link%s)' % i
-        bot.send_message(chat_id, message + '\r\n' + link)
+        bot.send_message(chat_id, message + '\r\n' + link, disable_web_page_preview=True)
 
 
 @ExceptionHandler.send_text_objects_exception

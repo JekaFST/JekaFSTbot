@@ -48,14 +48,15 @@ class ExceptionHandler(object):
             try:
                 result = function(text, **kwargs)
             except Exception:
-                kwargs['bot'].send_message(kwargs['chat_id'], kwargs['message'], parse_mode='HTML')
-                try:
-                    kwargs['bot'].send_message(45839899, kwargs['message'] + '\r\n\r\nRAW TEXT\r\n' + kwargs['raw_text'],
-                                               disable_web_page_preview=True)
-                except Exception:
-                    kwargs['bot'].send_message(45839899, kwargs['header'] + '\r\nНе получилось отправить raw text',
-                                               parse_mode='HTML')
-                    logging.exception(kwargs['message'])
+                if kwargs['send_to_chat']:
+                    kwargs['bot'].send_message(kwargs['chat_id'], kwargs['message'], parse_mode='HTML')
+                    try:
+                        kwargs['bot'].send_message(45839899, kwargs['message'] + '\r\n\r\nRAW TEXT\r\n' + kwargs['raw_text'],
+                                                   disable_web_page_preview=True)
+                    except Exception:
+                        kwargs['bot'].send_message(45839899, kwargs['header'] + '\r\nНе получилось отправить raw text',
+                                                   parse_mode='HTML')
+                        logging.exception(kwargs['message'])
                 logging.exception(kwargs['message'])
             return result
 

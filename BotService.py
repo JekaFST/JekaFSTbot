@@ -453,7 +453,7 @@ def run_app(bot, main_vars):
 
     # Set webhook
     bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
-    # bot.set_webhook(url='https://ed0ca28c.ngrok.io/webhook')
+    # bot.set_webhook(url='https://6cd322ce.ngrok.io/webhook')
 
     @app.route("/", methods=['GET', 'POST'])
     def hello():
