@@ -126,10 +126,9 @@ def storm_updater(chat_id, bot, session):
     if not existing_levels:
         for i in xrange(2):
             try:
-                storm_levels = get_storm_levels(len(game_model['Levels']), session, bot, chat_id, from_updater=True)
-                for level in storm_levels:
+                for level in game_model['Levels']:
                     if level['LevelId'] not in existing_levels:
-                        DBLevels.insert_level(session['sessionid'], session['gameid'], level)
+                        DBLevels.insert_level(session['sessionid'], session['gameid'], level, breif=True)
                 break
             except Exception:
                 if i == 0:
@@ -142,6 +141,9 @@ def storm_updater(chat_id, bot, session):
     dismissed_level_ids = DBLevels.get_dismissed_level_ids(session['sessionid'], session['gameid'])
     passed_level_ids = DBLevels.get_passed_level_ids(session['sessionid'], session['gameid'])
     for level in storm_levels:
+        if session['stopupdater']:
+            DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'False')
+            return
         if level['LevelId'] not in existing_levels:
             level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
             DBLevels.insert_level(session['sessionid'], session['gameid'], level)
@@ -149,9 +151,6 @@ def storm_updater(chat_id, bot, session):
             return
 
         try:
-            if session['stopupdater']:
-                DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'False')
-                return
             if level['LevelId'] in dismissed_level_ids or level['LevelId'] in passed_level_ids:
                 continue
 

@@ -102,24 +102,19 @@ def upd_session_cookie(session, bot, chat_id):
 
 def initiate_session_vars(session, bot, chat_id, from_updater=False):
     game_model = get_current_game_model(session, bot, chat_id, from_updater)
-    if game_model and game_model['LevelSequence'] == 3:
-        levels = game_model['Levels']
-        storm_levels = get_storm_levels(len(levels), session, bot, chat_id, from_updater)
-        existing_levels = DBLevels.get_level_ids_per_game(session['sessionid'], session['gameid'])
-        for level in storm_levels:
-            if level['LevelId'] not in existing_levels:
-                DBLevels.insert_level(session['sessionid'], session['gameid'], level)
-        DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'True')
-        return None, True
-    elif game_model:
-        current_level_info = game_model['Level']
-        DBSession.update_int_field(session['sessionid'], 'currlevelid', current_level_info['LevelId'])
+    if game_model:
         existing_levels = DBLevels.get_level_ids_per_game(session['sessionid'], session['gameid'])
         for level in game_model['Levels']:
             if level['LevelId'] not in existing_levels:
                 DBLevels.insert_level(session['sessionid'], session['gameid'], level, breif=True)
-        DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'False')
-        return True, None
+        if not game_model['LevelSequence'] == 3:
+            current_level_info = game_model['Level']
+            DBSession.update_int_field(session['sessionid'], 'currlevelid', current_level_info['LevelId'])
+            DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'False')
+            return True, None
+        else:
+            DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'True')
+            return None, True
     else:
         return None, None
 
