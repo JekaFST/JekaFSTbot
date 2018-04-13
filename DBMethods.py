@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
 import json
+
+import logging
 import psycopg2.extras
+
+import ExceptionHandler
 
 
 class DBConnection(object):
@@ -12,35 +16,24 @@ class DBConnection(object):
         self.db_conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require') if prod \
             else psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
 
-    @ExceptionHandler.db_exception
     def execute_select_cur(self, sql):
         if self.db_conn.closed != 0:
             self.connect()
         cur = self.db_conn.cursor()
-        cur.execute(sql)
-        result = cur.fetchall()
-        cur.close()
-        return result
+        try:
+            cur.execute(sql)
+            result = cur.fetchall()
+            cur.close()
+            return result
+        except psycopg2.DatabaseError:
+            cur.close()
+            self.db_conn.rollback()
+            logging.exception(sql)
+            return False
 
 db_connection = DBConnection()
 db_connection.connect()
 # db_connection.connect(prod=False)
-
-
-# def execute_select_cur(sql):
-#     if db_connection.db_conn.closed != 0:
-#         db_connection.connect()
-#     cur = db_connection.db_conn.cursor()
-#     try:
-#         cur.execute(sql)
-#         result = cur.fetchall()
-#         cur.close()
-#         return result
-#     except psycopg2.DatabaseError as err:
-#         cur.close()
-#         db_connection.db_conn.rollback()
-#         print 'DB error in the following query: "' + sql + '": ' + err.message
-#         return False
 
 
 def execute_dict_select_cur(sql):
