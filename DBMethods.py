@@ -463,7 +463,7 @@ class DB(object):
     def get_allowed_game_ids(main_chat_id):
         sql = "SELECT AllowedGameIds FROM AllowedChats WHERE ChatId = %s AND AddChatId IS NULL" % str(main_chat_id)
         rows = execute_select_cur(sql)
-        return rows[0][0]
+        return rows[0][0] if rows else list()
 
     @staticmethod
     def update_allowed_game_ids(main_chat_id, allowed_game_ids):
