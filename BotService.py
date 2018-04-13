@@ -79,8 +79,8 @@ def run_app(bot, main_vars):
         if message.chat.id != 45839899:
             bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
             return
-        chat_id = int(re.findall(r'-\s+([-\d]+)$', str(message.text.encode('utf-8')))[0])
-        game_id = re.findall(r'/add_game_id\s+(\d+)\s+-', str(message.text.encode('utf-8')))[0]
+        chat_id = int(re.findall(r':\s+([-\d]+)$', str(message.text.encode('utf-8')))[0])
+        game_id = re.findall(r'/add_game_id\s+(\d+)\s*:', str(message.text.encode('utf-8')))[0]
         allowed_game_ids = DB.get_allowed_game_ids(chat_id)
         if game_id not in allowed_game_ids:
             allowed_game_ids += game_id if not allowed_game_ids else ', ' + game_id
