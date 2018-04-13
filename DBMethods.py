@@ -3,27 +3,48 @@ import os
 import json
 import psycopg2.extras
 
-DATABASE_URL = os.environ['DATABASE_URL']
-db_conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-# db_conn = psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
 
+class DBConnection(object):
+    def __init__(self):
+        self.db_conn = None
 
-def execute_select_cur(sql):
-    cur = db_conn.cursor()
-    try:
+    def connect(self, prod=True):
+        self.db_conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require') if prod \
+            else psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
+
+    @ExceptionHandler.db_exception
+    def execute_select_cur(self, sql):
+        if self.db_conn.closed != 0:
+            self.connect()
+        cur = self.db_conn.cursor()
         cur.execute(sql)
         result = cur.fetchall()
         cur.close()
         return result
-    except psycopg2.DatabaseError as err:
-        cur.close()
-        db_conn.rollback()
-        print 'DB error in the following query: "' + sql + '": ' + err.message
-        return False
+
+db_connection = DBConnection()
+db_connection.connect()
+# db_connection.connect(prod=False)
+
+
+# def execute_select_cur(sql):
+#     if db_connection.db_conn.closed != 0:
+#         db_connection.connect()
+#     cur = db_connection.db_conn.cursor()
+#     try:
+#         cur.execute(sql)
+#         result = cur.fetchall()
+#         cur.close()
+#         return result
+#     except psycopg2.DatabaseError as err:
+#         cur.close()
+#         db_connection.db_conn.rollback()
+#         print 'DB error in the following query: "' + sql + '": ' + err.message
+#         return False
 
 
 def execute_dict_select_cur(sql):
-    cur = db_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = db_connection.db_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
         cur.execute(sql)
         result = cur.fetchall()
@@ -31,21 +52,21 @@ def execute_dict_select_cur(sql):
         return result
     except psycopg2.DatabaseError as err:
         cur.close()
-        db_conn.rollback()
+        db_connection.db_conn.rollback()
         print 'DB error in the following query: "' + sql + '": ' + err.message
         return False
 
 
 def execute_insert_cur(sql):
-    cur = db_conn.cursor()
+    cur = db_connection.db_conn.cursor()
     try:
         cur.execute(sql)
-        db_conn.commit()
+        db_connection.db_conn.commit()
         cur.close()
         return True
     except psycopg2.DatabaseError as err:
         cur.close()
-        db_conn.rollback()
+        db_connection.db_conn.rollback()
         print 'DB error in the following query: "' + sql + '": ' + err.message
         return False
 

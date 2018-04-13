@@ -71,3 +71,17 @@ class ExceptionHandler(object):
                 bot.send_message(chat_id, kwargs['message'])
                 logging.exception(kwargs['message'])
         return wrapped
+
+    @staticmethod
+    def db_exception(function):
+        def wrapped(sql):
+            result = False
+            try:
+                result = function(sql)
+            except Exception:
+                # except psycopg2.DatabaseError as err:
+                cur.close()
+                self.db_conn.rollback()
+                logging.exception(kwargs['message'])
+            return result
+        return wrapped
