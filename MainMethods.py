@@ -480,5 +480,5 @@ def add_custom_live_locations(task, bot):
     ll_message_ids = json.loads(session['llmessageids'])
     if ll_message_ids:
         close_live_locations(task.chat_id, bot, task.session, ll_message_ids)
-    send_live_locations_to_chat(bot, task.chat_id, task.session, locations, ll_message_ids,
+    send_live_locations_to_chat(bot, task.chat_id, session, locations, ll_message_ids,
                                 custom_points=task.points_dict, duration=task.duration)
