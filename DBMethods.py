@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import json
-
 import logging
 import psycopg2.extras
 
@@ -31,37 +30,40 @@ class DBConnection(object):
             logging.exception(sql)
             return False
 
+    def execute_dict_select_cur(self, sql):
+        if self.db_conn.closed != 0:
+            self.connect()
+        cur = self.db_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        try:
+            cur.execute(sql)
+            result = cur.fetchall()
+            cur.close()
+            return result
+        except psycopg2.DatabaseError:
+            cur.close()
+            self.db_conn.rollback()
+            logging.exception(sql)
+            return False
+
+    def execute_insert_cur(self, sql):
+        if self.db_conn.closed != 0:
+            self.connect()
+        cur = self.db_conn.cursor()
+        try:
+            cur.execute(sql)
+            db_connection.db_conn.commit()
+            cur.close()
+            return True
+        except psycopg2.DatabaseError:
+            cur.close()
+            self.db_conn.rollback()
+            logging.exception(sql)
+            return False
+
+
 db_connection = DBConnection()
 db_connection.connect()
 # db_connection.connect(prod=False)
-
-
-def execute_dict_select_cur(sql):
-    cur = db_connection.db_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    try:
-        cur.execute(sql)
-        result = cur.fetchall()
-        cur.close()
-        return result
-    except psycopg2.DatabaseError as err:
-        cur.close()
-        db_connection.db_conn.rollback()
-        print 'DB error in the following query: "' + sql + '": ' + err.message
-        return False
-
-
-def execute_insert_cur(sql):
-    cur = db_connection.db_conn.cursor()
-    try:
-        cur.execute(sql)
-        db_connection.db_conn.commit()
-        cur.close()
-        return True
-    except psycopg2.DatabaseError as err:
-        cur.close()
-        db_connection.db_conn.rollback()
-        print 'DB error in the following query: "' + sql + '": ' + err.message
-        return False
 
 
 class DBSession(object):
