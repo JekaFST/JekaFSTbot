@@ -577,8 +577,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
                 if "chat not found" in response_text:
                     not_in_chat_bots.append(k)
                 else:
-                    bot.send_message(chat_id, 'Live location точки %s не отправлена.\r\n%s' % (str(k)),
-                                     response_text)
+                    bot.send_message(chat_id, 'Live location точки %s не отправлена.\r\n%s' % (k, response_text))
         if not_in_chat_bots:
             bot.send_message(chat_id, 'Live location для следующих точек не отправлен: %s.\r\n'
                                       'В чате нет соответствующего(-их) бота(-ов)' % str(not_in_chat_bots))
