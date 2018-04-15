@@ -489,5 +489,6 @@ def add_custom_live_locations(task, bot):
     for k in task.points_dict.keys():
         if k in ll_message_ids.keys():
             close_live_locations(task.chat_id, bot, session, ll_message_ids, point=k)
+            time.sleep(1)
     send_live_locations_to_chat(bot, task.chat_id, session, None, ll_message_ids,
                                 custom_points=task.points_dict, duration=task.duration)
