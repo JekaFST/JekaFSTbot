@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from ExceptionHandler import ExceptionHandler
 from SessionMethods import *
 import json
@@ -22,8 +24,12 @@ def reload_backup(bot, main_vars):
                 DBSession.delete_session(session['sessionid'])
                 continue
         if not session['active']:
-            bot.send_message(session['sessionid'], 'Бот был перезагружен. Сессия не активна')
-            continue
+            try:
+                bot.send_message(session['sessionid'], 'Бот был перезагружен. Сессия не активна')
+                continue
+            except Exception:
+                logging.exception("Не удалось отправить сообщение о перезапуске сессии %s" % str(session['sessionid']))
+                continue
         if get_current_game_model(session, bot, session['sessionid'], from_updater=False):
             if not session['stopupdater']:
                 text = 'Бот был перезагружен. Игра в нормальном состоянии\r\nСлежение будет запущено автоматически'
@@ -31,7 +37,10 @@ def reload_backup(bot, main_vars):
                 main_vars.task_queue.append(start_updater_task)
             else:
                 text = 'Бот был перезагружен. Игра в нормальном состоянии. Слежение выключено'
-            bot.send_message(session['sessionid'], text)
+            try:
+                bot.send_message(session['sessionid'], text)
+            except Exception:
+                logging.exception("Не удалось отправить сообщение о перезапуске сессии %s" % str(session['sessionid']))
 
 
 def start(task, bot):
@@ -476,9 +485,10 @@ def add_custom_live_locations(task, bot):
     if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя отправлять live location при неактивной сессии')
         return
-    locations = json.loads(session['locations'])
     ll_message_ids = json.loads(session['llmessageids'])
-    if ll_message_ids:
-        close_live_locations(task.chat_id, bot, task.session, ll_message_ids)
-    send_live_locations_to_chat(bot, task.chat_id, task.session, locations, ll_message_ids,
+    for k in task.points_dict.keys():
+        if k in ll_message_ids.keys():
+            close_live_locations(task.chat_id, bot, session, ll_message_ids, point=k)
+            time.sleep(1)
+    send_live_locations_to_chat(bot, task.chat_id, session, None, ll_message_ids,
                                 custom_points=task.points_dict, duration=task.duration)
