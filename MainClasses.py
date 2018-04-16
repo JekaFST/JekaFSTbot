@@ -5,8 +5,6 @@ from DBMethods import DB, DBSession
 class MainVars(object):
     def __init__(self):
         self.task_queue = list()
-        self.sessions_dict = dict()
-        self.additional_ids = dict()
         self.updater_schedulers_dict = dict()
         self.updaters_dict = dict()
 
