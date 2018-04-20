@@ -159,13 +159,13 @@ def handle_coords(text, **kwargs):
     return text, indexes, incommon_coords
 
 
-def make_Y_G_links(coord, bold=True):
+def make_Y_G_links(coord):
     lat = re.findall(r'\d\d\.\d{4,7}', coord)[0]
     long = re.findall(r'\d\d\.\d{4,7}', coord)[1]
     Y = '<a href="http://maps.yandex.ru/?text=%s,%s">[Y]</a>' % (lat, long)
     G = '<a href="https://maps.google.com/?daddr=%s,%s&t=m">[G]</a>' % (lat, long)
     # G = '<a href="https://www.google.com/maps/place/%s,%s">[G]</a>' % (lat, long)
-    coord_Y_G = '<b>' + coord + '</b> ' + Y + ' ' + G if bold else coord + ' ' + Y + ' ' + G
+    coord_Y_G = '<b>' + coord + '</b> ' + Y + ' ' + G
     return coord_Y_G
 
 
