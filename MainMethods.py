@@ -42,6 +42,14 @@ def reload_backup(bot, main_vars):
                 bot.send_message(session['sessionid'], text)
             except Exception:
                 logging.exception("Не удалось отправить сообщение о перезапуске сессии %s" % str(session['sessionid']))
+        elif not session['stopupdater']:
+            text = 'Бот был перезагружен\r\nСлежение будет запущено автоматически'
+            start_updater_task = Task(session['sessionid'], 'start_updater', main_vars=main_vars, session_id=session['sessionid'])
+            main_vars.task_queue.append(start_updater_task)
+            try:
+                bot.send_message(session['sessionid'], text)
+            except Exception:
+                logging.exception("Не удалось отправить сообщение о перезапуске сессии %s" % str(session['sessionid']))
 
 
 def start(task, bot):
