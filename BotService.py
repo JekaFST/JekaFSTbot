@@ -445,7 +445,7 @@ def run_app(bot, main_vars):
         if allowed:
             coords = find_coords(message.text)
             if coords:
-                send_coords_task = Task(message.chat.id, 'send_coords', coords=coords)
+                send_coords_task = Task(message.chat.id, 'send_coords', coords=coords, message_id=message.message_id)
                 main_vars.task_queue.append(send_coords_task)
 
     # Remove webhook, it fails sometimes the set if there is a previous webhook

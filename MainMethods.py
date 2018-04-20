@@ -11,6 +11,7 @@ import telebot
 from CommonMethods import close_live_locations
 from DBMethods import DB, DBSession
 from MainClasses import Task
+from TextConvertingMethods import make_Y_G_links
 
 
 @ExceptionHandler.reload_backup_exception
@@ -388,7 +389,8 @@ def send_coords(task, bot):
     for coord in task.coords:
         latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
         longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
-        bot.send_venue(task.chat_id, latitude, longitude, coord, '')
+        coord_Y_G = make_Y_G_links(coord, bold=False)
+        bot.send_venue(task.chat_id, latitude, longitude, coord, coord_Y_G, reply_to_message_id=task.message_id)
 
 
 def join(task, bot):
