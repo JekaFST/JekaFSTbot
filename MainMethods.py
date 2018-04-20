@@ -398,7 +398,7 @@ def send_coords(task, bot):
         latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
         longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
         coord_Y_G = make_Y_G_links(coord)
-        bot.send_message(task.chat_id, coord_Y_G, reply_to_message_id=task.message_id)
+        bot.send_message(task.chat_id, coord_Y_G, reply_to_message_id=task.message_id, parse='HTML', disable_web_page_preview=True)
         bot.send_venue(task.chat_id, latitude, longitude, coord, '')
 
 
