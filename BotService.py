@@ -448,13 +448,6 @@ def run_app(bot, main_vars):
                 send_coords_task = Task(message.chat.id, 'send_coords', coords=coords)
                 main_vars.task_queue.append(send_coords_task)
 
-    # Remove webhook, it fails sometimes the set if there is a previous webhook
-    bot.remove_webhook()
-
-    # Set webhook
-    bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
-    # bot.set_webhook(url='https://d774e721.ngrok.io/webhook')
-
     @app.route("/", methods=['GET', 'POST'])
     def hello():
         return 'Hello world!'
@@ -465,5 +458,39 @@ def run_app(bot, main_vars):
         for tag in DB.get_tags_list():
             list_of_tags += '<br>' + tag
         return list_of_tags
+
+    @app.route("/<session_id>/<game_id>/codes", methods=['GET', 'POST'])
+    def all_codes(session_id, game_id):
+        text = ''
+        levels_dict = dict()
+        dict_lines = DB.get_codes_per_level(session_id, game_id)
+        for line in dict_lines:
+            level_number = line['number']
+            level_name = line['levelname']
+            if not level_number in levels_dict.keys():
+                levels_dict[level_number] = {
+                    "name": level_name,
+                    "sectors": dict()
+                }
+            levels_dict[level_number]['sectors'][line['sectororder']] = {
+                line['sectorname']: {
+                                        'code': line['code'],
+                                        'player': line['player']
+                                    }
+            }
+
+        for level_number, level in levels_dict.items():
+            level_name = ' - ' + level['name'] if level['name'] else ''
+            text += """
+                        <details>
+                        <summary>Уровень %s%s</summary>
+                    """ % (str(level_number), level_name)
+            text += '<p><b>Список секторов:</b>'
+            for sector_number, sector_name_code in level['sectors'].items():
+                text += '<br>с-р %s: %s - %s (%s)' % (sector_number, sector_name_code.keys()[0],
+                                                 sector_name_code.values()[0]['code'],
+                                                 sector_name_code.values()[0]['player'])
+            text += '</p></details>'
+        return text
 
     return app

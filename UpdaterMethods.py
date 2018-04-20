@@ -86,7 +86,8 @@ def linear_updater(chat_id, bot, session):
     try:
         if loaded_sectors:
             codes_to_find = loaded_level['SectorsLeftToClose']
-            sectors_parcer(session['sessionid'], session['gameid'], loaded_sectors, codes_to_find, bot, chat_id)
+            sectors_parcer(session['sessionid'], session['gameid'], loaded_sectors, codes_to_find, bot, chat_id,
+                           loaded_level['LevelId'])
     except Exception as err:
         bot.send_message(chat_id, 'Exception - не удалось выполнить слежение за секторами')
     try:
@@ -168,7 +169,7 @@ def storm_updater(chat_id, bot, session):
             if loaded_sectors:
                 codes_to_find = level['SectorsLeftToClose']
                 sectors_parcer(session['sessionid'], session['gameid'], loaded_sectors, codes_to_find, bot, chat_id,
-                               levelmark=levelmark, storm=True)
+                               level['LevelId'], levelmark=levelmark, storm=True)
             if loaded_helps:
                 help_parcer(session['sessionid'], session['gameid'], loaded_helps, bot, chat_id, session['channelname'],
                             session['usechannel'], levelmark=levelmark, storm=True)
@@ -251,11 +252,11 @@ def send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, channe
     DBSession.update_int_field(session_id, 'sectorsmessageid', response.message_id)
 
 
-def sectors_parcer(session_id, game_id, loaded_sectors, codes_to_find, bot, chat_id, levelmark=None, storm=False):
+def sectors_parcer(session_id, game_id, loaded_sectors, codes_to_find, bot, chat_id, level_id, levelmark=None, storm=False):
     existing_sectors = DBSectors.get_sector_ids_per_game(session_id, game_id)
     for sector in loaded_sectors:
         if sector['SectorId'] not in existing_sectors:
-            DBSectors.insert_sector(session_id, game_id, sector['SectorId'])
+            DBSectors.insert_sector(session_id, game_id, sector, level_id)
     answer_info_not_sent_sectors = DBSectors.get_answer_info_not_sent_sector_ids_per_game(session_id, game_id)
     for sector in loaded_sectors:
         if sector['IsAnswered'] and sector['SectorId'] in answer_info_not_sent_sectors:
@@ -270,7 +271,7 @@ def sectors_parcer(session_id, game_id, loaded_sectors, codes_to_find, bot, chat
             if storm:
                 message = levelmark + '\r\n' + message
             bot.send_message(chat_id, message, parse_mode='HTML')
-            DBSectors.update_answer_info_not_sent(session_id, game_id, sector['SectorId'], 'False')
+            DBSectors.update_answer_info_not_sent(session_id, game_id, sector['SectorId'], 'False', code, player)
 
 
 def help_parcer(session_id, game_id, loaded_helps, bot, chat_id, channel_name, use_channel, levelmark=None, storm=False):

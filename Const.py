@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+prod = False
+
 urls = {
     'game_url_ending': '/gameengines/encounter/play/',
     'login_url_ending': '/Login.aspx',

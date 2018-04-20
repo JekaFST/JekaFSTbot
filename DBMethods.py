@@ -3,13 +3,14 @@ import os
 import json
 import logging
 import psycopg2.extras
+from Const import prod
 
 
 class DBConnection(object):
     def __init__(self):
         self.db_conn = None
 
-    def connect(self, prod=True):
+    def connect(self):
         self.db_conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require') if prod \
             else psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
 
@@ -61,7 +62,6 @@ class DBConnection(object):
 
 db_connection = DBConnection()
 db_connection.connect()
-# db_connection.connect(prod=False)
 
 
 class DBSession(object):
@@ -168,10 +168,14 @@ class DBLevels(object):
     @staticmethod
     def insert_level(session_id, game_id, level, breif=False):
         number = level['Number'] if not breif else level['LevelNumber']
+        if not breif:
+            name = level['Name'].encode('utf-8') if level['Name'] else ''
+        else:
+            name = level['LevelName'].encode('utf-8') if level['LevelName'] else ''
         sql = """INSERT INTO levels
-                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent)
-                    VALUES (%s, %s, '%s', %s, %s, %s, False)
-                """ % (session_id, level['LevelId'], game_id, number, level['IsPassed'], level['Dismissed'])
+                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, levelname)
+                    VALUES (%s, %s, '%s', %s, %s, %s, False, '%s')
+                """ % (session_id, level['LevelId'], game_id, number, level['IsPassed'], level['Dismissed'], name)
         return db_connection.execute_insert_cur(sql)
 
     @staticmethod
@@ -321,11 +325,15 @@ class DBBonuses(object):
 
 class DBSectors(object):
     @staticmethod
-    def insert_sector(session_id, game_id, sector_id):
+    def insert_sector(session_id, game_id, sector, levelid, code='NULL'):
+        sector_id = sector['SectorId']
+        sector_name = sector['Name'].encode('utf-8')
+        sector_order = sector['Order']
+        player = sector['Answer']['Login'].encode('utf-8') if sector['IsAnswered'] else ''
         sql = """INSERT INTO sectors
-                    (SessionId, SectorId, GameId, AnswerInfoNotSent)
-                    VALUES (%s, %s, '%s', True)
-                """ % (session_id, sector_id, game_id)
+                    (SessionId, SectorId, GameId, AnswerInfoNotSent, code, levelid, sectorname, sectororder, player)
+                    VALUES (%s, %s, '%s', True, %s, %s, '%s', %s, '%s')
+                """ % (session_id, sector_id, game_id, code, levelid, sector_name, sector_order, player)
         return db_connection.execute_insert_cur(sql)
 
     @staticmethod
@@ -352,11 +360,11 @@ class DBSectors(object):
         return rows[0][0]
 
     @staticmethod
-    def update_answer_info_not_sent(session_id, game_id, sector_id, active):
+    def update_answer_info_not_sent(session_id, game_id, sector_id, active, code, player):
         sql = """UPDATE Sectors
-                SET answerinfonotsent = %s
-                WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
-                """ % (active, session_id, game_id, sector_id)
+                    SET answerinfonotsent = %s, code = '%s', player = '%s'
+                    WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
+                    """ % (active, code, player, session_id, game_id, sector_id)
         db_connection.execute_insert_cur(sql)
 
 
@@ -495,3 +503,20 @@ class DB(object):
                 DELETE FROM messages WHERE sessionid = %s AND gameid = '%s';
                 """ % (session_id, game_id, session_id, game_id, session_id, game_id, session_id, game_id, session_id, game_id)
         db_connection.execute_insert_cur(sql)
+
+    @staticmethod
+    def get_codes_per_level(session_id, game_id):
+        sql = """
+                SELECT l.levelname, l.number, s.code, s.sectorname, s.sectororder, s.player
+                FROM levels l JOIN sectors s ON
+                (
+                l.levelid = s.levelid
+                AND l.sessionid = s.sessionid
+                AND l.gameid = s.gameid
+                )
+                WHERE
+                l.sessionid = %s
+                AND l.gameid = '%s';
+                """ % (session_id, game_id)
+        rows = db_connection.execute_dict_select_cur(sql)
+        return rows
