@@ -98,7 +98,7 @@ def linear_updater(chat_id, bot, session):
         bot.send_message(chat_id, 'Exception - не удалось выполнить слежение за подсказками')
     try:
         if loaded_bonuses:
-            bonus_parcer(session['sessionid'], session['gameid'], loaded_bonuses, bot, chat_id)
+            bonus_parcer(session['sessionid'], session['gameid'], loaded_bonuses, bot, chat_id, loaded_level['LevelId'])
     except Exception as err:
         bot.send_message(chat_id, 'Exception - не удалось выполнить слежение за бонусами')
     try:
@@ -174,7 +174,7 @@ def storm_updater(chat_id, bot, session):
                 help_parcer(session['sessionid'], session['gameid'], loaded_helps, bot, chat_id, session['channelname'],
                             session['usechannel'], levelmark=levelmark, storm=True)
             if loaded_bonuses:
-                bonus_parcer(session['sessionid'], session['gameid'], loaded_bonuses, bot, chat_id,
+                bonus_parcer(session['sessionid'], session['gameid'], loaded_bonuses, bot, chat_id, level['LevelId'],
                              levelmark=levelmark, storm=True)
         except Exception:
             bot.send_message(chat_id, 'Exception - не удалось выполнить команду updater до конца')
@@ -294,17 +294,24 @@ def help_parcer(session_id, game_id, loaded_helps, bot, chat_id, channel_name, u
             send_time_to_help(help, bot, chat_id, levelmark, storm)
 
 
-def bonus_parcer(session_id, game_id, loaded_bonuses, bot, chat_id, levelmark=None, storm=False):
-    existing_bonuses = DBBonuses.get_bonus_ids_per_game(session_id, game_id)
+def bonus_parcer(session_id, game_id, loaded_bonuses, bot, chat_id, level_id, levelmark=None, storm=False):
+    existing_bonuses = DBBonuses.get_bonus_ids_per_level(session_id, game_id, level_id)
     for bonus in loaded_bonuses:
         if bonus['BonusId'] not in existing_bonuses:
-            DBBonuses.insert_bonus(session_id, game_id, bonus['BonusId'])
+            bonuses_award_sent = DBBonuses.get_award_sent_bonus_ids_per_game(session_id, game_id)
+            award_not_sent = False if bonus['BonusId'] in bonuses_award_sent else True
+            if award_not_sent:
+                bonuses_info_sent = DBBonuses.get_info_sent_bonus_ids_per_game(session_id, game_id)
+                info_not_sent = False if bonus['BonusId'] in bonuses_info_sent else True
+            else:
+                info_not_sent = False
+            DBBonuses.insert_bonus(session_id, game_id, bonus, level_id, info_not_sent, award_not_sent)
     bonuses_award_not_sent = DBBonuses.get_award_not_sent_bonus_ids_per_game(session_id, game_id)
     bonuses_info_not_sent = DBBonuses.get_info_not_sent_bonus_ids_per_game(session_id, game_id)
     for bonus in loaded_bonuses:
 
         if bonus['IsAnswered'] and bonus['BonusId'] in bonuses_award_not_sent:
-            DBBonuses.update_bool_flag(session_id, game_id, bonus['BonusId'], 'awardnotsent', 'False')
+            DBBonuses.update_answer_info_not_sent(session_id, game_id, bonus, 'awardnotsent', 'False')
             DBBonuses.update_bool_flag(session_id, game_id, bonus['BonusId'], 'infonotsent', 'False')
             send_bonus_award_answer(bonus, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
             continue

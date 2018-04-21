@@ -452,31 +452,41 @@ def run_app(bot, main_vars):
     def hello():
         return 'Hello world!'
 
-    @app.route("/develop/DB/connectorcheck", methods=['GET', 'POST'])
-    def db_conn_check():
-        list_of_tags = 'List of tags:'
-        for tag in DB.get_tags_list():
-            list_of_tags += '<br>' + tag
-        return list_of_tags
-
-    @app.route("/<session_id>/<game_id>/codes", methods=['GET', 'POST'])
+    @app.route("/<session_id>/<game_id>/levels", methods=['GET', 'POST'])
     def all_codes(session_id, game_id):
         text = ''
         levels_dict = dict()
-        dict_lines = DB.get_codes_per_level(session_id, game_id)
-        for line in dict_lines:
+        sectors_lines = DB.get_sectors_per_level(session_id, game_id)
+        bonus_lines = DB.get_bonuses_per_level(session_id, game_id)
+        for line in sectors_lines:
             level_number = line['number']
             level_name = line['levelname']
             if not level_number in levels_dict.keys():
                 levels_dict[level_number] = {
                     "name": level_name,
-                    "sectors": dict()
+                    "sectors": dict(),
+                    "bonuses": dict()
                 }
             levels_dict[level_number]['sectors'][line['sectororder']] = {
                 line['sectorname']: {
                                         'code': line['code'],
                                         'player': line['player']
                                     }
+            }
+        for line in bonus_lines:
+            level_number = line['number']
+            level_name = line['levelname']
+            if not level_number in levels_dict.keys():
+                levels_dict[level_number] = {
+                    "name": level_name,
+                    "sectors": dict(),
+                    "bonuses": dict()
+                }
+            levels_dict[level_number]['bonuses'][line['bonusnumber']] = {
+                line['bonusname']: {
+                    'code': line['code'],
+                    'player': line['player']
+                }
             }
 
         for level_number, level in levels_dict.items():
@@ -490,6 +500,11 @@ def run_app(bot, main_vars):
                 text += '<br>с-р %s: %s - %s (%s)' % (sector_number, sector_name_code.keys()[0],
                                                  sector_name_code.values()[0]['code'],
                                                  sector_name_code.values()[0]['player'])
+            text += '<p><b>Список бонусов:</b>'
+            for bonus_number, bonus_name_code in level['bonuses'].items():
+                text += '<br>б-с %s: %s - %s (%s)' % (bonus_number, bonus_name_code.keys()[0],
+                                                      bonus_name_code.values()[0]['code'],
+                                                      bonus_name_code.values()[0]['player'])
             text += '</p></details>'
         return text
 
