@@ -11,6 +11,7 @@ import telebot
 from CommonMethods import close_live_locations
 from DBMethods import DB, DBSession
 from MainClasses import Task
+from TextConvertingMethods import make_Y_G_links
 
 
 @ExceptionHandler.reload_backup_exception
@@ -37,6 +38,14 @@ def reload_backup(bot, main_vars):
                 main_vars.task_queue.append(start_updater_task)
             else:
                 text = 'Бот был перезагружен. Игра в нормальном состоянии. Слежение выключено'
+            try:
+                bot.send_message(session['sessionid'], text)
+            except Exception:
+                logging.exception("Не удалось отправить сообщение о перезапуске сессии %s" % str(session['sessionid']))
+        elif not session['stopupdater']:
+            text = 'Бот был перезагружен\r\nСлежение будет запущено автоматически'
+            start_updater_task = Task(session['sessionid'], 'start_updater', main_vars=main_vars, session_id=session['sessionid'])
+            main_vars.task_queue.append(start_updater_task)
             try:
                 bot.send_message(session['sessionid'], text)
             except Exception:
@@ -388,6 +397,8 @@ def send_coords(task, bot):
     for coord in task.coords:
         latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
         longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
+        coord_Y_G = make_Y_G_links(coord)
+        bot.send_message(task.chat_id, coord_Y_G, reply_to_message_id=task.message_id, parse_mode='HTML', disable_web_page_preview=True)
         bot.send_venue(task.chat_id, latitude, longitude, coord, '')
 
 
