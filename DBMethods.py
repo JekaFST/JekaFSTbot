@@ -361,7 +361,7 @@ class DBSectors(object):
         sector_order = sector['Order']
         sql = """INSERT INTO sectors
                     (SessionId, SectorId, GameId, AnswerInfoNotSent, code, levelid, sectorname, sectororder, player)
-                    VALUES (%s, %s, '%s', True, '%s', %s, '%s', %s, '%s')
+                    VALUES (%s, %s, '%s', True, %s, %s, '%s', %s, '%s')
                 """ % (session_id, sector_id, game_id, code, level_id, sector_name, sector_order, player)
         return db_connection.execute_insert_cur(sql)
 
@@ -394,6 +394,14 @@ class DBSectors(object):
                     SET answerinfonotsent = %s, code = '%s', player = '%s'
                     WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
                     """ % (active, code, player, session_id, game_id, sector_id)
+        db_connection.execute_insert_cur(sql)
+
+    @staticmethod
+    def update_level_last_code(session_id, game_id, sector_id, code, player):
+        sql = """UPDATE Sectors
+                        SET code = '%s', player = '%s'
+                        WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
+                        """ % (code, player, session_id, game_id, sector_id)
         db_connection.execute_insert_cur(sql)
 
 

@@ -454,7 +454,29 @@ def run_app(bot, main_vars):
 
     @app.route("/<session_id>/<game_id>/levels", methods=['GET', 'POST'])
     def all_codes(session_id, game_id):
-        text = ''
+        text = """
+            <html>
+            <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+            <title>All codes per game</title>
+            </head>
+            <body>
+            <style>
+	            table.codes {
+      	            border-collapse: collapse;
+      	            width: 600px;
+    	            }
+
+    	            .code td {
+    	            border: 1px solid Gray;
+    	            }
+
+                    .pola td.label {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    }
+            </style>
+        """
         levels_dict = dict()
         sectors_lines = DB.get_sectors_per_level(session_id, game_id)
         bonus_lines = DB.get_bonuses_per_level(session_id, game_id)
@@ -495,17 +517,49 @@ def run_app(bot, main_vars):
                         <details>
                         <summary>Уровень %s%s</summary>
                     """ % (str(level_number), level_name)
-            text += '<p><b>Список секторов:</b>'
+            text += """
+                    <table class="codes">
+                    <caption><b>Список секторов:</b></caption>
+                    <tr>
+                    <td class="label" width=25px>№</td>
+                    <td class="label">Имя</td>
+                    <td class="label">Код</td>
+                    <td class="label">Игрок</td>
+                    </tr>
+                    """
             for sector_number, sector_name_code in level['sectors'].items():
-                text += '<br>с-р %s: %s - %s (%s)' % (sector_number, sector_name_code.keys()[0],
+                text += """<tr>
+                    <td class="label" width=25px>%s</td>
+                    <td class="label">%s</td>
+                    <td class="label">%s</td>
+                    <td class="label">%s</td>
+                    </tr>
+                    """ % (sector_number, sector_name_code.keys()[0],
                                                  sector_name_code.values()[0]['code'],
                                                  sector_name_code.values()[0]['player'])
-            text += '<p><b>Список бонусов:</b>'
+            text += """
+                    </table>
+                    <br>
+                    <table class="codes">
+                    <caption><b>Список бонусов:</b></caption>
+                    <tr>
+                    <td class="label" width=25px>№</td>
+                    <td class="label">Имя</td>
+                    <td class="label">Код</td>
+                    <td class="label">Игрок</td>
+                    </tr>
+                    """
             for bonus_number, bonus_name_code in level['bonuses'].items():
-                text += '<br>б-с %s: %s - %s (%s)' % (bonus_number, bonus_name_code.keys()[0],
+                text += """<tr>
+                    <td class="label" width=25px>%s</td>
+                    <td class="label">%s</td>
+                    <td class="label">%s</td>
+                    <td class="label">%s</td>
+                    </tr>
+                    """ % (bonus_number, bonus_name_code.keys()[0],
                                                       bonus_name_code.values()[0]['code'],
                                                       bonus_name_code.values()[0]['player'])
-            text += '</p></details>'
+            text += '</table></details></body></html>'
         return text
 
     return app

@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, \
     send_adm_message
 from Const import game_wrong_statuses, urls
-from DBMethods import DB, DBSession, DBLevels
+from DBMethods import DB, DBSession, DBLevels, DBSectors
 
 
 def compile_urls(session_id, chat_id, bot, game_id, en_domain):
@@ -388,6 +388,15 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
         str(game_model['EngineAction']['BonusAction']['IsCorrectAnswer'])
     reply = get_send_code_reply(code, send_code_result, level, game_model)
     bot.send_message(chat_id, reply, reply_to_message_id=message_id, parse_mode='HTML')
+    if 'следующий' in reply:
+        not_answered_sector_ids = list()
+        for sector in level['Sectors']:
+            if not sector['IsAnswered']:
+                not_answered_sector_ids.append(sector['SectorId'])
+        if len(not_answered_sector_ids) == 1:
+            level_last_sector_id = not_answered_sector_ids[0]
+            DBSectors.update_level_last_code(session['sessionid'], session['gameid'], level_last_sector_id, code,
+                                             session['login'])
 
 
 def generate_code_request(level, code, bonus_only):
