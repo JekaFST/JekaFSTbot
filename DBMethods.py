@@ -276,10 +276,12 @@ class DBHelps(object):
 
 class DBBonuses(object):
     @staticmethod
-    def insert_bonus(session_id, game_id, bonus, level_id, info_not_sent, award_not_sent, code='NULL', player=''):
+    def insert_bonus(session_id, game_id, bonus, level_id, info_not_sent, award_not_sent):
         bonus_name = bonus['Name'].encode('utf-8') if bonus['Name'] else "Бонус " + str(bonus['Number'])
         bonus_number = bonus['Number']
         bonus_id = bonus['BonusId']
+        player = bonus['Answer']['Login'].encode('utf-8') if bonus['IsAnswered'] else ''
+        code = bonus['Answer']['Answer'].encode('utf-8') if bonus['IsAnswered'] else 'NULL'
         sql = """INSERT INTO bonuses
                         (SessionId, BonusId, GameId, InfoNotSent, AwardNotSent, levelid, code, bonusname, bonusnumber, player)
                         VALUES (%s, %s, '%s', %s, %s, %s, %s, '%s', %s, '%s')
