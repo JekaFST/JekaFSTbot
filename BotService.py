@@ -3,6 +3,8 @@ import flask
 import re
 import telebot
 from flask import Flask
+from flask import render_template
+
 from Const import helptext
 from DBMethods import DB
 from MainClasses import Task, Validations
@@ -454,112 +456,43 @@ def run_app(bot, main_vars):
 
     @app.route("/<session_id>/<game_id>", methods=['GET', 'POST'])
     def all_codes(session_id, game_id):
-        text = """
-            <html>
-            <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-            <title>All codes per game</title>
-            </head>
-            <body>
-            <style>
-	            table.codes {
-      	            border-collapse: collapse;
-      	            width: 600px;
-    	            }
-
-    	            .code td {
-    	            border: 1px solid Gray;
-    	            }
-
-                    .pola td.label {
-                    white-space: nowrap;
-                    overflow: hidden;
-                    }
-            </style>
-        """
         levels_dict = dict()
         sectors_lines = DB.get_sectors_per_level(session_id, game_id)
         bonus_lines = DB.get_bonuses_per_level(session_id, game_id)
         for line in sectors_lines:
             level_number = line['number']
-            level_name = line['levelname']
+            level_name = line['levelname'].decode('utf-8')
             if not level_number in levels_dict.keys():
                 levels_dict[level_number] = {
-                    "name": level_name,
-                    "sectors": dict(),
-                    "bonuses": dict()
+                    'number': level_number,
+                    'name': level_name,
+                    'sectors': list(),
+                    'bonuses': list()
                 }
-            levels_dict[level_number]['sectors'][line['sectororder']] = {
-                line['sectorname']: {
-                                        'code': line['code'],
-                                        'player': line['player']
-                                    }
-            }
+            levels_dict[level_number]['sectors'].append({
+                                                            'order': line['sectororder'],
+                                                            'name': line['sectorname'].decode('utf-8'),
+                                                            'code': line['code'].decode('utf-8') if line['code'] else '???',
+                                                            'player': line['player'].decode('utf-8') if line['player'] else ''
+                                                        })
         for line in bonus_lines:
             level_number = line['number']
-            level_name = line['levelname']
+            level_name = line['levelname'].decode('utf-8')
             if not level_number in levels_dict.keys():
                 levels_dict[level_number] = {
-                    "name": level_name,
-                    "sectors": dict(),
-                    "bonuses": dict()
+                    'number': level_number,
+                    'name': level_name,
+                    'sectors': list(),
+                    'bonuses': list()
                 }
-            levels_dict[level_number]['bonuses'][line['bonusnumber']] = {
-                line['bonusname']: {
-                    'code': line['code'],
-                    'player': line['player']
-                }
-            }
+            levels_dict[level_number]['bonuses'].append({
+                                                        'number': line['bonusnumber'],
+                                                        'name': line['bonusname'].decode('utf-8'),
+                                                        'code': line['code'].decode('utf-8') if line['code'] else '???',
+                                                        'player': line['player'].decode('utf-8') if line['player'] else ''
+                                                        })
 
-        for level_number, level in levels_dict.items():
-            level_name = ' - ' + level['name'] if level['name'] else ''
-            text += """
-                        <details>
-                        <summary>Уровень %s%s</summary>
-                    """ % (str(level_number), level_name)
-            text += """
-                    <table class="codes">
-                    <caption><b>Список секторов:</b></caption>
-                    <tr>
-                    <td class="label" width=25px><b>№</b></td>
-                    <td class="label"><b>Имя</b></td>
-                    <td class="label"><b>Код</b></td>
-                    <td class="label"><b>Игрок</b></td>
-                    </tr>
-                    """
-            for sector_number, sector_name_code in level['sectors'].items():
-                text += """<tr>
-                    <td class="label" width=25px>%s</td>
-                    <td class="label">%s</td>
-                    <td class="label">%s</td>
-                    <td class="label">%s</td>
-                    </tr>
-                    """ % (sector_number, sector_name_code.keys()[0],
-                                                 sector_name_code.values()[0]['code'],
-                                                 sector_name_code.values()[0]['player'])
-            text += """
-                    </table>
-                    <br>
-                    <table class="codes">
-                    <caption><b>Список бонусов:</b></caption>
-                    <tr>
-                    <td class="label" width=25px><b>№</b></td>
-                    <td class="label"><b>Имя</b></td>
-                    <td class="label"><b>Код</b></td>
-                    <td class="label"><b>Игрок</b></td>
-                    </tr>
-                    """
-            for bonus_number, bonus_name_code in level['bonuses'].items():
-                text += """<tr>
-                    <td class="label" width=25px>%s</td>
-                    <td class="label">%s</td>
-                    <td class="label">%s</td>
-                    <td class="label">%s</td>
-                    </tr>
-                    """ % (bonus_number, bonus_name_code.keys()[0],
-                                                      bonus_name_code.values()[0]['code'],
-                                                      bonus_name_code.values()[0]['player'])
-            text += '</table></details></body></html>'
-        return text
+        levels_list = [level for level in levels_dict.values()]
+        return render_template("TemplateForCodes.html", title='All codes per game', levels_list=levels_list)
 
     return app

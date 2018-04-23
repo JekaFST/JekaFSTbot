@@ -553,7 +553,8 @@ class DB(object):
                 )
                 WHERE
                 l.sessionid = %s
-                AND l.gameid = '%s';
+                AND l.gameid = '%s'
+                ORDER BY l.number, s.sectororder;
                 """ % (session_id, game_id)
         rows = db_connection.execute_dict_select_cur(sql)
         return rows
@@ -570,7 +571,8 @@ class DB(object):
                     )
                     WHERE
                     l.sessionid = %s
-                    AND l.gameid = '%s';
+                    AND l.gameid = '%s'
+                    ORDER BY l.number, b.bonusnumber;
                     """ % (session_id, game_id)
         rows = db_connection.execute_dict_select_cur(sql)
         return rows
