@@ -452,7 +452,7 @@ def run_app(bot, main_vars):
     def hello():
         return 'Hello world!'
 
-    @app.route("/<session_id>/<game_id>/levels", methods=['GET', 'POST'])
+    @app.route("/<session_id>/<game_id>", methods=['GET', 'POST'])
     def all_codes(session_id, game_id):
         text = """
             <html>
@@ -521,10 +521,10 @@ def run_app(bot, main_vars):
                     <table class="codes">
                     <caption><b>Список секторов:</b></caption>
                     <tr>
-                    <td class="label" width=25px>№</td>
-                    <td class="label">Имя</td>
-                    <td class="label">Код</td>
-                    <td class="label">Игрок</td>
+                    <td class="label" width=25px><b>№</b></td>
+                    <td class="label"><b>Имя</b></td>
+                    <td class="label"><b>Код</b></td>
+                    <td class="label"><b>Игрок</b></td>
                     </tr>
                     """
             for sector_number, sector_name_code in level['sectors'].items():
@@ -543,10 +543,10 @@ def run_app(bot, main_vars):
                     <table class="codes">
                     <caption><b>Список бонусов:</b></caption>
                     <tr>
-                    <td class="label" width=25px>№</td>
-                    <td class="label">Имя</td>
-                    <td class="label">Код</td>
-                    <td class="label">Игрок</td>
+                    <td class="label" width=25px><b>№</b></td>
+                    <td class="label"><b>Имя</b></td>
+                    <td class="label"><b>Код</b></td>
+                    <td class="label"><b>Игрок</b></td>
                     </tr>
                     """
             for bonus_number, bonus_name_code in level['bonuses'].items():
