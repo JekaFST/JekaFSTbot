@@ -544,7 +544,7 @@ class DB(object):
         db_connection.execute_insert_cur(sql)
 
     @staticmethod
-    def get_sectors_per_level(session_id, game_id):
+    def get_sectors_per_game(session_id, game_id):
         sql = """
                 SELECT l.levelname, l.number, s.code, s.sectorname, s.sectororder, s.player
                 FROM levels l JOIN sectors s ON
@@ -562,7 +562,7 @@ class DB(object):
         return rows
 
     @staticmethod
-    def get_bonuses_per_level(session_id, game_id):
+    def get_bonuses_per_game(session_id, game_id):
         sql = """
                     SELECT l.levelname, l.number, b.code, b.bonusname, b.bonusnumber, b.player
                     FROM levels l JOIN bonuses b ON
@@ -576,5 +576,43 @@ class DB(object):
                     AND l.gameid = '%s'
                     ORDER BY l.number, b.bonusnumber;
                     """ % (session_id, game_id)
+        rows = db_connection.execute_dict_select_cur(sql)
+        return rows
+
+    @staticmethod
+    def get_sectors_per_level(session_id, game_id, level_number):
+        sql = """
+                SELECT l.levelname, l.number, s.code, s.sectorname, s.sectororder, s.player
+                FROM levels l JOIN sectors s ON
+                (
+                l.levelid = s.levelid
+                AND l.sessionid = s.sessionid
+                AND l.gameid = s.gameid
+                )
+                WHERE
+                l.sessionid = %s
+                AND l.gameid = '%s'
+                AND l.number = %s
+                ORDER BY l.number, s.sectororder;
+                """ % (session_id, game_id, level_number)
+        rows = db_connection.execute_dict_select_cur(sql)
+        return rows
+
+    @staticmethod
+    def get_bonuses_per_level(session_id, game_id, level_number):
+        sql = """
+                    SELECT l.levelname, l.number, b.code, b.bonusname, b.bonusnumber, b.player
+                    FROM levels l JOIN bonuses b ON
+                    (
+                    l.levelid = b.levelid
+                    AND l.sessionid = b.sessionid
+                    AND l.gameid = b.gameid
+                    )
+                    WHERE
+                    l.sessionid = %s
+                    AND l.gameid = '%s'
+                    AND l.number = %s
+                    ORDER BY l.number, b.bonusnumber;
+                    """ % (session_id, game_id, level_number)
         rows = db_connection.execute_dict_select_cur(sql)
         return rows

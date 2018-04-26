@@ -47,9 +47,9 @@
             {% endif %}
         </table>
         <br>
+        {% if level.bonuses %}
         <table class="codes">
         <caption><b>Bonuses:</b></caption>
-            {% if level.bonuses %}
             <tr>
                 <td class="label" width=25px><b>#</b></td>
                 <td class="label"><b>Name</b></td>
@@ -64,9 +64,9 @@
                 <td class="label">{{bonus.player}}</td>
             </tr>
             {% endfor %}
-            {% endif %}
         </table>
         <br>
+        {% endif %}
     </details>
     {% endfor %}
 </body>

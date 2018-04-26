@@ -504,3 +504,13 @@ def add_custom_live_locations(task, bot):
             time.sleep(1)
     send_live_locations_to_chat(bot, task.chat_id, session, None, ll_message_ids,
                                 custom_points=task.points_dict, duration=task.duration)
+
+
+def get_codes_links(task, bot):
+    game_id = DBSession.get_field_value(task.session_id, 'gameid')
+    link_to_all_codes = 'https://powerful-shelf-32284.herokuapp.com/%s/%s' % (task.session_id, game_id)
+    link_to_codes_per_level = link_to_all_codes + '/level_number'
+    message = 'Для просмотра кодов по всем уровням игры:\r\n' + link_to_all_codes + '\r\n' \
+              'Для просмотра кодов по отдельному уровню игры:\r\n' + link_to_codes_per_level + '\r\n' \
+              'где level_number - номер уровня'
+    bot.send_message(task.chat_id, message, reply_to_message_id=task.message_id, disable_web_page_preview=True)

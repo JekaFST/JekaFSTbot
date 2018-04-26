@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
+import os
 import flask
 import re
 import telebot
-from flask import Flask
-from flask import render_template
-
+from flask import Flask, render_template, send_from_directory
+from BotServiceMethods import add_level_bonuses, add_level_sectors
 from Const import helptext
 from DBMethods import DB
 from MainClasses import Task, Validations
@@ -414,6 +414,15 @@ def run_app(bot, main_vars):
             add_points_ll_task = Task(message.chat.id, 'add_points_ll', session_id=main_chat_id, points_dict=points_dict, duration=duration)
             main_vars.task_queue.append(add_points_ll_task)
 
+    @bot.message_handler(commands=['get_codes_links'])
+    def get_codes_links(message):
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot) \
+                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
+
+            get_codes_links_task = Task(message.chat.id, 'get_codes_links', session_id=message.chat.id, message_id=message.message_id)
+            main_vars.task_queue.append(get_codes_links_task)
+
     @bot.message_handler(regexp='^!\s*(.+)')
     def main_code_processor(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -455,44 +464,29 @@ def run_app(bot, main_vars):
         return 'Hello world!'
 
     @app.route("/<session_id>/<game_id>", methods=['GET', 'POST'])
-    def all_codes(session_id, game_id):
+    def all_codes_per_game(session_id, game_id):
         levels_dict = dict()
-        sectors_lines = DB.get_sectors_per_level(session_id, game_id)
-        bonus_lines = DB.get_bonuses_per_level(session_id, game_id)
-        for line in sectors_lines:
-            level_number = line['number']
-            level_name = line['levelname'].decode('utf-8')
-            if not level_number in levels_dict.keys():
-                levels_dict[level_number] = {
-                    'number': level_number,
-                    'name': level_name,
-                    'sectors': list(),
-                    'bonuses': list()
-                }
-            levels_dict[level_number]['sectors'].append({
-                                                            'order': line['sectororder'],
-                                                            'name': line['sectorname'].decode('utf-8'),
-                                                            'code': line['code'].decode('utf-8') if line['code'] else '???',
-                                                            'player': line['player'].decode('utf-8') if line['player'] else ''
-                                                        })
-        for line in bonus_lines:
-            level_number = line['number']
-            level_name = line['levelname'].decode('utf-8')
-            if not level_number in levels_dict.keys():
-                levels_dict[level_number] = {
-                    'number': level_number,
-                    'name': level_name,
-                    'sectors': list(),
-                    'bonuses': list()
-                }
-            levels_dict[level_number]['bonuses'].append({
-                                                        'number': line['bonusnumber'],
-                                                        'name': line['bonusname'].decode('utf-8'),
-                                                        'code': line['code'].decode('utf-8') if line['code'] else '???',
-                                                        'player': line['player'].decode('utf-8') if line['player'] else ''
-                                                        })
+        sectors_lines = DB.get_sectors_per_game(session_id, game_id)
+        bonus_lines = DB.get_bonuses_per_game(session_id, game_id)
+        levels_dict = add_level_sectors(levels_dict, sectors_lines)
+        levels_dict = add_level_bonuses(levels_dict, bonus_lines)
 
         levels_list = [level for level in levels_dict.values()]
         return render_template("TemplateForCodes.html", title='All codes per game', levels_list=levels_list)
+
+    @app.route("/<session_id>/<game_id>/<level_number>", methods=['GET', 'POST'])
+    def all_codes_per_level(session_id, game_id, level_number):
+        levels_dict = dict()
+        sectors_lines = DB.get_sectors_per_level(session_id, game_id, level_number)
+        bonus_lines = DB.get_bonuses_per_level(session_id, game_id, level_number)
+        levels_dict = add_level_sectors(levels_dict, sectors_lines)
+        levels_dict = add_level_bonuses(levels_dict, bonus_lines)
+
+        levels_list = [level for level in levels_dict.values()]
+        return render_template("TemplateForCodes.html", title='All codes per %s level' % level_number, levels_list=levels_list)
+
+    @app.route('/favicon.ico')
+    def favicon():
+        return send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'favicon.ico', mimetype='image/png')
 
     return app
