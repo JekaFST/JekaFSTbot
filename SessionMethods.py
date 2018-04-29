@@ -584,7 +584,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
                 response = telebot.TeleBot(DB.get_location_bot_token_by_number(k)).send_location(
                     chat_id, latitude, longitude, live_period=live_period)
                 ll_message_ids[k] = str(response.message_id)
-                coord_Y_G = make_Y_G_links(v)
+                coord_Y_G = make_Y_G_links(v) + ' - ' + k
                 bot.send_message(chat_id, coord_Y_G, parse_mode='HTML', disable_web_page_preview=True)
             except Exception as e:
                 response_text = json.loads(e.result.text)['description'].encode('utf-8')
