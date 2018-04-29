@@ -8,6 +8,7 @@ from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bo
     send_adm_message
 from Const import game_wrong_statuses, urls
 from DBMethods import DB, DBSession, DBLevels, DBSectors
+from TextConvertingMethods import make_Y_G_links
 
 
 def compile_urls(session_id, chat_id, bot, game_id, en_domain):
@@ -568,6 +569,8 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
             live_period = duration if duration else 10800
             response = bot.send_location(chat_id, latitude, longitude, live_period=live_period)
             ll_message_ids['0'] = str(response.message_id)
+            coord_Y_G = make_Y_G_links(str(coords))
+            bot.send_message(chat_id, coord_Y_G, parse_mode='HTML', disable_web_page_preview=True)
             DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
     else:
         for k, v in custom_points.items():
@@ -581,6 +584,8 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
                 response = telebot.TeleBot(DB.get_location_bot_token_by_number(k)).send_location(
                     chat_id, latitude, longitude, live_period=live_period)
                 ll_message_ids[k] = str(response.message_id)
+                coord_Y_G = make_Y_G_links(v)
+                bot.send_message(chat_id, coord_Y_G, parse_mode='HTML', disable_web_page_preview=True)
             except Exception as e:
                 response_text = json.loads(e.result.text)['description'].encode('utf-8')
                 if "chat not found" in response_text:
