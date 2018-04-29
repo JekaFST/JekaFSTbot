@@ -494,9 +494,9 @@ def edit_live_locations(task, bot):
 
 def add_custom_live_locations(task, bot):
     session = DBSession.get_session(task.session_id)
-    if not session['active']:
-        bot.send_message(task.chat_id, 'Нельзя отправлять live location при неактивной сессии')
-        return
+    # if not session['active']:
+    #     bot.send_message(task.chat_id, 'Нельзя отправлять live location при неактивной сессии')
+    #     return
     ll_message_ids = json.loads(session['llmessageids'])
     for k in task.points_dict.keys():
         if k in ll_message_ids.keys():
