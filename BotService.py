@@ -355,7 +355,7 @@ def run_app(bot, main_vars):
     @bot.message_handler(commands=['send_ll'])
     def send_live_location(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot):
+        if allowed and Validations.check_session_available(message.chat.id, bot) and message.chat.id != -1001204488259:
 
             main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             coords = re.findall(r'\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
@@ -426,7 +426,7 @@ def run_app(bot, main_vars):
     @bot.message_handler(regexp='^!\s*(.+)')
     def main_code_processor(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot):
+        if allowed and Validations.check_session_available(message.chat.id, bot) and message.chat.id != -1001204488259:
 
             main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             if message.text[0] == '!':
@@ -438,7 +438,7 @@ def run_app(bot, main_vars):
     @bot.message_handler(regexp='^\?\s*(.+)')
     def bonus_code_processor(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot):
+        if allowed and Validations.check_session_available(message.chat.id, bot) and message.chat.id != -1001204488259:
 
             main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             if message.text[0] == '?':
