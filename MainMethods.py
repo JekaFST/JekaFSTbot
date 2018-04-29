@@ -429,9 +429,9 @@ def disable_codes(task, bot):
 
 def send_live_locations(task, bot):
     session = DBSession.get_session(task.session_id)
-    if not session['active']:
-        bot.send_message(task.chat_id, 'Нельзя отправлять live location при неактивной сессии')
-        return
+    # if not session['active']:
+    #     bot.send_message(task.chat_id, 'Нельзя отправлять live location при неактивной сессии')
+    #     return
     locations = json.loads(session['locations'])
     ll_message_ids = json.loads(session['llmessageids'])
     if not locations and not task.coords:
@@ -452,9 +452,9 @@ def send_live_locations(task, bot):
 
 def stop_live_locations(task, bot):
     session = DBSession.get_session(task.session_id)
-    if not session['active']:
-        bot.send_message(task.chat_id, 'Нельзя остановить live location при неактивной сессии')
-        return
+    # if not session['active']:
+    #     bot.send_message(task.chat_id, 'Нельзя остановить live location при неактивной сессии')
+    #     return
     ll_message_ids = json.loads(session['llmessageids'])
     if not ll_message_ids:
         bot.send_message(task.chat_id, 'Live location не отправлена')
@@ -464,9 +464,9 @@ def stop_live_locations(task, bot):
 
 def edit_live_locations(task, bot):
     session = DBSession.get_session(task.session_id)
-    if not session['active']:
-        bot.send_message(task.chat_id, 'Нельзя редактировать live location при неактивной сессии')
-        return
+    # if not session['active']:
+    #     bot.send_message(task.chat_id, 'Нельзя редактировать live location при неактивной сессии')
+    #     return
     ll_message_ids = json.loads(session['llmessageids'])
     if not ll_message_ids:
         bot.send_message(task.chat_id, 'Live location не отправлена')
