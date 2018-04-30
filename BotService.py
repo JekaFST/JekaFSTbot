@@ -6,7 +6,7 @@ import telebot
 from flask import Flask, render_template, send_from_directory
 from BotServiceMethods import add_level_bonuses, add_level_sectors
 from Const import helptext
-from DBMethods import DB
+from DBMethods import DB, DBSession
 from MainClasses import Task, Validations
 from TextConvertingMethods import find_coords
 
@@ -394,6 +394,11 @@ def run_app(bot, main_vars):
             point = point_number[0] if point_number else None
             edit_live_location_task = Task(message.chat.id, 'edit_live_location', session_id=main_chat_id, point=point, coords=coords)
             main_vars.task_queue.append(edit_live_location_task)
+
+    @bot.message_handler(commands=['clean_ll'])
+    def clean_ll(message):
+        DBSession.update_bool_flag(message.chat.id, 'llmessageids', {})
+        DBSession.update_bool_flag(message.chat.id, 'locations', {})
 
     @bot.message_handler(commands=['add_points_ll'])
     def add_points_live_location(message):
