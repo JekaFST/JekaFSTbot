@@ -424,9 +424,6 @@ def disable_codes(task, bot):
 
 def send_live_locations(task, bot):
     session = DBSession.get_session(task.session_id)
-    # if not session['active']:
-    #     bot.send_message(task.chat_id, 'Нельзя отправлять live location при неактивной сессии')
-    #     return
     locations = json.loads(session['locations'])
     ll_message_ids = json.loads(session['llmessageids'])
     if not locations and not task.coords:
@@ -447,9 +444,6 @@ def send_live_locations(task, bot):
 
 def stop_live_locations(task, bot):
     session = DBSession.get_session(task.session_id)
-    # if not session['active']:
-    #     bot.send_message(task.chat_id, 'Нельзя остановить live location при неактивной сессии')
-    #     return
     ll_message_ids = json.loads(session['llmessageids'])
     if not ll_message_ids:
         bot.send_message(task.chat_id, 'Live location не отправлена')
@@ -459,9 +453,6 @@ def stop_live_locations(task, bot):
 
 def edit_live_locations(task, bot):
     session = DBSession.get_session(task.session_id)
-    # if not session['active']:
-    #     bot.send_message(task.chat_id, 'Нельзя редактировать live location при неактивной сессии')
-    #     return
     ll_message_ids = json.loads(session['llmessageids'])
     if not ll_message_ids:
         bot.send_message(task.chat_id, 'Live location не отправлена')
@@ -489,9 +480,6 @@ def edit_live_locations(task, bot):
 
 def add_custom_live_locations(task, bot):
     session = DBSession.get_session(task.session_id)
-    # if not session['active']:
-    #     bot.send_message(task.chat_id, 'Нельзя отправлять live location при неактивной сессии')
-    #     return
     ll_message_ids = json.loads(session['llmessageids'])
     for k in task.points_dict.keys():
         if k in ll_message_ids.keys():
@@ -499,6 +487,11 @@ def add_custom_live_locations(task, bot):
             time.sleep(1)
     send_live_locations_to_chat(bot, task.chat_id, session, None, ll_message_ids,
                                 custom_points=task.points_dict, duration=task.duration)
+
+
+def clean_live_locations(task, bot):
+    DBSession.update_json_field(task.session_id, 'llmessageids', {})
+    DBSession.update_json_field(task.session_id, 'locations', {})
 
 
 def get_codes_links(task, bot):

@@ -38,6 +38,7 @@ task_method_dict = {
     'stop_live_location': stop_live_locations,
     'edit_live_location': edit_live_locations,
     'add_points_ll': add_custom_live_locations,
+    'clean_ll': clean_live_locations,
     'get_codes_links': get_codes_links,
 }
 

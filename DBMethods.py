@@ -114,7 +114,7 @@ class DBSession(object):
     def drop_session_vars(session_id):
         sql = """UPDATE SessionConfig
                 SET CurrLevelId = NULL, GameURL = NULL, GameURLjs = NULL, LoginURL = NULL, StormGame = NULL,
-                SendCodes = True, GameModelStatus = '', PutUpdaterTask = Null, StopUpdater = True
+                SendCodes = True, GameModelStatus = '', PutUpdaterTask = Null, StopUpdater = True, Locations = '{}', llmessageids = '{}'
                 WHERE sessionid = %s
               """ % session_id
         db_connection.execute_insert_cur(sql)
