@@ -25,12 +25,7 @@ def reload_backup(bot, main_vars):
                 DBSession.delete_session(session['sessionid'])
                 continue
         if not session['active']:
-            try:
-                bot.send_message(session['sessionid'], 'Бот был перезагружен. Сессия не активна')
-                continue
-            except Exception:
-                logging.exception("Не удалось отправить сообщение о перезапуске сессии %s" % str(session['sessionid']))
-                continue
+            continue
         if get_current_game_model(session, bot, session['sessionid'], from_updater=False):
             if not session['stopupdater']:
                 text = 'Бот был перезагружен. Игра в нормальном состоянии\r\nСлежение будет запущено автоматически'
