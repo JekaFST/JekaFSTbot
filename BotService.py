@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+import os
 import flask
 import re
 import telebot
-from flask import Flask
+from flask import Flask, render_template, send_from_directory
+from BotServiceMethods import add_level_bonuses, add_level_sectors
 from Const import helptext
-from DBMethods import DB
+from DBMethods import DB, DBSession
 from MainClasses import Task, Validations
 from TextConvertingMethods import find_coords
 
@@ -352,6 +354,8 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(commands=['send_ll'])
     def send_live_location(message):
+        if message.chat.id == -1001204488259:
+            return
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
@@ -391,6 +395,11 @@ def run_app(bot, main_vars):
             edit_live_location_task = Task(message.chat.id, 'edit_live_location', session_id=main_chat_id, point=point, coords=coords)
             main_vars.task_queue.append(edit_live_location_task)
 
+    @bot.message_handler(commands=['clean_ll'])
+    def clean_ll(message):
+        DBSession.update_bool_flag(message.chat.id, 'llmessageids', {})
+        DBSession.update_bool_flag(message.chat.id, 'locations', {})
+
     @bot.message_handler(commands=['add_points_ll'])
     def add_points_live_location(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -412,8 +421,19 @@ def run_app(bot, main_vars):
             add_points_ll_task = Task(message.chat.id, 'add_points_ll', session_id=main_chat_id, points_dict=points_dict, duration=duration)
             main_vars.task_queue.append(add_points_ll_task)
 
+    @bot.message_handler(commands=['get_codes_links'])
+    def get_codes_links(message):
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot) \
+                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
+
+            get_codes_links_task = Task(message.chat.id, 'get_codes_links', session_id=message.chat.id, message_id=message.message_id)
+            main_vars.task_queue.append(get_codes_links_task)
+
     @bot.message_handler(regexp='^!\s*(.+)')
     def main_code_processor(message):
+        if message.chat.id == -1001204488259:
+            return
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
@@ -426,6 +446,8 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(regexp='^\?\s*(.+)')
     def bonus_code_processor(message):
+        if message.chat.id == -1001204488259:
+            return
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
@@ -448,22 +470,34 @@ def run_app(bot, main_vars):
                 send_coords_task = Task(message.chat.id, 'send_coords', coords=coords, message_id=message.message_id)
                 main_vars.task_queue.append(send_coords_task)
 
-    # Remove webhook, it fails sometimes the set if there is a previous webhook
-    bot.remove_webhook()
-
-    # Set webhook
-    bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook')
-    # bot.set_webhook(url='https://d774e721.ngrok.io/webhook')
-
     @app.route("/", methods=['GET', 'POST'])
     def hello():
         return 'Hello world!'
 
-    @app.route("/develop/DB/connectorcheck", methods=['GET', 'POST'])
-    def db_conn_check():
-        list_of_tags = 'List of tags:'
-        for tag in DB.get_tags_list():
-            list_of_tags += '<br>' + tag
-        return list_of_tags
+    @app.route("/<session_id>/<game_id>", methods=['GET', 'POST'])
+    def all_codes_per_game(session_id, game_id):
+        levels_dict = dict()
+        sectors_lines = DB.get_sectors_per_game(session_id, game_id)
+        bonus_lines = DB.get_bonuses_per_game(session_id, game_id)
+        levels_dict = add_level_sectors(levels_dict, sectors_lines)
+        levels_dict = add_level_bonuses(levels_dict, bonus_lines)
+
+        levels_list = [level for level in levels_dict.values()]
+        return render_template("TemplateForCodes.html", title='All codes per game', levels_list=levels_list)
+
+    @app.route("/<session_id>/<game_id>/<level_number>", methods=['GET', 'POST'])
+    def all_codes_per_level(session_id, game_id, level_number):
+        levels_dict = dict()
+        sectors_lines = DB.get_sectors_per_level(session_id, game_id, level_number)
+        bonus_lines = DB.get_bonuses_per_level(session_id, game_id, level_number)
+        levels_dict = add_level_sectors(levels_dict, sectors_lines)
+        levels_dict = add_level_bonuses(levels_dict, bonus_lines)
+
+        levels_list = [level for level in levels_dict.values()]
+        return render_template("TemplateForCodes.html", title='All codes per %s level' % level_number, levels_list=levels_list)
+
+    @app.route('/favicon.ico')
+    def favicon():
+        return send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'favicon.ico', mimetype='image/png')
 
     return app

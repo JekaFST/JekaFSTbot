@@ -95,6 +95,7 @@ def cut_images(text, **kwargs):
         images.append(img_soup[0].get('src').encode('utf-8'))
         image = '(img%s)' % i
         text = text.replace(img, image)
+    text = text.replace('<img>', '')
 
     return text, images, None
 

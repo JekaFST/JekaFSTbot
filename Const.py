@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+prod = True
+
 urls = {
     'game_url_ending': '/gameengines/encounter/play/',
     'login_url_ending': '/Login.aspx',
@@ -53,6 +56,7 @@ helptext = 'Коды сдавать в виде !код или ! код\n' \
            '/ask_for_permission - отправить запрос на разрешение использования бота\n' \
            '/codes_off - выключить сдачу кодов\n' \
            '/codes_on - включить сдачу кодов\n' \
+           '/get_codes_links - получить ссылки для просмотра сданных кодов\n' \
            '/send_ll s3600 - отправить live locations из задания\n' \
            'где s3600 - длительность в секундах\n' \
            'если длительность не задана - по умолчанию - 3 часа\n' \

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>{{title}}</title>
+    <style>
+        table.codes {
+            border-collapse: collapse;
+            width: 600px;
+            }
+
+            .code td {
+            border: 1px solid Gray;
+            }
+
+            .code td.label {
+            white-space: nowrap;
+            overflow: hidden;
+            }
+    </style>
+</head>
+<body>
+    {% for level in levels_list %}
+    <details>
+        {% if level.name %}
+        <summary>Level {{level.number}} - {{level.name}}</summary>
+        {% else %}
+        <summary>Level {{level.number}}</summary>
+        {% endif %}
+        <table class="codes">
+            <caption><b>Sectors:</b></caption>
+            {% if level.sectors %}
+            <tr>
+                <td class="label" width=25px><b>#</b></td>
+                <td class="label"><b>Name</b></td>
+                <td class="label"><b>Code</b></td>
+                <td class="label"><b>Player</b></td>
+            </tr>
+            {% for sector in level.sectors %}
+            <tr>
+                <td class="label" width=25px>{{sector.order}}</td>
+                <td class="label">{{sector.name}}</td>
+                <td class="label">{{sector.code}}</td>
+                <td class="label">{{sector.player}}</td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+        </table>
+        <br>
+        {% if level.bonuses %}
+        <table class="codes">
+        <caption><b>Bonuses:</b></caption>
+            <tr>
+                <td class="label" width=25px><b>#</b></td>
+                <td class="label"><b>Name</b></td>
+                <td class="label"><b>Code</b></td>
+                <td class="label"><b>Player</b></td>
+            </tr>
+            {% for bonus in level.bonuses %}
+            <tr>
+                <td class="label" width=25px>{{bonus.number}}</td>
+                <td class="label">{{bonus.name}}</td>
+                <td class="label">{{bonus.code}}</td>
+                <td class="label">{{bonus.player}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <br>
+        {% endif %}
+    </details>
+    {% endfor %}
+</body>
+</html>

@@ -3,13 +3,14 @@ import os
 import json
 import logging
 import psycopg2.extras
+from Const import prod
 
 
 class DBConnection(object):
     def __init__(self):
         self.db_conn = None
 
-    def connect(self, prod=True):
+    def connect(self):
         self.db_conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require') if prod \
             else psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
 
@@ -61,7 +62,6 @@ class DBConnection(object):
 
 db_connection = DBConnection()
 db_connection.connect()
-# db_connection.connect(prod=False)
 
 
 class DBSession(object):
@@ -168,10 +168,14 @@ class DBLevels(object):
     @staticmethod
     def insert_level(session_id, game_id, level, breif=False):
         number = level['Number'] if not breif else level['LevelNumber']
+        if not breif:
+            name = level['Name'].encode('utf-8') if level['Name'] else ''
+        else:
+            name = level['LevelName'].encode('utf-8') if level['LevelName'] else ''
         sql = """INSERT INTO levels
-                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent)
-                    VALUES (%s, %s, '%s', %s, %s, %s, False)
-                """ % (session_id, level['LevelId'], game_id, number, level['IsPassed'], level['Dismissed'])
+                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, levelname)
+                    VALUES (%s, %s, '%s', %s, %s, %s, False, '%s')
+                """ % (session_id, level['LevelId'], game_id, number, level['IsPassed'], level['Dismissed'], name)
         return db_connection.execute_insert_cur(sql)
 
     @staticmethod
@@ -272,34 +276,55 @@ class DBHelps(object):
 
 class DBBonuses(object):
     @staticmethod
-    def insert_bonus(session_id, game_id, bonus_id):
+    def insert_bonus(session_id, game_id, bonus, level_id, info_not_sent, award_not_sent):
+        bonus_name = bonus['Name'].encode('utf-8') if bonus['Name'] else "Бонус " + str(bonus['Number'])
+        bonus_number = bonus['Number']
+        bonus_id = bonus['BonusId']
+        player = bonus['Answer']['Login'].encode('utf-8') if bonus['IsAnswered'] else ''
+        code = bonus['Answer']['Answer'].encode('utf-8') if bonus['IsAnswered'] else 'NULL'
         sql = """INSERT INTO bonuses
-                        (SessionId, BonusId, GameId, InfoNotSent, AwardNotSent)
-                        VALUES (%s, %s, '%s', True, True)
-                    """ % (session_id, bonus_id, game_id)
+                        (SessionId, BonusId, GameId, InfoNotSent, AwardNotSent, levelid, code, bonusname, bonusnumber, player)
+                        VALUES (%s, %s, '%s', %s, %s, %s, %s, '%s', %s, '%s')
+                    """ % (session_id, bonus_id, game_id, info_not_sent, award_not_sent, level_id, code, bonus_name, bonus_number, player)
         return db_connection.execute_insert_cur(sql)
 
     @staticmethod
-    def get_bonus_ids_per_game(session_id, game_id):
+    def get_bonus_ids_per_level(session_id, game_id, level_id):
         sql = """SELECT BonusId FROM bonuses
-                        WHERE sessionid = %s AND gameid = '%s'
-                        """ % (session_id, game_id)
+                            WHERE sessionid = %s AND gameid = '%s' AND levelid = %s
+                            """ % (session_id, game_id, level_id)
         rows = db_connection.execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_award_not_sent_bonus_ids_per_game(session_id, game_id):
-        sql = """SELECT BonusId FROM bonuses
+        sql = """SELECT DISTINCT BonusId FROM bonuses
                         WHERE sessionid = %s AND gameid = '%s' AND awardnotsent = True
                         """ % (session_id, game_id)
         rows = db_connection.execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
 
     @staticmethod
+    def get_award_sent_bonus_ids_per_game(session_id, game_id):
+        sql = """SELECT DISTINCT BonusId FROM bonuses
+                            WHERE sessionid = %s AND gameid = '%s' AND awardnotsent = False
+                            """ % (session_id, game_id)
+        rows = db_connection.execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
     def get_info_not_sent_bonus_ids_per_game(session_id, game_id):
-        sql = """SELECT BonusId FROM bonuses
+        sql = """SELECT DISTINCT BonusId FROM bonuses
                         WHERE sessionid = %s AND gameid = '%s' AND infonotsent = True
                         """ % (session_id, game_id)
+        rows = db_connection.execute_select_cur(sql)
+        return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def get_info_sent_bonus_ids_per_game(session_id, game_id):
+        sql = """SELECT DISTINCT BonusId FROM bonuses
+                            WHERE sessionid = %s AND gameid = '%s' AND infonotsent = False
+                            """ % (session_id, game_id)
         rows = db_connection.execute_select_cur(sql)
         return [row[0] for row in rows] if rows else list()
 
@@ -318,14 +343,28 @@ class DBBonuses(object):
                 """ % (header, value, session_id, game_id, bonus_id)
         db_connection.execute_insert_cur(sql)
 
+    @staticmethod
+    def update_answer_info_not_sent(session_id, game_id, bonus, header, value):
+        player = bonus['Answer']['Login'].encode('utf-8')
+        code = bonus['Answer']['Answer'].encode('utf-8')
+        bonus_id = bonus['BonusId']
+        sql = """UPDATE Bonuses
+                        SET %s = %s, code = '%s', player = '%s'
+                        WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
+                        """ % (header, value, code, player, session_id, game_id, bonus_id)
+        db_connection.execute_insert_cur(sql)
+
 
 class DBSectors(object):
     @staticmethod
-    def insert_sector(session_id, game_id, sector_id):
+    def insert_sector(session_id, game_id, sector, level_id, code='NULL', player=''):
+        sector_id = sector['SectorId']
+        sector_name = sector['Name'].encode('utf-8')
+        sector_order = sector['Order']
         sql = """INSERT INTO sectors
-                    (SessionId, SectorId, GameId, AnswerInfoNotSent)
-                    VALUES (%s, %s, '%s', True)
-                """ % (session_id, sector_id, game_id)
+                    (SessionId, SectorId, GameId, AnswerInfoNotSent, code, levelid, sectorname, sectororder, player)
+                    VALUES (%s, %s, '%s', True, %s, %s, '%s', %s, '%s')
+                """ % (session_id, sector_id, game_id, code, level_id, sector_name, sector_order, player)
         return db_connection.execute_insert_cur(sql)
 
     @staticmethod
@@ -352,11 +391,19 @@ class DBSectors(object):
         return rows[0][0]
 
     @staticmethod
-    def update_answer_info_not_sent(session_id, game_id, sector_id, active):
+    def update_answer_info_not_sent(session_id, game_id, sector_id, active, code, player):
         sql = """UPDATE Sectors
-                SET answerinfonotsent = %s
-                WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
-                """ % (active, session_id, game_id, sector_id)
+                    SET answerinfonotsent = %s, code = '%s', player = '%s'
+                    WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
+                    """ % (active, code, player, session_id, game_id, sector_id)
+        db_connection.execute_insert_cur(sql)
+
+    @staticmethod
+    def update_level_last_code(session_id, game_id, sector_id, code, player):
+        sql = """UPDATE Sectors
+                        SET code = '%s', player = '%s'
+                        WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
+                        """ % (code, player, session_id, game_id, sector_id)
         db_connection.execute_insert_cur(sql)
 
 
@@ -495,3 +542,77 @@ class DB(object):
                 DELETE FROM messages WHERE sessionid = %s AND gameid = '%s';
                 """ % (session_id, game_id, session_id, game_id, session_id, game_id, session_id, game_id, session_id, game_id)
         db_connection.execute_insert_cur(sql)
+
+    @staticmethod
+    def get_sectors_per_game(session_id, game_id):
+        sql = """
+                SELECT l.levelname, l.number, s.code, s.sectorname, s.sectororder, s.player
+                FROM levels l JOIN sectors s ON
+                (
+                l.levelid = s.levelid
+                AND l.sessionid = s.sessionid
+                AND l.gameid = s.gameid
+                )
+                WHERE
+                l.sessionid = %s
+                AND l.gameid = '%s'
+                ORDER BY l.number, s.sectororder;
+                """ % (session_id, game_id)
+        rows = db_connection.execute_dict_select_cur(sql)
+        return rows
+
+    @staticmethod
+    def get_bonuses_per_game(session_id, game_id):
+        sql = """
+                    SELECT l.levelname, l.number, b.code, b.bonusname, b.bonusnumber, b.player
+                    FROM levels l JOIN bonuses b ON
+                    (
+                    l.levelid = b.levelid
+                    AND l.sessionid = b.sessionid
+                    AND l.gameid = b.gameid
+                    )
+                    WHERE
+                    l.sessionid = %s
+                    AND l.gameid = '%s'
+                    ORDER BY l.number, b.bonusnumber;
+                    """ % (session_id, game_id)
+        rows = db_connection.execute_dict_select_cur(sql)
+        return rows
+
+    @staticmethod
+    def get_sectors_per_level(session_id, game_id, level_number):
+        sql = """
+                SELECT l.levelname, l.number, s.code, s.sectorname, s.sectororder, s.player
+                FROM levels l JOIN sectors s ON
+                (
+                l.levelid = s.levelid
+                AND l.sessionid = s.sessionid
+                AND l.gameid = s.gameid
+                )
+                WHERE
+                l.sessionid = %s
+                AND l.gameid = '%s'
+                AND l.number = %s
+                ORDER BY l.number, s.sectororder;
+                """ % (session_id, game_id, level_number)
+        rows = db_connection.execute_dict_select_cur(sql)
+        return rows
+
+    @staticmethod
+    def get_bonuses_per_level(session_id, game_id, level_number):
+        sql = """
+                    SELECT l.levelname, l.number, b.code, b.bonusname, b.bonusnumber, b.player
+                    FROM levels l JOIN bonuses b ON
+                    (
+                    l.levelid = b.levelid
+                    AND l.sessionid = b.sessionid
+                    AND l.gameid = b.gameid
+                    )
+                    WHERE
+                    l.sessionid = %s
+                    AND l.gameid = '%s'
+                    AND l.number = %s
+                    ORDER BY l.number, b.bonusnumber;
+                    """ % (session_id, game_id, level_number)
+        rows = db_connection.execute_dict_select_cur(sql)
+        return rows
