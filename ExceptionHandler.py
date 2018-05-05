@@ -71,3 +71,13 @@ class ExceptionHandler(object):
                 bot.send_message(chat_id, kwargs['message'])
                 logging.exception(kwargs['message'])
         return wrapped
+
+    @staticmethod
+    def parcers_exception(function):
+        def wrapped(bot, chat_id, session, **kwargs):
+            try:
+                function(bot, chat_id, session, **kwargs)
+            except Exception:
+                bot.send_message(chat_id, kwargs['message'])
+                logging.exception(kwargs['message'])
+        return wrapped

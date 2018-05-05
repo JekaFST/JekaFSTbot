@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import threading
 import json
+import logging
 from DBMethods import DBSession, DBLevels, DBHelps, DBBonuses, DBSectors, DBMessages
+from ExceptionHandler import ExceptionHandler
 from SessionMethods import get_current_level, get_storm_level, get_storm_levels, get_current_game_model
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
     send_bonus_award_answer, send_adm_message, close_live_locations
@@ -32,6 +34,7 @@ def linear_updater(chat_id, bot, session):
             if i == 0:
                 continue
             bot.send_message(chat_id, 'Exception - updater не смог загрузить уровень(-вни)')
+            logging.exception('Exception - updater не смог загрузить уровень(-вни)')
             DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
             return
 
@@ -77,30 +80,20 @@ def linear_updater(chat_id, bot, session):
     except Exception:
         bot.send_message(chat_id, 'Exception - updater не смог проанализировать время до автоперехода')
 
-    try:
-        if loaded_messages:
-            message_parcer(session['sessionid'], session['gameid'], loaded_messages, bot, chat_id,
-                           session['channelname'], session['usechannel'])
-    except Exception as err:
-        bot.send_message(chat_id, 'Exception - не удалось выполнить слежение за сообщениями авторов')
-    try:
-        if loaded_sectors:
-            codes_to_find = loaded_level['SectorsLeftToClose']
-            sectors_parcer(session['sessionid'], session['gameid'], loaded_sectors, codes_to_find, bot, chat_id,
-                           loaded_level['LevelId'])
-    except Exception as err:
-        bot.send_message(chat_id, 'Exception - не удалось выполнить слежение за секторами')
-    try:
-        if loaded_helps:
-            help_parcer(session['sessionid'], session['gameid'], loaded_helps, bot, chat_id, session['channelname'],
-                        session['usechannel'])
-    except Exception as err:
-        bot.send_message(chat_id, 'Exception - не удалось выполнить слежение за подсказками')
-    try:
-        if loaded_bonuses:
-            bonus_parcer(session['sessionid'], session['gameid'], loaded_bonuses, bot, chat_id, loaded_level['LevelId'])
-    except Exception as err:
-        bot.send_message(chat_id, 'Exception - не удалось выполнить слежение за бонусами')
+    if loaded_messages:
+        message_parcer(bot, chat_id, session, loaded_messages=loaded_messages, levelmark=None, storm=False,
+                       message='Exception - не удалось выполнить слежение за сообщениями авторов')
+    if loaded_sectors:
+        codes_to_find = loaded_level['SectorsLeftToClose']
+        sectors_parcer(bot, chat_id, session, loaded_sectors=loaded_sectors, codes_to_find=codes_to_find,
+                       level_id=loaded_level['LevelId'], levelmark=None, storm=False,
+                       message='Exception - не удалось выполнить слежение за секторами')
+    if loaded_helps:
+        help_parcer(bot, chat_id, session, loaded_helps=loaded_helps, levelmark=None, storm=False,
+                    message='Exception - не удалось выполнить слежение за подсказками')
+    if loaded_bonuses:
+        bonus_parcer(bot, chat_id, session, loaded_bonuses=loaded_bonuses, level_id=loaded_level['LevelId'],
+                     levelmark=None, storm=False, message='Exception - не удалось выполнить слежение за бонусами')
     try:
         if session['channelname'] and session['usechannel'] and session['sectorstoclose'] \
                 and session['sectorstoclose'] != '1' and session['sectorsmessageid']:
@@ -108,11 +101,10 @@ def linear_updater(chat_id, bot, session):
                                    session['channelname'], session['sectorsmessageid'])
     except Exception as err:
         bot.send_message(chat_id, 'Exception - не удалось обновить не закрытые сектора в канале')
-    try:
-        dismissed_level_ids = DBLevels.get_dismissed_level_ids(session['sessionid'], session['gameid'])
-        levels_parcer(session['sessionid'], session['gameid'], dismissed_level_ids, levels, bot, chat_id)
-    except Exception as err:
-        bot.send_message(chat_id, 'Exception - не удалось выполнить слежение за уровнями')
+
+    dismissed_level_ids = DBLevels.get_dismissed_level_ids(session['sessionid'], session['gameid'])
+    levels_parcer(bot, chat_id, session, levels=levels, dismissed_level_ids=dismissed_level_ids, storm=False,
+                  message='Exception - не удалось выполнить слежение за уровнями')
 
     DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
 
@@ -151,37 +143,34 @@ def storm_updater(chat_id, bot, session):
             DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
             return
 
-        try:
-            if level['LevelId'] in dismissed_level_ids or level['LevelId'] in passed_level_ids:
-                continue
+        if level['LevelId'] in dismissed_level_ids or level['LevelId'] in passed_level_ids:
+            continue
 
-            loaded_helps = level['Helps']
-            loaded_bonuses = level['Bonuses']
-            loaded_sectors = level['Sectors']
-            loaded_messages = level['Messages']
+        loaded_helps = level['Helps']
+        loaded_bonuses = level['Bonuses']
+        loaded_sectors = level['Sectors']
+        loaded_messages = level['Messages']
 
-            levelmark = '<b>Уровень %s: %s</b>' % (str(level['Number']), level['Name'].encode('utf-8')) if level['Name'] \
-                else '<b>Уровень %s</b>' % str(level['Number'])
+        levelmark = '<b>Уровень %s: %s</b>' % (str(level['Number']), level['Name'].encode('utf-8')) if level['Name'] \
+            else '<b>Уровень %s</b>' % str(level['Number'])
 
-            if loaded_messages:
-                message_parcer(session['sessionid'], session['gameid'], loaded_messages, bot, chat_id,
-                               session['channelname'], session['usechannel'], levelmark=levelmark, storm=True)
-            if loaded_sectors:
-                codes_to_find = level['SectorsLeftToClose']
-                sectors_parcer(session['sessionid'], session['gameid'], loaded_sectors, codes_to_find, bot, chat_id,
-                               level['LevelId'], levelmark=levelmark, storm=True)
-            if loaded_helps:
-                help_parcer(session['sessionid'], session['gameid'], loaded_helps, bot, chat_id, session['channelname'],
-                            session['usechannel'], levelmark=levelmark, storm=True)
-            if loaded_bonuses:
-                bonus_parcer(session['sessionid'], session['gameid'], loaded_bonuses, bot, chat_id, level['LevelId'],
-                             levelmark=levelmark, storm=True)
-        except Exception:
-            bot.send_message(chat_id, 'Exception - не удалось выполнить команду updater до конца')
-    try:
-        levels_parcer(session['sessionid'], session['gameid'], dismissed_level_ids, storm_levels, bot, chat_id, storm=True)
-    except Exception:
-        bot.send_message(chat_id, 'Exception - не удалось обновить информацию об уровнях')
+        if loaded_messages:
+            message_parcer(bot, chat_id, session, loaded_messages=loaded_messages, levelmark=levelmark, storm=True,
+                           message='Exception - не удалось выполнить слежение за сообщениями авторов')
+        if loaded_sectors:
+            codes_to_find = level['SectorsLeftToClose']
+            sectors_parcer(bot, chat_id, session, loaded_sectors=loaded_sectors, codes_to_find=codes_to_find,
+                           level_id=level['LevelId'], levelmark=levelmark, storm=True,
+                           message='Exception - не удалось выполнить слежение за секторами')
+        if loaded_helps:
+            help_parcer(bot, chat_id, session, loaded_helps=loaded_helps, levelmark=levelmark, storm=True,
+                        message='Exception - не удалось выполнить слежение за подсказками')
+        if loaded_bonuses:
+            bonus_parcer(bot, chat_id, session, loaded_bonuses=loaded_bonuses, level_id=level['LevelId'],
+                         levelmark=levelmark, storm=True, message='Exception - не удалось выполнить слежение за бонусами')
+
+    levels_parcer(bot, chat_id, session, levels=storm_levels, dismissed_level_ids=dismissed_level_ids, storm=True,
+                  passed_level_ids=passed_level_ids, message='Exception - не удалось выполнить слежение за уровнями')
 
     DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
 
@@ -252,111 +241,120 @@ def send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, channe
     DBSession.update_int_field(session_id, 'sectorsmessageid', response.message_id)
 
 
-def sectors_parcer(session_id, game_id, loaded_sectors, codes_to_find, bot, chat_id, level_id, levelmark=None, storm=False):
-    existing_sectors = DBSectors.get_sector_ids_per_game(session_id, game_id)
-    for sector in loaded_sectors:
+@ExceptionHandler.parcers_exception
+def sectors_parcer(bot, chat_id, session, **kwargs):
+    existing_sectors = DBSectors.get_sector_ids_per_game(session['sessionid'], session['gameid'])
+    for sector in kwargs['loaded_sectors']:
         if sector['SectorId'] not in existing_sectors:
-            DBSectors.insert_sector(session_id, game_id, sector, level_id)
-    answer_info_not_sent_sectors = DBSectors.get_answer_info_not_sent_sector_ids_per_game(session_id, game_id)
-    for sector in loaded_sectors:
+            DBSectors.insert_sector(session['sessionid'], session['gameid'], sector, kwargs['level_id'])
+    answer_info_not_sent_sectors = DBSectors.get_answer_info_not_sent_sector_ids_per_game(session['sessionid'], session['gameid'])
+    for sector in kwargs['loaded_sectors']:
         if sector['IsAnswered'] and sector['SectorId'] in answer_info_not_sent_sectors:
 
             code = sector['Answer']['Answer'].encode('utf-8')
             player = sector['Answer']['Login'].encode('utf-8')
             name = sector['Name'].encode('utf-8')
-            codes_all = len(loaded_sectors)
-            sectors_to_close = get_sectors_to_close(loaded_sectors)
+            codes_all = len(kwargs['loaded_sectors'])
+            sectors_to_close = get_sectors_to_close(kwargs['loaded_sectors'])
             message = '<b>с-р: ' + name + ' - </b>' + '\xE2\x9C\x85' + '<b> (' + player + ': ' + code + ')</b>' \
-                      '\r\nОсталось закрыть: %s из %s:\r\n%s' % (str(codes_to_find), str(codes_all), sectors_to_close)
-            if storm:
-                message = levelmark + '\r\n' + message
+                      '\r\nОсталось закрыть: %s из %s:\r\n%s' % (str(kwargs['codes_to_find']), str(codes_all), sectors_to_close)
+            if kwargs['storm']:
+                message = kwargs['levelmark'] + '\r\n' + message
             bot.send_message(chat_id, message, parse_mode='HTML')
-            DBSectors.update_answer_info_not_sent(session_id, game_id, sector['SectorId'], 'False', code, player)
+            DBSectors.update_answer_info_not_sent(session['sessionid'], session['gameid'], sector['SectorId'], 'False', code, player)
 
 
-def help_parcer(session_id, game_id, loaded_helps, bot, chat_id, channel_name, use_channel, levelmark=None, storm=False):
-    existing_helps = DBHelps.get_help_ids_per_game(session_id, game_id)
-    for help in loaded_helps:
+@ExceptionHandler.parcers_exception
+def help_parcer(bot, chat_id, session, **kwargs):
+    existing_helps = DBHelps.get_help_ids_per_game(session['sessionid'], session['gameid'])
+    for help in kwargs['loaded_helps']:
         if help['HelpId'] not in existing_helps:
-            DBHelps.insert_help(session_id, game_id, help['HelpId'])
-    helps_not_sent = DBHelps.get_not_sent_help_ids_per_game(session_id, game_id)
-    helps_time_not_sent = DBHelps.get_time_not_sent_help_ids_per_game(session_id, game_id)
-    for help in loaded_helps:
+            DBHelps.insert_help(session['sessionid'], session['gameid'], help['HelpId'])
+    helps_not_sent = DBHelps.get_not_sent_help_ids_per_game(session['sessionid'], session['gameid'])
+    helps_time_not_sent = DBHelps.get_time_not_sent_help_ids_per_game(session['sessionid'], session['gameid'])
+    for help in kwargs['loaded_helps']:
         if help['HelpText'] is not None and help['HelpId'] in helps_not_sent:
-            DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'notsent', 'False')
-            DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'timenotsent', 'False')
-            send_help(help, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
-            if channel_name and use_channel:
-                send_help(help, bot, channel_name, session_id, storm=storm, levelmark=levelmark)
+            DBHelps.update_bool_flag(session['sessionid'], session['gameid'], help['HelpId'], 'notsent', 'False')
+            DBHelps.update_bool_flag(session['sessionid'], session['gameid'], help['HelpId'], 'timenotsent', 'False')
+            send_help(help, bot, chat_id, session['sessionid'], from_updater=True, storm=kwargs['storm'], levelmark=kwargs['levelmark'])
+            if session['channelname'] and session['usechannel']:
+                send_help(help, bot, session['channelname'], session['sessionid'], storm=kwargs['storm'], levelmark=kwargs['levelmark'])
             continue
         if help['RemainSeconds'] <= 180 and help['HelpId'] in helps_time_not_sent:
-            DBHelps.update_bool_flag(session_id, game_id, help['HelpId'], 'timenotsent', 'False')
-            send_time_to_help(help, bot, chat_id, levelmark, storm)
+            DBHelps.update_bool_flag(session['sessionid'], session['gameid'], help['HelpId'], 'timenotsent', 'False')
+            send_time_to_help(help, bot, chat_id, kwargs['levelmark'], kwargs['storm'])
 
 
-def bonus_parcer(session_id, game_id, loaded_bonuses, bot, chat_id, level_id, levelmark=None, storm=False):
-    existing_bonuses = DBBonuses.get_bonus_ids_per_level(session_id, game_id, level_id)
-    for bonus in loaded_bonuses:
+@ExceptionHandler.parcers_exception
+def bonus_parcer(bot, chat_id, session, **kwargs):
+    existing_bonuses = DBBonuses.get_bonus_ids_per_level(session['sessionid'], session['gameid'], kwargs['level_id'])
+    for bonus in kwargs['loaded_bonuses']:
         if bonus['BonusId'] not in existing_bonuses:
-            bonuses_award_sent = DBBonuses.get_award_sent_bonus_ids_per_game(session_id, game_id)
+            bonuses_award_sent = DBBonuses.get_award_sent_bonus_ids_per_game(session['sessionid'], session['gameid'])
             award_not_sent = False if bonus['BonusId'] in bonuses_award_sent else True
             if award_not_sent:
-                bonuses_info_sent = DBBonuses.get_info_sent_bonus_ids_per_game(session_id, game_id)
+                bonuses_info_sent = DBBonuses.get_info_sent_bonus_ids_per_game(session['sessionid'], session['gameid'])
                 info_not_sent = False if bonus['BonusId'] in bonuses_info_sent else True
             else:
                 info_not_sent = False
-            DBBonuses.insert_bonus(session_id, game_id, bonus, level_id, info_not_sent, award_not_sent)
-    bonuses_award_not_sent = DBBonuses.get_award_not_sent_bonus_ids_per_game(session_id, game_id)
-    bonuses_info_not_sent = DBBonuses.get_info_not_sent_bonus_ids_per_game(session_id, game_id)
-    for bonus in loaded_bonuses:
+            DBBonuses.insert_bonus(session['sessionid'], session['gameid'], bonus, kwargs['level_id'], info_not_sent, award_not_sent)
+    bonuses_award_not_sent = DBBonuses.get_award_not_sent_bonus_ids_per_game(session['sessionid'], session['gameid'])
+    bonuses_info_not_sent = DBBonuses.get_info_not_sent_bonus_ids_per_game(session['sessionid'], session['gameid'])
+    for bonus in kwargs['loaded_bonuses']:
 
         if bonus['IsAnswered'] and bonus['BonusId'] in bonuses_award_not_sent:
-            DBBonuses.update_answer_info_not_sent(session_id, game_id, bonus, 'awardnotsent', 'False')
-            DBBonuses.update_bool_flag(session_id, game_id, bonus['BonusId'], 'infonotsent', 'False')
-            send_bonus_award_answer(bonus, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
+            DBBonuses.update_answer_info_not_sent(session['sessionid'], session['gameid'], bonus, 'awardnotsent', 'False')
+            DBBonuses.update_bool_flag(session['sessionid'], session['gameid'], bonus['BonusId'], 'infonotsent', 'False')
+            send_bonus_award_answer(bonus, bot, chat_id, session['sessionid'], from_updater=True, storm=kwargs['storm'],
+                                    levelmark=kwargs['levelmark'])
             continue
-        if not storm:
+        if not kwargs['storm']:
             if bonus['Task'] and not bonus['Expired'] and bonus['BonusId'] in bonuses_info_not_sent:
-                DBBonuses.update_bool_flag(session_id, game_id, bonus['BonusId'], 'infonotsent', 'False')
-                send_bonus_info(bonus, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
+                DBBonuses.update_bool_flag(session['sessionid'], session['gameid'], bonus['BonusId'], 'infonotsent', 'False')
+                send_bonus_info(bonus, bot, chat_id, session['sessionid'], from_updater=True, storm=kwargs['storm'],
+                                levelmark=kwargs['levelmark'])
 
 
-def message_parcer(session_id, game_id, loaded_messages, bot, chat_id, channel_name, use_channel, levelmark=None, storm=False):
-    existing_messages = DBMessages.get_message_ids_per_game(session_id, game_id)
-    for message in loaded_messages:
+@ExceptionHandler.parcers_exception
+def message_parcer(bot, chat_id, session, **kwargs):
+    existing_messages = DBMessages.get_message_ids_per_game(session['sessionid'], session['gameid'])
+    for message in kwargs['loaded_messages']:
         if message['MessageId'] not in existing_messages:
-            DBMessages.insert_message(session_id, game_id, message['MessageId'])
-    not_sent_messages = DBMessages.get_not_sent_message_ids_per_game(session_id, game_id)
-    for message in loaded_messages:
+            DBMessages.insert_message(session['sessionid'], session['gameid'], message['MessageId'])
+    not_sent_messages = DBMessages.get_not_sent_message_ids_per_game(session['sessionid'], session['gameid'])
+    for message in kwargs['loaded_messages']:
         if message['MessageId'] in not_sent_messages:
-            DBMessages.update_message_not_sent(session_id, game_id, message['MessageId'], 'False')
-            send_adm_message(message, bot, chat_id, session_id, from_updater=True, storm=storm, levelmark=levelmark)
-            if channel_name and use_channel:
-                send_adm_message(message, bot, channel_name, session_id, storm=storm, levelmark=levelmark)
+            DBMessages.update_message_not_sent(session['sessionid'], session['gameid'], message['MessageId'], 'False')
+            send_adm_message(message, bot, chat_id, session['sessionid'], from_updater=True, storm=kwargs['storm'],
+                             levelmark=kwargs['levelmark'])
+            if session['channelname'] and session['usechannel']:
+                send_adm_message(message, bot, session['channelname'], session['sessionid'], storm=kwargs['storm'],
+                                 levelmark=kwargs['levelmark'])
 
 
-def levels_parcer(session_id, game_id, dismissed_level_ids, levels, bot, chat_id, storm=False):
-    existing_levels = DBLevels.get_level_ids_per_game(session_id, game_id)
-    for level in levels:
+@ExceptionHandler.parcers_exception
+def levels_parcer(bot, chat_id, session, **kwargs):
+    existing_levels = DBLevels.get_level_ids_per_game(session['sessionid'], session['gameid'])
+    for level in kwargs['levels']:
         if level['LevelId'] not in existing_levels:
-            DBLevels.insert_level(session_id, game_id, level) if storm \
-                else DBLevels.insert_level(session_id, game_id, level, breif=True)
-            dismissed_level_ids = DBLevels.get_dismissed_level_ids(session_id, game_id)
-    for level in levels:
-        if level['Dismissed'] and level['LevelId'] not in dismissed_level_ids:
-            text = '\xE2\x9D\x97 <b>Уровень %s, "%s" - снят</b> \xE2\x9D\x97' % (str(level['LevelNumber']),
-                                                                                 level['LevelName'].encode('utf-8')) \
-                if level['LevelName'] else '\xE2\x9D\x97 <b>Уровень %s - снят</b> \xE2\x9D\x97' % str(level['LevelNumber'])
+            DBLevels.insert_level(session['sessionid'], session['gameid'], level) if kwargs['storm'] \
+                else DBLevels.insert_level(session['sessionid'], session['gameid'], level, breif=True)
+    for level in kwargs['levels']:
+        if level['Dismissed'] and level['LevelId'] not in kwargs['dismissed_level_ids']:
+            text = '\xE2\x9D\x97 <b>Уровень %s, "%s" - снят</b> \xE2\x9D\x97' % \
+                   (str(level['LevelNumber']), level['LevelName'].encode('utf-8')) if level['LevelName'] \
+                else '\xE2\x9D\x97 <b>Уровень %s - снят</b> \xE2\x9D\x97' % str(level['LevelNumber'])
             bot.send_message(chat_id, text, parse_mode='HTML')
-            DBLevels.update_bool_field(session_id, game_id, level['LevelId'], 'dismissed', 'True')
-        if not level['Dismissed'] and level['LevelId'] in dismissed_level_ids:
-            text = '\xE2\x9D\x97 <b>Уровень %s, "%s" - возвращен</b> \xE2\x9D\x97' % (str(level['LevelNumber']), level['LevelName'].encode('utf-8')) \
-                if level['LevelName'] else '\xE2\x9D\x97 <b>Уровень %s - возвращен</b> \xE2\x9D\x97' % str(level['LevelNumber'])
+            DBLevels.update_bool_field(session['sessionid'], session['gameid'], level['LevelId'], 'dismissed', 'True')
+        if not level['Dismissed'] and level['LevelId'] in kwargs['dismissed_level_ids']:
+            text = '\xE2\x9D\x97 <b>Уровень %s, "%s" - возвращен</b> \xE2\x9D\x97' % \
+                   (str(level['LevelNumber']), level['LevelName'].encode('utf-8')) if level['LevelName'] \
+                else '\xE2\x9D\x97 <b>Уровень %s - возвращен</b> \xE2\x9D\x97' % str(level['LevelNumber'])
             bot.send_message(chat_id, text, parse_mode='HTML')
-            DBLevels.update_bool_field(session_id, game_id, level['LevelId'], 'dismissed', 'False')
+            DBLevels.update_bool_field(session['sessionid'], session['gameid'], level['LevelId'], 'dismissed', 'False')
 
-        if storm and level['IsPassed']:
-            DBLevels.update_bool_field(session_id, game_id, level['LevelId'], 'ispassed', 'True')
+        if kwargs['storm'] and level['IsPassed'] and level['LevelId'] not in kwargs['passed_level_ids']:
+            DBLevels.update_bool_field(session['sessionid'], session['gameid'], level['LevelId'], 'ispassed', 'True')
 
 
 def channel_sectors_editor(session_id, loaded_level, old_sectors_to_close, bot, channel_name, message_id):

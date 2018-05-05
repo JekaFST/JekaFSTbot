@@ -133,7 +133,7 @@ def handle_coords(text, **kwargs):
                 locations[str(i)] = coord
                 DBSession.update_json_field(kwargs['session_id'], 'locations', locations)
 
-        elif not kwargs['from_updater']and not kwargs['storm']:
+        elif not kwargs['from_updater'] and not kwargs['storm']:
             for coord in coords:
                 locations = DBSession.get_locations(kwargs['session_id'])
                 if coord in locations.values():
