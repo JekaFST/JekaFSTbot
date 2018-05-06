@@ -26,30 +26,8 @@ def updater(task, bot):
 
 
 def linear_updater(chat_id, bot, session):
-    for i in xrange(2):
-        try:
-            loaded_level, levels = get_current_level(session, bot, chat_id, from_updater=True)
-            break
-        except Exception:
-            if i == 0:
-                continue
-            bot.send_message(chat_id, 'Exception - updater не смог загрузить уровень(-вни)')
-            logging.exception('Exception - updater не смог загрузить уровень(-вни)')
-            DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
-            return
-
+    loaded_level, levels = get_levels_for_updater(bot, chat_id, session)
     if not loaded_level:
-        DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
-        return
-
-    try:
-        loaded_helps = loaded_level['Helps']
-        loaded_bonuses = loaded_level['Bonuses']
-        loaded_sectors = loaded_level['Sectors']
-        loaded_messages = loaded_level['Messages']
-    except Exception:
-        bot.send_message(chat_id, 'Exception - updater не смог вытащить элементы '
-                                  '(сектора|бонусы|подсказки) загруженного уровня')
         DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
         return
 
@@ -60,8 +38,8 @@ def linear_updater(chat_id, bot, session):
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
         try:
-            sectors_to_close = send_up_info(session['sessionid'], loaded_level, len(levels), loaded_helps,
-                                            loaded_bonuses, bot, chat_id, session['channelname'], session['usechannel'])
+            sectors_to_close = send_up_info(session['sessionid'], loaded_level, len(levels), loaded_level['Helps'],
+                                            loaded_level['Bonuses'], bot, chat_id, session['channelname'], session['usechannel'])
             if session['channelname'] and session['usechannel']:
                 send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, session['channelname'], session['sessionid'])
         except Exception:
@@ -80,19 +58,19 @@ def linear_updater(chat_id, bot, session):
     except Exception:
         bot.send_message(chat_id, 'Exception - updater не смог проанализировать время до автоперехода')
 
-    if loaded_messages:
-        message_parcer(bot, chat_id, session, loaded_messages=loaded_messages, levelmark=None, storm=False,
+    if loaded_level['Messages']:
+        message_parcer(bot, chat_id, session, loaded_messages=loaded_level['Messages'], levelmark=None, storm=False,
                        message='Exception - не удалось выполнить слежение за сообщениями авторов')
-    if loaded_sectors:
+    if loaded_level['Sectors']:
         codes_to_find = loaded_level['SectorsLeftToClose']
-        sectors_parcer(bot, chat_id, session, loaded_sectors=loaded_sectors, codes_to_find=codes_to_find,
+        sectors_parcer(bot, chat_id, session, loaded_sectors=loaded_level['Sectors'], codes_to_find=codes_to_find,
                        level_id=loaded_level['LevelId'], levelmark=None, storm=False,
                        message='Exception - не удалось выполнить слежение за секторами')
-    if loaded_helps:
-        help_parcer(bot, chat_id, session, loaded_helps=loaded_helps, levelmark=None, storm=False,
+    if loaded_level['Helps']:
+        help_parcer(bot, chat_id, session, loaded_helps=loaded_level['Helps'], levelmark=None, storm=False,
                     message='Exception - не удалось выполнить слежение за подсказками')
-    if loaded_bonuses:
-        bonus_parcer(bot, chat_id, session, loaded_bonuses=loaded_bonuses, level_id=loaded_level['LevelId'],
+    if loaded_level['Bonuses']:
+        bonus_parcer(bot, chat_id, session, loaded_bonuses=loaded_level['Bonuses'], level_id=loaded_level['LevelId'],
                      levelmark=None, storm=False, message='Exception - не удалось выполнить слежение за бонусами')
     try:
         if session['channelname'] and session['usechannel'] and session['sectorstoclose'] \
@@ -146,33 +124,34 @@ def storm_updater(chat_id, bot, session):
         if level['LevelId'] in dismissed_level_ids or level['LevelId'] in passed_level_ids:
             continue
 
-        loaded_helps = level['Helps']
-        loaded_bonuses = level['Bonuses']
-        loaded_sectors = level['Sectors']
-        loaded_messages = level['Messages']
-
         levelmark = '<b>Уровень %s: %s</b>' % (str(level['Number']), level['Name'].encode('utf-8')) if level['Name'] \
             else '<b>Уровень %s</b>' % str(level['Number'])
 
-        if loaded_messages:
-            message_parcer(bot, chat_id, session, loaded_messages=loaded_messages, levelmark=levelmark, storm=True,
+        if level['Messages']:
+            message_parcer(bot, chat_id, session, loaded_messages=level['Messages'], levelmark=levelmark, storm=True,
                            message='Exception - не удалось выполнить слежение за сообщениями авторов')
-        if loaded_sectors:
+        if level['Sectors']:
             codes_to_find = level['SectorsLeftToClose']
-            sectors_parcer(bot, chat_id, session, loaded_sectors=loaded_sectors, codes_to_find=codes_to_find,
+            sectors_parcer(bot, chat_id, session, loaded_sectors=level['Sectors'], codes_to_find=codes_to_find,
                            level_id=level['LevelId'], levelmark=levelmark, storm=True,
                            message='Exception - не удалось выполнить слежение за секторами')
-        if loaded_helps:
-            help_parcer(bot, chat_id, session, loaded_helps=loaded_helps, levelmark=levelmark, storm=True,
+        if level['Helps']:
+            help_parcer(bot, chat_id, session, loaded_helps=level['Helps'], levelmark=levelmark, storm=True,
                         message='Exception - не удалось выполнить слежение за подсказками')
-        if loaded_bonuses:
-            bonus_parcer(bot, chat_id, session, loaded_bonuses=loaded_bonuses, level_id=level['LevelId'],
+        if level['Bonuses']:
+            bonus_parcer(bot, chat_id, session, loaded_bonuses=level['Bonuses'], level_id=level['LevelId'],
                          levelmark=levelmark, storm=True, message='Exception - не удалось выполнить слежение за бонусами')
 
     levels_parcer(bot, chat_id, session, levels=storm_levels, dismissed_level_ids=dismissed_level_ids, storm=True,
                   passed_level_ids=passed_level_ids, message='Exception - не удалось выполнить слежение за уровнями')
 
     DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
+
+
+@ExceptionHandler.get_levels_updater_exception
+def get_levels_for_updater(bot, chat_id, session):
+    loaded_level, levels = get_current_level(session, bot, chat_id, from_updater=True)
+    return loaded_level, levels
 
 
 def reset_live_locations(chat_id, bot, session):
