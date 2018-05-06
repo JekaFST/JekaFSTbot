@@ -80,8 +80,10 @@ class DBSession(object):
         channel_name = "'" + channel_name + "'" if channel_name else 'NULL'
         sql = """INSERT INTO SessionConfig
                 (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, GameURLjs, LoginURL,
-                GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame, CurrLevelId, Locations, llmessageids)
-                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, '', %s, True, NULL, 2, True, NULL, NULL, '{}', '{}')
+                GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame, CurrLevelId,
+                sectorstoclose, sectorsmessageid, Locations, llmessageids)
+                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, '', %s, True, NULL, 2, True, NULL, NULL,
+                '', NULL, '{}', '{}')
               """ % (main_chat_id, login, password, en_domain, channel_name, use_channel)
         return db_connection.execute_insert_cur(sql)
 

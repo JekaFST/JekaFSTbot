@@ -33,15 +33,12 @@ def linear_updater(chat_id, bot, session):
 
     if not DBSession.get_field_value(session['sessionid'], 'currlevelid') or loaded_level['LevelId'] != session['currlevelid']:
         DBSession.update_int_field(session['sessionid'], 'currlevelid', loaded_level['LevelId'])
-        try:
-            reset_live_locations(chat_id, bot, session)
-        except Exception:
-            bot.send_message(chat_id, 'Exception - updater не смог сбросить информацию о live location')
-        try:
-            sectors_to_close = send_up_info(session['sessionid'], loaded_level, len(levels), loaded_level['Helps'],
+        reset_live_locations(bot, chat_id, session, message='Exception - updater не смог сбросить информацию о live location')
+        send_up_info(session['sessionid'], loaded_level, len(levels), loaded_level['Helps'],
                                             loaded_level['Bonuses'], bot, chat_id, session['channelname'], session['usechannel'])
+
             if session['channelname'] and session['usechannel']:
-                send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, session['channelname'], session['sessionid'])
+
         except Exception:
             bot.send_message(chat_id, 'Exception - updater не смог прислать информацию об АПе')
 
@@ -154,7 +151,8 @@ def get_levels_for_updater(bot, chat_id, session):
     return loaded_level, levels
 
 
-def reset_live_locations(chat_id, bot, session):
+@ExceptionHandler.common_updater_exception
+def reset_live_locations(bot, chat_id, session):
     DBSession.update_json_field(session['sessionid'], 'locations', {})
     ll_message_ids = json.loads(session['llmessageids'])
     if ll_message_ids:
@@ -189,24 +187,26 @@ def send_up_info(session_id, loaded_level, number_of_levels, loaded_helps, loade
         bot.send_message(chat_id, up_message, parse_mode='HTML')
     except Exception:
         bot.send_message(chat_id, up + '\r\nException - updater не смог собрать и отправить информацию об уровне')
-
+    
     send_task(session_id, loaded_level, bot, chat_id, from_updater=True)
 
-    try:
-        if channel_name and use_channel:
-            bot.send_message(channel_name, up_message, parse_mode='HTML')
-            send_task(session_id, loaded_level, bot, channel_name)
-    except Exception:
-        bot.send_message(chat_id, 'Exception - updater не смог отправить информацию по новому уровню в канал')
-
-    try:
-        sectors_to_close = get_sectors_to_close(loaded_level['Sectors'], get_sector_names=True)
-    except Exception:
-        bot.send_message(chat_id, 'Exception - updater не смог составить список секторов')
-        sectors_to_close = 'Exception - updater не смог составить список секторов'
-
-    DBSession.update_text_field(session_id, 'sectorstoclose', sectors_to_close)
-    return sectors_to_close
+    # try:
+    #     if channel_name and use_channel:
+    #         bot.send_message(channel_name, up_message, parse_mode='HTML')
+    #         send_task(session_id, loaded_level, bot, channel_name)
+    # except Exception:
+    #     bot.send_message(chat_id, 'Exception - updater не смог отправить информацию по новому уровню в канал')
+    #
+    # try:
+    #     sectors_to_close = get_sectors_to_close(loaded_level['Sectors'], get_sector_names=True)
+    #     send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, session['channelname'],
+    #                                      session['sessionid'])
+    # except Exception:
+    #     bot.send_message(chat_id, 'Exception - updater не смог составить список секторов')
+    #     sectors_to_close = 'Exception - updater не смог составить список секторов'
+    #
+    # DBSession.update_text_field(session_id, 'sectorstoclose', sectors_to_close)
+    # return sectors_to_close
 
 
 def send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, channel_name, session_id):
@@ -220,7 +220,7 @@ def send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, channe
     DBSession.update_int_field(session_id, 'sectorsmessageid', response.message_id)
 
 
-@ExceptionHandler.parcers_exception
+@ExceptionHandler.common_updater_exception
 def sectors_parcer(bot, chat_id, session, **kwargs):
     existing_sectors = DBSectors.get_sector_ids_per_game(session['sessionid'], session['gameid'])
     for sector in kwargs['loaded_sectors']:
@@ -243,7 +243,7 @@ def sectors_parcer(bot, chat_id, session, **kwargs):
             DBSectors.update_answer_info_not_sent(session['sessionid'], session['gameid'], sector['SectorId'], 'False', code, player)
 
 
-@ExceptionHandler.parcers_exception
+@ExceptionHandler.common_updater_exception
 def help_parcer(bot, chat_id, session, **kwargs):
     existing_helps = DBHelps.get_help_ids_per_game(session['sessionid'], session['gameid'])
     for help in kwargs['loaded_helps']:
@@ -264,7 +264,7 @@ def help_parcer(bot, chat_id, session, **kwargs):
             send_time_to_help(help, bot, chat_id, kwargs['levelmark'], kwargs['storm'])
 
 
-@ExceptionHandler.parcers_exception
+@ExceptionHandler.common_updater_exception
 def bonus_parcer(bot, chat_id, session, **kwargs):
     existing_bonuses = DBBonuses.get_bonus_ids_per_level(session['sessionid'], session['gameid'], kwargs['level_id'])
     for bonus in kwargs['loaded_bonuses']:
@@ -294,7 +294,7 @@ def bonus_parcer(bot, chat_id, session, **kwargs):
                                 levelmark=kwargs['levelmark'])
 
 
-@ExceptionHandler.parcers_exception
+@ExceptionHandler.common_updater_exception
 def message_parcer(bot, chat_id, session, **kwargs):
     existing_messages = DBMessages.get_message_ids_per_game(session['sessionid'], session['gameid'])
     for message in kwargs['loaded_messages']:
@@ -311,7 +311,7 @@ def message_parcer(bot, chat_id, session, **kwargs):
                                  levelmark=kwargs['levelmark'])
 
 
-@ExceptionHandler.parcers_exception
+@ExceptionHandler.common_updater_exception
 def levels_parcer(bot, chat_id, session, **kwargs):
     existing_levels = DBLevels.get_level_ids_per_game(session['sessionid'], session['gameid'])
     for level in kwargs['levels']:

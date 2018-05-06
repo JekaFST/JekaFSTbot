@@ -73,7 +73,7 @@ class ExceptionHandler(object):
         return wrapped
 
     @staticmethod
-    def parcers_exception(function):
+    def common_updater_exception(function):
         def wrapped(bot, chat_id, session, **kwargs):
             try:
                 function(bot, chat_id, session, **kwargs)
