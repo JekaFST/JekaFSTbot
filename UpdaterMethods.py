@@ -46,14 +46,9 @@ def linear_updater(chat_id, bot, session):
         return
 
     DBSession.update_int_field(session['sessionid'], 'currlevelid', loaded_level['LevelId'])
-    try:
-        if not loaded_level['Timeout'] == 0 and loaded_level['TimeoutSecondsRemain'] <= 300 \
-                and not DBLevels.get_time_to_up_sent(session['sessionid'], loaded_level['LevelId']):
-            message = 'До автоперехода < 5 мин'
-            bot.send_message(chat_id, message)
-            DBLevels.update_time_to_up_sent(session['sessionid'], loaded_level['LevelId'], 'True')
-    except Exception:
-        bot.send_message(chat_id, 'Exception - updater не смог проанализировать время до автоперехода')
+
+    timeout_parcer(bot, chat_id, session, loaded_level=loaded_level,
+                   message='Exception - updater не смог проанализировать время до автоперехода')
 
     if loaded_level['Messages']:
         message_parcer(bot, chat_id, session, loaded_messages=loaded_level['Messages'], levelmark=None, storm=False,
@@ -69,13 +64,9 @@ def linear_updater(chat_id, bot, session):
     if loaded_level['Bonuses']:
         bonus_parcer(bot, chat_id, session, loaded_bonuses=loaded_level['Bonuses'], level_id=loaded_level['LevelId'],
                      levelmark=None, storm=False, message='Exception - не удалось выполнить слежение за бонусами')
-    try:
-        if session['channelname'] and session['usechannel'] and session['sectorstoclose'] \
-                and session['sectorstoclose'] != '1' and session['sectorsmessageid']:
-            channel_sectors_editor(session['sessionid'], loaded_level, session['sectorstoclose'], bot,
-                                   session['channelname'], session['sectorsmessageid'])
-    except Exception as err:
-        bot.send_message(chat_id, 'Exception - не удалось обновить не закрытые сектора в канале')
+
+    channel_sectors_editor(bot, chat_id, session, loaded_level=loaded_level,
+                           message='Exception - не удалось обновить не закрытые сектора в канале')
 
     dismissed_level_ids = DBLevels.get_dismissed_level_ids(session['sessionid'], session['gameid'])
     levels_parcer(bot, chat_id, session, levels=levels, dismissed_level_ids=dismissed_level_ids, storm=False,
@@ -220,6 +211,16 @@ def send_unclosed_sectors_to_channel(bot, chat_id, session, **kwargs):
 
 
 @ExceptionHandler.common_updater_exception
+def timeout_parcer(bot, chat_id, session, **kwargs):
+    loaded_level = kwargs['loaded_level']
+    if not loaded_level['Timeout'] == 0 and loaded_level['TimeoutSecondsRemain'] <= 300 \
+            and not DBLevels.get_time_to_up_sent(session['sessionid'], loaded_level['LevelId']):
+        message = 'До автоперехода < 5 мин'
+        bot.send_message(chat_id, message)
+        DBLevels.update_time_to_up_sent(session['sessionid'], loaded_level['LevelId'], 'True')
+
+
+@ExceptionHandler.common_updater_exception
 def sectors_parcer(bot, chat_id, session, **kwargs):
     existing_sectors = DBSectors.get_sector_ids_per_game(session['sessionid'], session['gameid'])
     for sector in kwargs['loaded_sectors']:
@@ -335,15 +336,19 @@ def levels_parcer(bot, chat_id, session, **kwargs):
             DBLevels.update_bool_field(session['sessionid'], session['gameid'], level['LevelId'], 'ispassed', 'True')
 
 
-def channel_sectors_editor(session_id, loaded_level, old_sectors_to_close, bot, channel_name, message_id):
-    new_sectors_to_close = get_sectors_to_close(loaded_level['Sectors'], get_sector_names=True)
-    if new_sectors_to_close != old_sectors_to_close:
-        codes_all = 1 if not loaded_level['Sectors'] else len(loaded_level['Sectors'])
-        codes_to_find = 1 if not loaded_level['Sectors'] else loaded_level['SectorsLeftToClose']
-        message = '<b>Осталось закрыть: %s из %s:</b>\r\n%s' % \
-                  (str(codes_to_find), str(codes_all), new_sectors_to_close)
-        bot.edit_message_text(message, channel_name, message_id, parse_mode='HTML')
-        DBSession.update_text_field(session_id, 'sectorstoclose', new_sectors_to_close)
+@ExceptionHandler.common_updater_exception
+def channel_sectors_editor(bot, chat_id, session, **kwargs):
+    if session['channelname'] and session['usechannel'] and session['sectorstoclose'] and session['sectorstoclose'] != '1' \
+            and session['sectorsmessageid']:
+        loaded_level = kwargs['loaded_level']
+        new_sectors_to_close = get_sectors_to_close(loaded_level['Sectors'], get_sector_names=True)
+        if new_sectors_to_close != session['sectorstoclose']:
+            codes_all = 1 if not loaded_level['Sectors'] else len(loaded_level['Sectors'])
+            codes_to_find = 1 if not loaded_level['Sectors'] else loaded_level['SectorsLeftToClose']
+            message = '<b>Осталось закрыть: %s из %s:</b>\r\n%s' % \
+                      (str(codes_to_find), str(codes_all), new_sectors_to_close)
+            bot.edit_message_text(message, session['channelname'], session['sectorsmessageid'], parse_mode='HTML')
+            DBSession.update_text_field(session['sessionid'], 'sectorstoclose', new_sectors_to_close)
 
 
 def get_sectors_to_close(sectors, get_sector_names=False):
