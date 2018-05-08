@@ -98,3 +98,13 @@ class ExceptionHandler(object):
                     logging.exception('Exception - updater не смог загрузить уровень(-вни)')
             return r1, r2
         return wrapped
+
+    @staticmethod
+    def up_message_exception(function):
+        def wrapped(bot, chat_id, **kwargs):
+            try:
+                function(bot, chat_id, **kwargs)
+            except Exception:
+                bot.send_message(chat_id, kwargs['message'])
+                logging.exception(kwargs['message'])
+        return wrapped
