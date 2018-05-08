@@ -37,9 +37,10 @@ def linear_updater(chat_id, bot, session):
         send_up_message(bot, chat_id, loaded_level=loaded_level, number_of_levels=len(levels),
                         channel_name=session['channelname'], use_channel=session['usechannel'],
                         message='\xE2\x9D\x97#АП\r\nException - updater не смог собрать и отправить информацию о новом уровне')
-        send_task_after_up(bot, chat_id, session, loaded_level=loaded_level, channel_name=session['channelname'],
-                           use_channel=session['usechannel'], message='Exception - updater не смог отправить задание нового уровня в канал')
-
+        send_task_after_up(bot, chat_id, session, loaded_level=loaded_level,
+                           message='Exception - updater не смог отправить задание нового уровня в канал')
+        send_unclosed_sectors_to_channel(bot, chat_id, session, loaded_level=loaded_level,
+                                         message='Exception - updater не смог отправить или сохранить сообщение с секторами из канала')
 
         DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
         return
@@ -193,30 +194,29 @@ def send_up_message(bot, chat_id, **kwargs):
 @ExceptionHandler.common_updater_exception
 def send_task_after_up(bot, chat_id, session, **kwargs):
     send_task(session['sessionid'], kwargs['loaded_level'], bot, chat_id, from_updater=True)
-    try:
-        if kwargs['channel_name'] and kwargs['use_channel']:
-            send_task(session['sessionid'], kwargs['loaded_level'], bot, kwargs['channel_name'])
-
-            if session['channelname'] and session['usechannel']:
+    if session['channelname'] and session['usechannel']:
+        send_task(session['sessionid'], kwargs['loaded_level'], bot, session['channelname'])
 
 
-
-def send_unclosed_sectors_to_channel(bot, channel_name, session_id, loaded_level):
-    sectors_to_close = get_sectors_to_close(loaded_level['Sectors'], get_sector_names=True)
-    DBSession.update_text_field(session_id, 'sectorstoclose', sectors_to_close)
-    codes_all = 1 if not loaded_level['Sectors'] else len(loaded_level['Sectors'])
-    codes_to_find = 1 if not loaded_level['Sectors'] else loaded_level['SectorsLeftToClose']
-    message = '<b>Осталось закрыть: %s из %s:</b>\r\n%s' % (str(codes_to_find), str(codes_all), sectors_to_close)
-    response = bot.send_message(channel_name, message, parse_mode='HTML')
-    DBSession.update_int_field(session_id, 'sectorsmessageid', response.message_id)
-
-    # except Exception:
-    # bot.send_message(chat_id, 'Exception - updater не смог составить список секторов')
-    # sectors_to_close = 'Exception - updater не смог составить список секторов'
-    # try:
-    # except Exception:
-    # response = bot.send_message(channel_name, 'Exception - updater не смог прислать не закрытые сектора')
-
+@ExceptionHandler.common_updater_exception
+def send_unclosed_sectors_to_channel(bot, chat_id, session, **kwargs):
+    if session['channelname'] and session['usechannel']:
+        loaded_level = kwargs['loaded_level']
+        try:
+            sectors_to_close = get_sectors_to_close(loaded_level['Sectors'], get_sector_names=True)
+        except Exception:
+            sectors_to_close = 'Список секторов не составлен'
+            logging.exception('Exception - cписок секторов не составлен')
+        DBSession.update_text_field(session['sessionid'], 'sectorstoclose', sectors_to_close)
+        codes_all = 1 if not loaded_level['Sectors'] else len(loaded_level['Sectors'])
+        codes_to_find = 1 if not loaded_level['Sectors'] else loaded_level['SectorsLeftToClose']
+        message = '<b>Осталось закрыть: %s из %s:</b>\r\n%s' % (str(codes_to_find), str(codes_all), sectors_to_close)
+        try:
+            response = bot.send_message(session['channelname'], message, parse_mode='HTML')
+        except Exception:
+            response = bot.send_message(session['channelname'], 'Exception - updater не смог прислать не закрытые сектора')
+            logging.exception('Exception - updater не смог прислать не закрытые сектора')
+        DBSession.update_int_field(session['sessionid'], 'sectorsmessageid', response.message_id)
 
 
 @ExceptionHandler.common_updater_exception
