@@ -300,6 +300,7 @@ def start_updater(task, bot):
         bot.send_message(task.chat_id, 'Нельзя запустить слежение повторно или при неактивной сессии')
 
 
+@ExceptionHandler.updater_scheduler_exception
 def updater_scheduler(chat_id, bot, main_vars, session_id):
     while not DBSession.get_field_value(session_id, 'stopupdater'):
         if DBSession.get_field_value(session_id, 'putupdatertask'):

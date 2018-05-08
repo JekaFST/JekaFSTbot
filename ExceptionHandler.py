@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from DBMethods import DBSession
+from MainClasses import Task
 
 
 class ExceptionHandler(object):
@@ -12,8 +13,6 @@ class ExceptionHandler(object):
             except Exception:
                 bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду %s' % task.type)
                 logging.exception("Exception в main - не удалось обработать команду %s" % task.type)
-                if task.type == 'updater':
-                    DBSession.update_bool_flag(task.session_id, 'putupdatertask', 'True')
         return wrapped
 
     @staticmethod
@@ -84,6 +83,17 @@ class ExceptionHandler(object):
         return wrapped
 
     @staticmethod
+    def updater_exception(function):
+        def wrapped(bot, chat_id, session):
+            try:
+                function(bot, chat_id, session)
+            except Exception:
+                # bot.send_message(chat_id, 'Exception в функции слежения')
+                logging.exception('Exception в updater')
+                DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
+        return wrapped
+
+    @staticmethod
     def get_levels_updater_exception(function):
         def wrapped(bot, chat_id, session):
             r1 = None
@@ -108,4 +118,17 @@ class ExceptionHandler(object):
             except Exception:
                 bot.send_message(chat_id, kwargs['message'])
                 logging.exception(kwargs['message'])
+        return wrapped
+
+    @staticmethod
+    def updater_scheduler_exception(function):
+        def wrapped(chat_id, bot, main_vars, session_id):
+            try:
+                function(chat_id, bot, main_vars, session_id)
+            except Exception:
+                logging.exception('Exception - упал updater_scheduler')
+                del main_vars.updater_schedulers_dict[chat_id]
+                start_updater_task = Task(chat_id, 'start_updater', main_vars=main_vars, session_id=chat_id)
+                main_vars.task_queue.append(start_updater_task)
+                # bot.send_message(chat_id, 'Критическая ошибка при слежении. Перезапустите /start_updater')
         return wrapped

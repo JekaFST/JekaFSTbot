@@ -14,18 +14,19 @@ def updater(task, bot):
     if not session['stormgame']:
         name = 'upd_thread_%s' % task.chat_id
         task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=linear_updater,
-                                                            args=(task.chat_id, bot, session))
+                                                            args=(bot, task.chat_id, session))
         task.updaters_dict[task.chat_id].start()
         return
     else:
         name = 'upd_thread_%s' % task.chat_id
         task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=storm_updater,
-                                                            args=(task.chat_id, bot, session))
+                                                            args=(bot, task.chat_id, session))
         task.updaters_dict[task.chat_id].start()
         return
 
 
-def linear_updater(chat_id, bot, session):
+@ExceptionHandler.updater_exception
+def linear_updater(bot, chat_id, session):
     loaded_level, levels = get_levels_for_updater(bot, chat_id, session)
     if not loaded_level:
         DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
@@ -75,7 +76,8 @@ def linear_updater(chat_id, bot, session):
     DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
 
 
-def storm_updater(chat_id, bot, session):
+@ExceptionHandler.updater_exception
+def storm_updater(bot, chat_id, session):
     existing_levels = DBLevels.get_level_ids_per_game(session['sessionid'], session['gameid'])
     game_model = get_current_game_model(session, bot, chat_id, from_updater=True)
     if not game_model:
@@ -143,7 +145,7 @@ def get_levels_for_updater(bot, chat_id, session):
 
 
 @ExceptionHandler.common_updater_exception
-def reset_live_locations(bot, chat_id, session):
+def reset_live_locations(bot, chat_id, session, **kwargs):
     DBSession.update_json_field(session['sessionid'], 'locations', {})
     ll_message_ids = json.loads(session['llmessageids'])
     if ll_message_ids:
