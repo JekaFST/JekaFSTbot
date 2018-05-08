@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 import logging
+from DBMethods import DBSession
 
 
 class ExceptionHandler(object):
     @staticmethod
     def run_task_exception(function):
         def wrapped(task, bot):
-            result = None
             try:
-                result = function(task, bot)
+                function(task, bot)
             except Exception:
                 bot.send_message(task.chat_id, 'Exception в main - не удалось обработать команду %s' % task.type)
                 logging.exception("Exception в main - не удалось обработать команду %s" % task.type)
-            return result
+                if task.type == 'updater':
+                    DBSession.update_bool_flag(task.session_id, 'putupdatertask', 'True')
         return wrapped
 
     @staticmethod
