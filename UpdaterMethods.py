@@ -200,25 +200,23 @@ def send_task_after_up(bot, chat_id, session, **kwargs):
             if session['channelname'] and session['usechannel']:
 
 
-def send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, channel_name, session_id):
-    # try:
-    #     sectors_to_close = get_sectors_to_close(loaded_level['Sectors'], get_sector_names=True)
-    #     send_unclosed_sectors_to_channel(loaded_level, sectors_to_close, bot, session['channelname'],
-    #                                      session['sessionid'])
-    # except Exception:
-    #     bot.send_message(chat_id, 'Exception - updater не смог составить список секторов')
-    #     sectors_to_close = 'Exception - updater не смог составить список секторов'
-    #
-    # DBSession.update_text_field(session_id, 'sectorstoclose', sectors_to_close)
-    # return sectors_to_close
-    try:
-        codes_all = 1 if not loaded_level['Sectors'] else len(loaded_level['Sectors'])
-        codes_to_find = 1 if not loaded_level['Sectors'] else loaded_level['SectorsLeftToClose']
-        message = '<b>Осталось закрыть: %s из %s:</b>\r\n%s' % (str(codes_to_find), str(codes_all), sectors_to_close)
-        response = bot.send_message(channel_name, message, parse_mode='HTML')
-    except Exception:
-        response = bot.send_message(channel_name, 'Exception - updater не смог прислать не закрытые сектора')
+
+def send_unclosed_sectors_to_channel(bot, channel_name, session_id, loaded_level):
+    sectors_to_close = get_sectors_to_close(loaded_level['Sectors'], get_sector_names=True)
+    DBSession.update_text_field(session_id, 'sectorstoclose', sectors_to_close)
+    codes_all = 1 if not loaded_level['Sectors'] else len(loaded_level['Sectors'])
+    codes_to_find = 1 if not loaded_level['Sectors'] else loaded_level['SectorsLeftToClose']
+    message = '<b>Осталось закрыть: %s из %s:</b>\r\n%s' % (str(codes_to_find), str(codes_all), sectors_to_close)
+    response = bot.send_message(channel_name, message, parse_mode='HTML')
     DBSession.update_int_field(session_id, 'sectorsmessageid', response.message_id)
+
+    # except Exception:
+    # bot.send_message(chat_id, 'Exception - updater не смог составить список секторов')
+    # sectors_to_close = 'Exception - updater не смог составить список секторов'
+    # try:
+    # except Exception:
+    # response = bot.send_message(channel_name, 'Exception - updater не смог прислать не закрытые сектора')
+
 
 
 @ExceptionHandler.common_updater_exception
