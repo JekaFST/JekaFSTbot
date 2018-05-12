@@ -177,7 +177,7 @@ def start_session(task, bot):
             bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль.')
     else:
         bot.send_message(task.chat_id, 'Сессия уже активирована. Если у вас проблемы со слежением - попробуйте '
-                                       '/stop_updater, затем /start_updater')
+                                       '/stop_updater, затем подождав ~ 5 секунд - /start_updater')
 
 
 def send_task(task, bot):
