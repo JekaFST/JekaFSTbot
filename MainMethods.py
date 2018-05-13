@@ -60,10 +60,15 @@ def start(task, bot):
                                            '- ввести логин игрока (/login abc)\n'
                                            '- ввести пароль игрока (/password abc)\n'
                                            '- активировать сессию (/start_session)\n'
-                                           'Краткое описание доступно по команде /help',
+                                           'Краткое описание доступно по команде /help\n'
+                                           'Краткая инструкция к боту доступна по ссылке:\n'
+                                           'https://powerful-shelf-32284.herokuapp.com/instruction',
                              disable_web_page_preview=True, parse_mode='HTML')
         else:
-            bot.send_message(task.chat_id, 'Сессия не создана. Ошибка SQL')
+            bot.send_message(task.chat_id, 'Сессия не создана. Ошибка SQL\n'
+                                           'Краткая инструкция к боту доступна по ссылке:\n'
+                                           'https://powerful-shelf-32284.herokuapp.com/instruction',
+                             disable_web_page_preview=True)
     elif task.chat_id not in sessions_ids and config:
         result = DBSession.insert_session(task.chat_id, login=config['login'], password=config['password'],
                                    en_domain=config['endomain'], channel_name=config['channelname'])
@@ -76,13 +81,21 @@ def start(task, bot):
                                            '- сменить домен игры (/domain http://demo.en.cx)\n'
                                            '- сменить логин игрока (/login abc)\n'
                                            '- сменить пароль игрока (/password abc)\n'
-                                           'Краткое описание доступно по команде /help',
+                                           'Краткое описание доступно по команде /help\n'
+                                           'Краткая инструкция к боту доступна по ссылке:\n'
+                                           'https://powerful-shelf-32284.herokuapp.com/instruction',
                              disable_web_page_preview=True, parse_mode='HTML')
         else:
-            bot.send_message(task.chat_id, 'Сессия не создана. Ошибка SQL')
+            bot.send_message(task.chat_id, 'Сессия не создана. Ошибка SQL\n'
+                                           'Краткая инструкция к боту доступна по ссылке:\n'
+                                           'https://powerful-shelf-32284.herokuapp.com/instruction',
+                             disable_web_page_preview=True)
     else:
         bot.send_message(task.chat_id, 'Для данного чата уже создана сессия\n'
-                                       'Введите /config для проверки ее состояния')
+                                       'Введите /config для проверки ее состояния\n'
+                                       'Краткая инструкция к боту доступна по ссылке:\n'
+                                       'https://powerful-shelf-32284.herokuapp.com/instruction',
+                         disable_web_page_preview=True)
 
 
 def stop_session(task, bot):

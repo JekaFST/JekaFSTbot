@@ -5,7 +5,7 @@ import re
 import telebot
 from flask import Flask, render_template, send_from_directory
 from BotServiceMethods import add_level_bonuses, add_level_sectors
-from Const import helptext
+from Const import helptext, instruction
 from DBMethods import DB
 from MainClasses import Task, Validations
 from TextConvertingMethods import find_coords
@@ -434,6 +434,10 @@ def run_app(bot, main_vars):
             get_codes_links_task = Task(message.chat.id, 'get_codes_links', session_id=message.chat.id, message_id=message.message_id)
             main_vars.task_queue.append(get_codes_links_task)
 
+    @bot.message_handler(commands=['instruction'])
+    def send_instruction(message):
+        bot.send_message(message.chat.id, 'https://powerful-shelf-32284.herokuapp.com/instruction')
+
     @bot.message_handler(regexp='^!\s*(.+)')
     def main_code_processor(message):
         if message.chat.id == -1001204488259:
@@ -477,6 +481,10 @@ def run_app(bot, main_vars):
     @app.route("/", methods=['GET', 'POST'])
     def hello():
         return 'Hello world!'
+
+    @app.route("/instruction", methods=['GET', 'POST'])
+    def all_codes_per_game(session_id, game_id):
+        return instruction
 
     @app.route("/<session_id>/<game_id>", methods=['GET', 'POST'])
     def all_codes_per_game(session_id, game_id):
