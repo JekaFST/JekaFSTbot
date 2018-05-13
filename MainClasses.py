@@ -18,7 +18,9 @@ class Validations(object):
         else:
             bot.send_message(chat_id,
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission')
+                             'Для отправки запроса на разрешение введите /ask_for_permission\n'
+                             'Краткая инструкция к боту доступна по ссылке:\n'
+                             'https://powerful-shelf-32284.herokuapp.com/instruction', disable_web_page_preview=True)
             return False, main_chat_ids, add_chat_ids
 
     @staticmethod
