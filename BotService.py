@@ -483,7 +483,7 @@ def run_app(bot, main_vars):
         return 'Hello world!'
 
     @app.route("/instruction", methods=['GET', 'POST'])
-    def all_codes_per_game():
+    def instruction():
         return instruction
 
     @app.route("/<session_id>/<game_id>", methods=['GET', 'POST'])
