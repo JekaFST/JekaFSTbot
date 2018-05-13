@@ -217,7 +217,7 @@ def timeout_parcer(bot, chat_id, session, **kwargs):
     loaded_level = kwargs['loaded_level']
     if not loaded_level['Timeout'] == 0 and loaded_level['TimeoutSecondsRemain'] <= 300 \
             and not DBLevels.get_time_to_up_sent(session['sessionid'], loaded_level['LevelId']):
-        message = 'До автоперехода 5 мин'
+        message = 'Автопереход через 5 мин'
         bot.send_message(chat_id, message)
         DBLevels.update_time_to_up_sent(session['sessionid'], loaded_level['LevelId'], 'True')
 
