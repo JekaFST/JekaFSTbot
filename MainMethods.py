@@ -317,7 +317,8 @@ def start_updater(task, bot):
 def updater_scheduler(chat_id, bot, main_vars, session_id):
     while not DBSession.get_field_value(session_id, 'stopupdater'):
         if DBSession.get_field_value(session_id, 'putupdatertask'):
-            time.sleep(DBSession.get_field_value(session_id, 'delay'))
+            # time.sleep(DBSession.get_field_value(session_id, 'delay'))
+            time.sleep(2)
             updater_task = Task(chat_id, 'updater', session_id=session_id, updaters_dict=main_vars.updaters_dict)
             main_vars.task_queue.append(updater_task)
             DBSession.update_bool_flag(session_id, 'putupdatertask', 'False')
