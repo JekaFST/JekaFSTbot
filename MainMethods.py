@@ -112,7 +112,7 @@ def config(task, bot):
     session_condition = 'Сессия активна' if session['active'] else 'Сессия не активна'
     channel_condition = '\r\nИмя канала задано' if session['channelname'] else '\r\nИмя канала не задано'
     reply = session_condition + '\r\nДомен: ' + session['endomain'] + '\r\nID игры: ' + session['gameid'] + \
-            '\r\nЛогин: ' + session['login'] + channel_condition + '\r\nИнтервал слежения: ' + str(session['delay'])
+            '\r\nЛогин: ' + session['login'] + channel_condition + '\r\nИнтервал слежения: 2 сек'
     bot.send_message(task.chat_id, reply, disable_web_page_preview=True)
 
 
