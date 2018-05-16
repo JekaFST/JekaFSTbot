@@ -170,7 +170,7 @@ def check_game_model(game_model, session, bot, chat_id, from_updater=False):
     else:
         loaded_game_wrong_status = 'Состояние игры не соответствует ни одному из ожидаемых. Проверьте настройки бота'
 
-    if not from_updater or not DBSession.get_field_value(session['sessionid'], 'gamemodelstatus') == loaded_game_wrong_status:
+    if not from_updater or not session['gamemodelstatus'] == loaded_game_wrong_status:
         DBSession.update_text_field(session['sessionid'], 'gamemodelstatus', loaded_game_wrong_status)
         bot.send_message(chat_id, loaded_game_wrong_status)
 

@@ -32,7 +32,7 @@ def linear_updater(bot, chat_id, session):
         DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
         return
 
-    if not DBSession.get_field_value(session['sessionid'], 'currlevelid') or loaded_level['LevelId'] != session['currlevelid']:
+    if not session['currlevelid'] or loaded_level['LevelId'] != session['currlevelid']:
         DBSession.update_int_field(session['sessionid'], 'currlevelid', loaded_level['LevelId'])
         reset_live_locations(bot, chat_id, session, message='Exception - updater не смог сбросить информацию о live location')
         send_up_message(bot, chat_id, loaded_level=loaded_level, number_of_levels=len(levels),
