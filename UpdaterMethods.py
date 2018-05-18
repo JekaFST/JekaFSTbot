@@ -134,7 +134,7 @@ def storm_updater(bot, chat_id, session):
                              levelmark=levelmark, storm=True, message='Exception - не удалось выполнить слежение за бонусами')
         except Exception:
             logging.exception('Some level exceprion')
-            print storm_levels
+            print level
             DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
             return
     levels_parcer(bot, chat_id, session, levels=storm_levels, dismissed_level_ids=dismissed_level_ids, storm=True,
