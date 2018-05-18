@@ -144,9 +144,10 @@ def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=
                 bot.send_message(chat_id, reply)
                 return False
             else:
-                logging.exception('Exception - game model не является json объектом')
+                logging.exception('Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
                 try:
                     print response
+                    print response.text
                 except:
                     pass
                 # DBSession.update_bool_flag(session['sessionid'], 'stopupdater', 'True')
