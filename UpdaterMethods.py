@@ -105,11 +105,11 @@ def storm_updater(bot, chat_id, session):
         if session['stopupdater']:
             DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'False')
             return
-        if level['LevelId'] not in existing_levels:
-            level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
-            DBLevels.insert_level(session['sessionid'], session['gameid'], level)
-            DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
-            return
+        # if level['LevelId'] not in existing_levels:
+        #     level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
+        #     DBLevels.insert_level(session['sessionid'], session['gameid'], level)
+        #     DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
+        #     return
 
         if level['LevelId'] in dismissed_level_ids or level['LevelId'] in passed_level_ids:
             continue
