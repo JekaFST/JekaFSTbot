@@ -366,6 +366,13 @@ def run_app(bot, main_vars):
                                 r'\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}', message.text)
             seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))
             duration = int(seconds[0]) if seconds else None
+            if duration:
+                if duration > 86400:
+                    duration = 86400
+                elif duration < 60:
+                    duration = 60
+                else:
+                    pass
             send_live_location_task = Task(message.chat.id, 'live_location', session_id=main_chat_id, coords=coords, duration=duration)
             main_vars.task_queue.append(send_live_location_task)
 
@@ -422,6 +429,13 @@ def run_app(bot, main_vars):
                                                   '1 - корды\n2 - корды\n...\nn - корды')
             seconds = re.findall(r'\ss(\d+)', str(message.text.encode('utf-8')))
             duration = int(seconds[0]) if seconds else None
+            if duration:
+                if duration > 86400:
+                    duration = 86400
+                elif duration < 60:
+                    duration = 60
+                else:
+                    pass
             add_points_ll_task = Task(message.chat.id, 'add_points_ll', session_id=main_chat_id, points_dict=points_dict, duration=duration)
             main_vars.task_queue.append(add_points_ll_task)
 
