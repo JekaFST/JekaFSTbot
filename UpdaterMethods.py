@@ -244,7 +244,7 @@ def sectors_parcer(bot, chat_id, session, **kwargs):
                       '\r\nОсталось закрыть: %s из %s:\r\n%s' % (str(kwargs['codes_to_find']), str(codes_all), sectors_to_close)
             if kwargs['storm']:
                 message = kwargs['levelmark'] + '\r\n' + message
-            # bot.send_message(chat_id, message, parse_mode='HTML')
+            bot.send_message(chat_id, message, parse_mode='HTML')
             DBSectors.update_answer_info_not_sent(session['sessionid'], session['gameid'], sector['SectorId'], 'False', code, player)
 
 
@@ -289,14 +289,14 @@ def bonus_parcer(bot, chat_id, session, **kwargs):
         if bonus['IsAnswered'] and bonus['BonusId'] in bonuses_award_not_sent:
             DBBonuses.update_answer_info_not_sent(session['sessionid'], session['gameid'], bonus, 'awardnotsent', 'False')
             DBBonuses.update_bool_flag(session['sessionid'], session['gameid'], bonus['BonusId'], 'infonotsent', 'False')
-            # send_bonus_award_answer(bonus, bot, chat_id, session['sessionid'], from_updater=True, storm=kwargs['storm'],
-            #                         levelmark=kwargs['levelmark'])
+            send_bonus_award_answer(bonus, bot, chat_id, session['sessionid'], from_updater=True, storm=kwargs['storm'],
+                                    levelmark=kwargs['levelmark'])
             continue
         if not kwargs['storm']:
             if bonus['Task'] and not bonus['Expired'] and bonus['BonusId'] in bonuses_info_not_sent:
                 DBBonuses.update_bool_flag(session['sessionid'], session['gameid'], bonus['BonusId'], 'infonotsent', 'False')
-                # send_bonus_info(bonus, bot, chat_id, session['sessionid'], from_updater=True, storm=kwargs['storm'],
-                #                 levelmark=kwargs['levelmark'])
+                send_bonus_info(bonus, bot, chat_id, session['sessionid'], from_updater=True, storm=kwargs['storm'],
+                                levelmark=kwargs['levelmark'])
 
 
 @ExceptionHandler.common_updater_exception
