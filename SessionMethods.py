@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import re
+import logging
 import requests
 import json
 import telebot
+from time import sleep
 from bs4 import BeautifulSoup
 from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, \
     send_adm_message
@@ -142,8 +144,13 @@ def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=
                 bot.send_message(chat_id, reply)
                 return False
             else:
-                DBSession.update_bool_flag(session['sessionid'], 'stopupdater', 'True')
-                bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
+                logging.exception('Exception - game model не является json объектом')
+                try:
+                    print response
+                except:
+                    pass
+                # DBSession.update_bool_flag(session['sessionid'], 'stopupdater', 'True')
+                # bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
                 return False
 
     game_model = check_game_model(response_json, session, bot, chat_id, from_updater)
@@ -191,6 +198,7 @@ def get_storm_levels(levels_qty, session, bot, chat_id, from_updater=False):
     storm_levels = list()
     for i in xrange(levels_qty):
         storm_levels.append(get_storm_level(i+1, session, bot, chat_id, from_updater))
+        sleep(0.5)
     return storm_levels
 
 
