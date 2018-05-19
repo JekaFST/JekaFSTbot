@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import re
-import logging
 import requests
 import json
 import telebot
@@ -365,12 +364,12 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
     response = requests.post(session['gameurljs'], data=code_request,
                              headers={'Cookie': session['cookie']})
     try:
-        response_json = json.loads(response.text)
+        game_model = json.loads(response.text)
     except Exception:
         bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
         return
-    game_model = check_game_model(response_json, session, bot, chat_id)
-    if not game_model:
+    if not game_model['Event'] == 0:
+        handle_inactive_game_model(game_model, session, bot, chat_id)
         return
     if is_repeat_code:
         bot.send_message(chat_id, '\xf0\x9f\x94\x84\r\nПовторный код', reply_to_message_id=message_id)

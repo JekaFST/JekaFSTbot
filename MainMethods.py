@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-
 from ExceptionHandler import ExceptionHandler
 from SessionMethods import *
 import json
