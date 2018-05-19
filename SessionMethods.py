@@ -394,7 +394,10 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
     try:
         game_model = json.loads(response.text)
     except Exception:
-        bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
+        logging.exception('Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
+        bot.send_message(45839899, 'Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
+        bot.send_message(chat_id, '\xE2\x9D\x97\xE2\x9D\x97\xE2\x9D\x97\r\nОтправьте код повторно. Движок вернул некорректный ответ',
+                         reply_to_message_id=message_id)
         return
     if not game_model['Event'] == 0:
         handle_inactive_game_model(game_model, session, bot, chat_id)
