@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 from DBMethods import DBSession
 from MainClasses import Task
+from SessionMethods import upd_session_cookie, handle_inactive_game_model
 
 
 class ExceptionHandler(object):
@@ -131,4 +133,40 @@ class ExceptionHandler(object):
                 start_updater_task = Task(chat_id, 'start_updater', main_vars=main_vars, session_id=chat_id)
                 main_vars.task_queue.append(start_updater_task)
                 # bot.send_message(chat_id, 'Критическая ошибка при слежении. Перезапустите /start_updater')
+        return wrapped
+
+    @staticmethod
+    def get_current_game_exception(function):
+        def wrapped(session, bot, chat_id, from_updater, storm_level_url=None):
+            game_model = None
+            normal = None
+            for i in xrange(2):
+                if not i == 0:
+                    _ = upd_session_cookie(session, bot, chat_id)
+                    session = DBSession.get_session(session['sessionid'])
+                try:
+                    response = function(session, bot, chat_id, from_updater, storm_level_url=None)
+                    game_model = json.loads(response.text)
+                    if game_model['Event'] == 0:
+                        normal = True
+                    else:
+                        handle_inactive_game_model(game_model, session, bot, chat_id, from_updater)
+                        normal = False
+                    break
+                except Exception:
+                    if i == 0:
+                        continue
+                    if "Your requests have been classified as robot's requests." in response.text:
+                        DBSession.update_bool_flag(session['sessionid'], 'stopupdater', 'True')
+                        reply = 'Сработала защита движка от повторяющихся запросов. Необходимо перезапустить апдейтер.\r\n/start_updater'
+                        bot.send_message(chat_id, reply)
+                    else:
+                        logging.exception('Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
+                        bot.send_message(45839899, 'Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
+                        try:
+                            print response
+                            print response.text
+                        except:
+                            pass
+            return game_model, normal
         return wrapped
