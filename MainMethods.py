@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import logging
 from SessionMethods import *
+import logging
 import json
 import threading
 import time
