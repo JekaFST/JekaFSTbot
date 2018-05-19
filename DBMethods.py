@@ -282,7 +282,7 @@ class DBBonuses(object):
         code = bonus['Answer']['Answer'].encode('utf-8') if bonus['IsAnswered'] else 'NULL'
         sql = """INSERT INTO bonuses
                         (SessionId, BonusId, GameId, InfoNotSent, AwardNotSent, levelid, code, bonusname, bonusnumber, player)
-                        VALUES (%s, %s, '%s', %s, %s, %s, %s, '%s', %s, '%s')
+                        VALUES (%s, %s, '%s', %s, %s, %s, '%s', '%s', %s, '%s')
                     """ % (session_id, bonus_id, game_id, info_not_sent, award_not_sent, level_id, code, bonus_name, bonus_number, player)
         return db_connection.execute_insert_cur(sql)
 
