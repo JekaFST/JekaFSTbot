@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import logging
 import requests
 import json
 import telebot
@@ -7,8 +8,45 @@ from bs4 import BeautifulSoup
 from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, send_adm_message
 from Const import game_wrong_statuses, urls
 from DBMethods import DB, DBSession, DBLevels, DBSectors
-from ExceptionHandler import ExceptionHandler
 from TextConvertingMethods import make_Y_G_links
+
+
+class SessionException(object):
+    @staticmethod
+    def get_current_game_exception(function):
+        def wrapped(session, bot, chat_id, from_updater, storm_level_url=None):
+            game_model = None
+            normal = None
+            for i in xrange(2):
+                if not i == 0:
+                    _ = upd_session_cookie(session, bot, chat_id)
+                    session = DBSession.get_session(session['sessionid'])
+                try:
+                    response = function(session, bot, chat_id, from_updater, storm_level_url=None)
+                    game_model = json.loads(response.text)
+                    if game_model['Event'] == 0:
+                        normal = True
+                    else:
+                        handle_inactive_game_model(game_model, session, bot, chat_id, from_updater)
+                        normal = False
+                    break
+                except Exception:
+                    if i == 0:
+                        continue
+                    if "Your requests have been classified as robot's requests." in response.text:
+                        DBSession.update_bool_flag(session['sessionid'], 'stopupdater', 'True')
+                        reply = 'Сработала защита движка от повторяющихся запросов. Необходимо перезапустить апдейтер.\r\n/start_updater'
+                        bot.send_message(chat_id, reply)
+                    else:
+                        logging.exception('Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
+                        bot.send_message(45839899, 'Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
+                        try:
+                            print response
+                            print response.text
+                        except:
+                            pass
+            return game_model, normal
+        return wrapped
 
 
 def compile_urls(session_id, chat_id, bot, game_id, en_domain):
@@ -141,7 +179,7 @@ def initiate_session_vars(session, bot, chat_id, from_updater=False):
         return None, None, None
 
 
-@ExceptionHandler.get_current_game_exception
+@SessionException.get_current_game_exception
 def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=None):
     if not storm_level_url:
         response = requests.get(session['gameurljs'], headers={'Cookie': session['cookie']})
