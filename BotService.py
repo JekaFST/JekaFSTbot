@@ -452,7 +452,7 @@ def run_app(bot, main_vars):
     def send_instruction(message):
         bot.send_message(message.chat.id, 'https://powerful-shelf-32284.herokuapp.com/instruction')
 
-    @bot.message_handler(regexp='^\.\s*(.+)')
+    @bot.message_handler(regexp='^!\s*(.+)')
     def main_code_processor(message):
         if message.chat.id == -1001204488259:
             return
@@ -460,8 +460,8 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
             main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
-            if message.text[0] == '.':
-                code = re.findall(r'\.\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
+            if message.text[0] == '!':
+                code = re.findall(r'!\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
                 send_code_main_task = Task(message.chat.id, 'send_code_main', session_id=main_chat_id, code=code,
                                            message_id=message.message_id)
                 main_vars.task_queue.append(send_code_main_task)
