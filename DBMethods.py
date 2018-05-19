@@ -8,16 +8,26 @@ from Const import prod
 
 class DBConnection(object):
     def __init__(self):
-        self.db_conn = None
+        self.db_conn_select = None
+        self.db_conn_dict_select = None
+        self.db_conn_insert = None
 
-    def connect(self):
-        self.db_conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require') if prod \
+    def connect_select(self):
+        self.db_conn_select = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require') if prod \
+            else psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
+
+    def connect_dict_select(self):
+        self.db_conn_dict_select = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require') if prod \
+            else psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
+
+    def connect_insert(self):
+        self.db_conn_insert = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require') if prod \
             else psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='hjccbz_1412' port='5432'")
 
     def execute_select_cur(self, sql):
-        if self.db_conn.closed != 0:
-            self.connect()
-        cur = self.db_conn.cursor()
+        if self.db_conn_select.closed != 0:
+            self.connect_select()
+        cur = self.db_conn_select.cursor()
         try:
             cur.execute(sql)
             result = cur.fetchall()
@@ -25,14 +35,15 @@ class DBConnection(object):
             return result
         except psycopg2.DatabaseError:
             cur.close()
-            self.db_conn.rollback()
+            self.db_conn_select.rollback()
+            self.db_conn_select.close()
             logging.exception(sql)
             return False
 
     def execute_dict_select_cur(self, sql):
-        if self.db_conn.closed != 0:
-            self.connect()
-        cur = self.db_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        if self.db_conn_dict_select.closed != 0:
+            self.connect_dict_select()
+        cur = self.db_conn_dict_select.cursor(cursor_factory=psycopg2.extras.DictCursor)
         try:
             cur.execute(sql)
             result = cur.fetchall()
@@ -40,28 +51,32 @@ class DBConnection(object):
             return result
         except psycopg2.DatabaseError:
             cur.close()
-            self.db_conn.rollback()
+            self.db_conn_dict_select.rollback()
+            self.db_conn_dict_select.close()
             logging.exception(sql)
             return False
 
     def execute_insert_cur(self, sql):
-        if self.db_conn.closed != 0:
-            self.connect()
-        cur = self.db_conn.cursor()
+        if self.db_conn_insert.closed != 0:
+            self.connect_insert()
+        cur = self.db_conn_insert.cursor()
         try:
             cur.execute(sql)
-            db_connection.db_conn.commit()
+            db_connection.db_conn_insert.commit()
             cur.close()
             return True
         except psycopg2.DatabaseError:
             cur.close()
-            self.db_conn.rollback()
+            self.db_conn_insert.rollback()
+            self.db_conn_insert.close()
             logging.exception(sql)
             return False
 
 
 db_connection = DBConnection()
-db_connection.connect()
+db_connection.connect_select()
+db_connection.connect_dict_select()
+db_connection.connect_insert()
 
 
 class DBSession(object):
@@ -281,7 +296,7 @@ class DBBonuses(object):
         player = bonus['Answer']['Login'].encode('utf-8') if bonus['IsAnswered'] else ''
         code = bonus['Answer']['Answer'].encode('utf-8') if bonus['IsAnswered'] else 'NULL'
         sql = """INSERT INTO bonuses
-                        (SessionId, BonusId, GameId, InfoNotSent, AwardNotSent, levelid, code, bonusname, bonusnumber, player)
+                        (SessionId, BonusId, GameId, InfoNotSent, AwardNotSent, levelid, codefds, bonusname, bonusnumber, player)
                         VALUES (%s, %s, '%s', %s, %s, %s, '%s', '%s', %s, '%s')
                     """ % (session_id, bonus_id, game_id, info_not_sent, award_not_sent, level_id, code, bonus_name, bonus_number, player)
         return db_connection.execute_insert_cur(sql)
