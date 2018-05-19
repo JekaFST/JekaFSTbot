@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-from ExceptionHandler import ExceptionHandler
 from SessionMethods import *
 import json
 import threading
@@ -11,6 +10,7 @@ from CommonMethods import close_live_locations
 from DBMethods import DB, DBSession
 from MainClasses import Task
 from TextConvertingMethods import make_Y_G_links
+from ExceptionHandler import ExceptionHandler
 
 
 @ExceptionHandler.reload_backup_exception
