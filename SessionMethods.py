@@ -34,8 +34,7 @@ def login_to_en(session, bot, chat_id):
 
 def launch_session(session, bot, chat_id):
     if 'stoken' not in session['cookie']:
-        bot.send_message(chat_id, 'Сессия не активирована - бот не залогинен\n'
-                                  'Проверьте конфигурацию /config и залогиньтесь /login_to_en')
+        bot.send_message(chat_id, 'Бот не залогинен, попробуйте повторно задать логин, пароль и перезапустить сессию')
         return
     game_loaded, normal, storm = initiate_session_vars(session, bot, chat_id)
     if not game_loaded:
