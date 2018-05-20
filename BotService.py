@@ -5,7 +5,7 @@ import re
 import telebot
 from flask import Flask, render_template, send_from_directory
 from BotServiceMethods import add_level_bonuses, add_level_sectors
-from Const import helptext, instruction
+from Const import helptext
 from DBMethods import DB
 from MainClasses import Task, Validations
 from TextConvertingMethods import find_coords
