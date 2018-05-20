@@ -498,7 +498,7 @@ def run_app(bot, main_vars):
 
     @app.route("/instruction", methods=['GET', 'POST'])
     def send_instruction():
-        return render_template("TemplateForinstruction.html")
+        return render_template("TemplateForInstruction.html")
 
     @app.route("/<session_id>/<game_id>", methods=['GET', 'POST'])
     def all_codes_per_game(session_id, game_id):
