@@ -91,9 +91,6 @@ def storm_updater(bot, chat_id, session):
                   passed_level_ids=passed_level_ids, message='Exception - не удалось выполнить слежение за уровнями')
 
     for level in levels:
-        if session['stopupdater']:
-            DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'False')
-            return
         if level['LevelId'] in dismissed_level_ids or level['LevelId'] in passed_level_ids:
             continue
         sleep(0.5)

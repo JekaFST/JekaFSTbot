@@ -112,9 +112,12 @@ def stop_session(task, bot):
 def config(task, bot):
     session = DBSession.get_session(task.session_id)
     session_condition = 'Сессия активна' if session['active'] else 'Сессия не активна'
-    channel_condition = '\r\nИмя канала задано' if session['channelname'] else '\r\nИмя канала не задано'
+    updater_condition = '\r\nСлежение запущено' if not session['stop_updater'] else '\r\nСлежение остановлено'
+    channel_name = '\r\nИмя канала задано' if session['channelname'] else '\r\nИмя канала не задано'
+    channel_condition = '\r\nПостинг в канал активен' if session['usechannel'] else '\r\nПостинг в канал не активен'
     reply = session_condition + '\r\nДомен: ' + session['endomain'] + '\r\nID игры: ' + session['gameid'] + \
-            '\r\nЛогин: ' + session['login'] + channel_condition + '\r\nИнтервал слежения: 2 сек'
+            '\r\nЛогин: ' + session['login'] + updater_condition + '\r\nИнтервал слежения: 2 сек' + channel_condition + \
+            channel_name
     bot.send_message(task.chat_id, reply, disable_web_page_preview=True)
 
 
