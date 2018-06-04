@@ -1,6 +1,6 @@
-from ExceptionHandler import ExceptionHandler
 from MainMethods import *
 from UpdaterMethods import updater
+from ExceptionHandler import ExceptionHandler
 
 task_method_dict = {
     'start': start,
