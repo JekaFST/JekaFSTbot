@@ -2,9 +2,10 @@
 import threading
 import json
 import logging
+from time import sleep
 from DBMethods import DBSession, DBLevels, DBHelps, DBBonuses, DBSectors, DBMessages
 from ExceptionHandler import ExceptionHandler
-from SessionMethods import get_current_level, get_storm_level, get_storm_levels, get_current_game_model
+from SessionMethods import get_current_level, get_storm_level, get_current_game_model
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
     send_bonus_award_answer, send_adm_message, close_live_locations
 
@@ -78,65 +79,42 @@ def linear_updater(bot, chat_id, session):
 
 @ExceptionHandler.updater_exception
 def storm_updater(bot, chat_id, session):
-    existing_levels = DBLevels.get_level_ids_per_game(session['sessionid'], session['gameid'])
-    game_model = get_current_game_model(session, bot, chat_id, from_updater=True)
-    if not game_model:
+    game_model, normal = get_current_game_model(session, bot, chat_id, from_updater=True)
+    if not normal:
         DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
         return
 
-    if not existing_levels:
-        for i in xrange(2):
-            try:
-                for level in game_model['Levels']:
-                    if level['LevelId'] not in existing_levels:
-                        DBLevels.insert_level(session['sessionid'], session['gameid'], level, breif=True)
-                break
-            except Exception:
-                if i == 0:
-                    continue
-                bot.send_message(chat_id, 'Exception - updater не смог загрузить уровень(-вни)')
-        DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
-        return
-
-    storm_levels = get_storm_levels(len(game_model['Levels']), session, bot, chat_id, from_updater=True)
+    levels = game_model['Levels']
     dismissed_level_ids = DBLevels.get_dismissed_level_ids(session['sessionid'], session['gameid'])
     passed_level_ids = DBLevels.get_passed_level_ids(session['sessionid'], session['gameid'])
-    for level in storm_levels:
-        if session['stopupdater']:
-            DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'False')
-            return
-        if not level:
-            continue
-        if level['LevelId'] not in existing_levels:
-            level = get_storm_level(level['Number'], session, bot, chat_id, from_updater=True)
-            DBLevels.insert_level(session['sessionid'], session['gameid'], level)
-            DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
-            return
+    levels_parcer(bot, chat_id, session, levels=levels, dismissed_level_ids=dismissed_level_ids, storm=True,
+                  passed_level_ids=passed_level_ids, message='Exception - не удалось выполнить слежение за уровнями')
 
+    for level in levels:
         if level['LevelId'] in dismissed_level_ids or level['LevelId'] in passed_level_ids:
             continue
+        sleep(0.5)
+        loaded_level = get_storm_level(level['LevelNumber'], session, bot, chat_id, from_updater=True)
+        if not loaded_level:
+            continue
 
-        levelmark = '<b>Уровень %s: %s</b>' % (str(level['Number']), level['Name'].encode('utf-8')) if level['Name'] \
-            else '<b>Уровень %s</b>' % str(level['Number'])
+        levelmark = '<b>Уровень %s: %s</b>' % (str(loaded_level['Number']), loaded_level['Name'].encode('utf-8')) \
+            if loaded_level['Name'] else '<b>Уровень %s</b>' % str(loaded_level['Number'])
 
-        if level['Messages']:
-            message_parcer(bot, chat_id, session, loaded_messages=level['Messages'], levelmark=levelmark, storm=True,
+        if loaded_level['Messages']:
+            message_parcer(bot, chat_id, session, loaded_messages=loaded_level['Messages'], levelmark=levelmark, storm=True,
                            message='Exception - не удалось выполнить слежение за сообщениями авторов')
-        if level['Sectors']:
-            codes_to_find = level['SectorsLeftToClose']
-            sectors_parcer(bot, chat_id, session, loaded_sectors=level['Sectors'], codes_to_find=codes_to_find,
-                           level_id=level['LevelId'], levelmark=levelmark, storm=True,
+        if loaded_level['Sectors']:
+            codes_to_find = loaded_level['SectorsLeftToClose']
+            sectors_parcer(bot, chat_id, session, loaded_sectors=loaded_level['Sectors'], codes_to_find=codes_to_find,
+                           level_id=loaded_level['LevelId'], levelmark=levelmark, storm=True,
                            message='Exception - не удалось выполнить слежение за секторами')
-        if level['Helps']:
-            help_parcer(bot, chat_id, session, loaded_helps=level['Helps'], levelmark=levelmark, storm=True,
+        if loaded_level['Helps']:
+            help_parcer(bot, chat_id, session, loaded_helps=loaded_level['Helps'], levelmark=levelmark, storm=True,
                         message='Exception - не удалось выполнить слежение за подсказками')
-        if level['Bonuses']:
-            bonus_parcer(bot, chat_id, session, loaded_bonuses=level['Bonuses'], level_id=level['LevelId'],
+        if loaded_level['Bonuses']:
+            bonus_parcer(bot, chat_id, session, loaded_bonuses=loaded_level['Bonuses'], level_id=loaded_level['LevelId'],
                          levelmark=levelmark, storm=True, message='Exception - не удалось выполнить слежение за бонусами')
-
-    if None not in storm_levels:
-        levels_parcer(bot, chat_id, session, levels=storm_levels, dismissed_level_ids=dismissed_level_ids, storm=True,
-                      passed_level_ids=passed_level_ids, message='Exception - не удалось выполнить слежение за уровнями')
 
     DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
 
@@ -321,8 +299,7 @@ def levels_parcer(bot, chat_id, session, **kwargs):
     existing_levels = DBLevels.get_level_ids_per_game(session['sessionid'], session['gameid'])
     for level in kwargs['levels']:
         if level['LevelId'] not in existing_levels:
-            DBLevels.insert_level(session['sessionid'], session['gameid'], level) if kwargs['storm'] \
-                else DBLevels.insert_level(session['sessionid'], session['gameid'], level, breif=True)
+            DBLevels.insert_level(session['sessionid'], session['gameid'], level)
     for level in kwargs['levels']:
         if level['Dismissed'] and level['LevelId'] not in kwargs['dismissed_level_ids']:
             text = '\xE2\x9D\x97 <b>Уровень %s, "%s" - снят</b> \xE2\x9D\x97' % \

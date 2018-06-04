@@ -4,10 +4,8 @@ import logging
 import requests
 import json
 import telebot
-from time import sleep
 from bs4 import BeautifulSoup
-from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, \
-    send_adm_message
+from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, send_adm_message
 from Const import game_wrong_statuses, urls
 from DBMethods import DB, DBSession, DBLevels, DBSectors
 from TextConvertingMethods import make_Y_G_links
@@ -36,19 +34,26 @@ def login_to_en(session, bot, chat_id):
 
 def launch_session(session, bot, chat_id):
     if 'stoken' not in session['cookie']:
-        bot.send_message(chat_id, 'Сессия не активирована - бот не залогинен\n'
-                                  'Проверьте конфигурацию /config и залогиньтесь /login_to_en')
+        bot.send_message(chat_id, 'Бот не залогинен, попробуйте повторно задать логин, пароль и перезапустить сессию')
         return
-    linear, storm = initiate_session_vars(session, bot, chat_id)
-    if linear:
-        reply = 'Сессия активирована, игра в нормальном состоянии\r\n' \
+    game_loaded, normal, storm = initiate_session_vars(session, bot, chat_id)
+    if not game_loaded:
+        reply = 'Сессия активирована, не удалось загрузить игру\r\n' \
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
                 'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
                 'и запустите репстинг в канал /start_channel\r\n' \
                 'если имя канала задано по умолчания, постинг уже активирован\r\n' \
                 'для остановки репостинга в канал введите /stop_channel'
-    elif storm:
+    elif normal and not storm:
+        reply = 'Сессия активирована, линейная игра в нормальном состоянии\r\n' \
+                'для запуска слежения введите /start_updater\r\n' \
+                'для остановки слежения введите /stop_updater\r\n' \
+                'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
+                'и запустите репстинг в канал /start_channel\r\n' \
+                'если имя канала задано по умолчания, постинг уже активирован\r\n' \
+                'для остановки репостинга в канал введите /stop_channel'
+    elif normal and storm:
         reply = 'Сессия активирована, штурмовая игра в нормальном состоянии\r\n' \
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
@@ -56,8 +61,15 @@ def launch_session(session, bot, chat_id):
                 'и запустите репстинг в канал /start_channel\r\n' \
                 'если имя канала задано по умолчания, постинг уже активирован\r\n' \
                 'для остановки репостинга в канал введите /stop_channel'
+    elif not storm:
+        reply = 'Сессия активирована. Линейная игра не в нормальном состоянии\r\n' \
+                'для запуска слежения введите /start_updater\r\n' \
+                'для остановки слежения введите /stop_updater\r\n' \
+                'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
+                'и запустите репстинг в канал /start_channel\r\n' \
+                'для остановки репостинга в канал введите /stop_channel'
     else:
-        reply = 'Сессия активирована. Игра не в нормальном состоянии\r\n' \
+        reply = 'Сессия активирована. Штурмовая игра не в нормальном состоянии\r\n' \
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
                 'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
@@ -65,6 +77,8 @@ def launch_session(session, bot, chat_id):
                 'для остановки репостинга в канал введите /stop_channel'
     if DBSession.update_bool_flag(session['sessionid'], 'active', 'True'):
         bot.send_message(chat_id, reply)
+    else:
+        bot.send_message(chat_id, 'Не удалось запустить сессию')
 
 
 def upd_session_cookie(session, bot, chat_id):
@@ -104,64 +118,66 @@ def upd_session_cookie(session, bot, chat_id):
 
 
 def initiate_session_vars(session, bot, chat_id, from_updater=False):
-    game_model = get_current_game_model(session, bot, chat_id, from_updater)
+    game_model, normal = get_current_game_model(session, bot, chat_id, from_updater)
     if game_model:
-        existing_levels = DBLevels.get_level_ids_per_game(session['sessionid'], session['gameid'])
-        for level in game_model['Levels']:
-            if level['LevelId'] not in existing_levels:
-                DBLevels.insert_level(session['sessionid'], session['gameid'], level, breif=True)
-        if not game_model['LevelSequence'] == 3:
-            current_level_info = game_model['Level']
-            DBSession.update_int_field(session['sessionid'], 'currlevelid', current_level_info['LevelId'])
-            DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'False')
-            return True, None
-        else:
+        if game_model['LevelSequence'] == 3:
             DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'True')
-            return None, True
+            storm = True
+        else:
+            DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'False')
+            storm = False
+        if normal:
+            existing_levels = DBLevels.get_level_ids_per_game(session['sessionid'], session['gameid'])
+            for level in game_model['Levels']:
+                if level['LevelId'] not in existing_levels:
+                    DBLevels.insert_level(session['sessionid'], session['gameid'], level)
+            if not game_model['LevelSequence'] == 3:
+                current_level_info = game_model['Level']
+                DBSession.update_int_field(session['sessionid'], 'currlevelid', current_level_info['LevelId'])
+        game_loaded = True
+        return game_loaded, normal, storm
     else:
-        return None, None
+        return None, None, None
 
 
 def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=None):
+    game_model = None
+    normal = None
     for i in xrange(2):
         if not i == 0:
             _ = upd_session_cookie(session, bot, chat_id)
             session = DBSession.get_session(session['sessionid'])
-        if not storm_level_url:
-            response = requests.get(session['gameurljs'], headers={'Cookie': session['cookie']})
-        else:
-            response = requests.get(storm_level_url, headers={'Cookie': session['cookie']})
         try:
-            response_json = json.loads(response.text)
+            if not storm_level_url:
+                response = requests.get(session['gameurljs'], headers={'Cookie': session['cookie']})
+            else:
+                response = requests.get(storm_level_url, headers={'Cookie': session['cookie']})
+            game_model = json.loads(response.text)
+            if game_model['Event'] == 0:
+                normal = True
+            else:
+                handle_inactive_game_model(game_model, session, bot, chat_id, from_updater)
+                normal = False
             break
         except Exception:
             if i == 0:
                 continue
             if "Your requests have been classified as robot's requests." in response.text:
                 DBSession.update_bool_flag(session['sessionid'], 'stopupdater', 'True')
-                reply = 'Сработала защита движка от повторяющихся запросов.' \
-                        ' Необходимо перелогиниться и перезапустить апдейтер.\r\n/login_to_en\r\n/start_updater'
+                reply = 'Сработала защита движка от повторяющихся запросов. Необходимо перезапустить апдейтер.\r\n/start_updater'
                 bot.send_message(chat_id, reply)
-                return False
             else:
                 logging.exception('Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
+                bot.send_message(45839899, 'Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
                 try:
                     print response
                     print response.text
                 except:
                     pass
-                # DBSession.update_bool_flag(session['sessionid'], 'stopupdater', 'True')
-                # bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
-                return False
-
-    game_model = check_game_model(response_json, session, bot, chat_id, from_updater)
-    return game_model
+    return game_model, normal
 
 
-def check_game_model(game_model, session, bot, chat_id, from_updater=False):
-    if game_model['Event'] == 0:
-        return game_model
-
+def handle_inactive_game_model(game_model, session, bot, chat_id, from_updater=False):
     loaded_game_wrong_status = None
     if game_model['Event'] in game_wrong_statuses.keys():
         if game_model['Event'] == 17:
@@ -171,6 +187,7 @@ def check_game_model(game_model, session, bot, chat_id, from_updater=False):
             DBSession.drop_session_vars(session['sessionid'])
             DB.cleanup_for_ended_game(session['sessionid'], session['gameid'])
             loaded_game_wrong_status = game_wrong_statuses[17] + '\r\nСессия остановлена, переменные сброшены'
+            session = DBSession.get_session(session['sessionid'])
         else:
             for k, v in game_wrong_statuses.items():
                 if game_model['Event'] == k:
@@ -182,12 +199,10 @@ def check_game_model(game_model, session, bot, chat_id, from_updater=False):
         DBSession.update_text_field(session['sessionid'], 'gamemodelstatus', loaded_game_wrong_status)
         bot.send_message(chat_id, loaded_game_wrong_status)
 
-    return False
-
 
 def get_current_level(session, bot, chat_id, from_updater=False):
-    game_model = get_current_game_model(session, bot, chat_id, from_updater)
-    if game_model:
+    game_model, normal = get_current_game_model(session, bot, chat_id, from_updater)
+    if normal:
         current_level = game_model['Level']
         levels = game_model['Levels']
         return current_level, levels
@@ -195,22 +210,16 @@ def get_current_level(session, bot, chat_id, from_updater=False):
         return None, None
 
 
-def get_storm_levels(levels_qty, session, bot, chat_id, from_updater=False):
-    storm_levels = list()
-    for i in xrange(levels_qty):
-        storm_levels.append(get_storm_level(i+1, session, bot, chat_id, from_updater))
-        sleep(0.5)
-    return storm_levels
-
-
 def get_storm_level(level_number, session, bot, chat_id, from_updater):
     url_ending = '?level=%s&json=1' % str(level_number)
     url = str(session['endomain'] + urls['game_url_ending'] + session['gameid'] + url_ending)
-    storm_level_game_model = get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=url)
-    if not storm_level_game_model:
-        return
-    storm_level = storm_level_game_model['Level']
-    return storm_level
+    storm_level_game_model, normal = get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=url)
+    if normal:
+        storm_level = storm_level_game_model['Level']
+        return storm_level
+    else:
+        return None
+
 
 
 def send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=False):
@@ -383,12 +392,15 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
     response = requests.post(session['gameurljs'], data=code_request,
                              headers={'Cookie': session['cookie']})
     try:
-        response_json = json.loads(response.text)
+        game_model = json.loads(response.text)
     except Exception:
-        bot.send_message(chat_id, '<b>Exception</b>\r\nGame model не является json объектом', parse_mode='HTML')
+        logging.exception('Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
+        bot.send_message(45839899, 'Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
+        bot.send_message(chat_id, '\xE2\x9D\x97\xE2\x9D\x97\xE2\x9D\x97\r\nОтправьте код повторно. Движок вернул некорректный ответ',
+                         reply_to_message_id=message_id)
         return
-    game_model = check_game_model(response_json, session, bot, chat_id)
-    if not game_model:
+    if not game_model['Event'] == 0:
+        handle_inactive_game_model(game_model, session, bot, chat_id)
         return
     if is_repeat_code:
         bot.send_message(chat_id, '\xf0\x9f\x94\x84\r\nПовторный код', reply_to_message_id=message_id)

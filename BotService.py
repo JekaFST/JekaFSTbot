@@ -5,7 +5,7 @@ import re
 import telebot
 from flask import Flask, render_template, send_from_directory
 from BotServiceMethods import add_level_bonuses, add_level_sectors
-from Const import helptext, instruction
+from Const import helptext
 from DBMethods import DB
 from MainClasses import Task, Validations
 from TextConvertingMethods import find_coords
@@ -498,7 +498,7 @@ def run_app(bot, main_vars):
 
     @app.route("/instruction", methods=['GET', 'POST'])
     def send_instruction():
-        return instruction
+        return render_template("TemplateForInstruction.html")
 
     @app.route("/<session_id>/<game_id>", methods=['GET', 'POST'])
     def all_codes_per_game(session_id, game_id):

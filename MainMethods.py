@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-import logging
-
-from ExceptionHandler import ExceptionHandler
 from SessionMethods import *
+import logging
 import json
 import threading
 import time
@@ -12,6 +10,7 @@ from CommonMethods import close_live_locations
 from DBMethods import DB, DBSession
 from MainClasses import Task
 from TextConvertingMethods import make_Y_G_links
+from ExceptionHandler import ExceptionHandler
 
 
 @ExceptionHandler.reload_backup_exception
@@ -26,7 +25,8 @@ def reload_backup(bot, main_vars):
                 continue
         if not session['active']:
             continue
-        if get_current_game_model(session, bot, session['sessionid'], from_updater=False):
+        game_model, normal = get_current_game_model(session, bot, session['sessionid'], from_updater=False)
+        if game_model and normal:
             if not session['stopupdater']:
                 text = 'Бот был перезагружен. Игра в нормальном состоянии\r\nСлежение будет запущено автоматически'
                 start_updater_task = Task(session['sessionid'], 'start_updater', main_vars=main_vars, session_id=session['sessionid'])
@@ -37,7 +37,7 @@ def reload_backup(bot, main_vars):
                 bot.send_message(session['sessionid'], text)
             except Exception:
                 logging.exception("Не удалось отправить сообщение о перезапуске сессии %s" % str(session['sessionid']))
-        elif not session['stopupdater']:
+        elif game_model and not normal and not session['stopupdater']:
             text = 'Бот был перезагружен\r\nСлежение будет запущено автоматически'
             start_updater_task = Task(session['sessionid'], 'start_updater', main_vars=main_vars, session_id=session['sessionid'])
             main_vars.task_queue.append(start_updater_task)
@@ -45,6 +45,8 @@ def reload_backup(bot, main_vars):
                 bot.send_message(session['sessionid'], text)
             except Exception:
                 logging.exception("Не удалось отправить сообщение о перезапуске сессии %s" % str(session['sessionid']))
+        else:
+            pass
 
 
 def start(task, bot):
@@ -110,9 +112,12 @@ def stop_session(task, bot):
 def config(task, bot):
     session = DBSession.get_session(task.session_id)
     session_condition = 'Сессия активна' if session['active'] else 'Сессия не активна'
-    channel_condition = '\r\nИмя канала задано' if session['channelname'] else '\r\nИмя канала не задано'
+    updater_condition = '\r\nСлежение запущено' if not session['stopupdater'] else '\r\nСлежение остановлено'
+    channel_name = '\r\nИмя канала задано' if session['channelname'] else '\r\nИмя канала не задано'
+    channel_condition = '\r\nПостинг в канал активен' if session['usechannel'] else '\r\nПостинг в канал не активен'
     reply = session_condition + '\r\nДомен: ' + session['endomain'] + '\r\nID игры: ' + session['gameid'] + \
-            '\r\nЛогин: ' + session['login'] + channel_condition + '\r\nИнтервал слежения: 2 сек'
+            '\r\nЛогин: ' + session['login'] + updater_condition + '\r\nИнтервал слежения: 2 сек' + channel_condition + \
+            channel_name
     bot.send_message(task.chat_id, reply, disable_web_page_preview=True)
 
 
