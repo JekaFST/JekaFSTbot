@@ -136,10 +136,12 @@ def make_bonus_data_and_url(row, domain, gameid, level_ids_dict):
         "txtSeconds": int(row[7]) if row[7] else 0,
         "txtHelp": row[8] if row[8] else ''
     }
-    answers = re.findall(r'.+\b', row[2])
+    # answers = re.findall(r'.+', row[2])
+    answers = re.findall(r'[^/]+', row[2])
     for i, answer in enumerate(answers):
         bonus_data['answer_-%s' % str(i+1)] = answer
-    level_numbers = re.findall(r'.+\b', row[4])
+    # level_numbers = re.findall(r'.+', row[4])
+    level_numbers = re.findall(r'[^/]+', row[4])
     for level_number in level_numbers:
         bonus_data[str('level_%s' % level_ids_dict[level_number])] = 'on'
     if row[9] or row[10] or row[11]:
@@ -159,7 +161,8 @@ def make_sector_data_and_url(row, domain, gameid):
     sector_data = {
         'txtSectorName': row[0] if row[0] else ''
     }
-    answers = re.findall(r'.+\b', row[1])
+    # answers = re.findall(r'.+', row[1])
+    answers = re.findall(r'[^/]+', row[1])
     for i, answer in enumerate(answers):
         sector_data['txtAnswer_%s' % str(i)] = answer
         sector_data['ddlAnswerFor_%s' % str(i)] = 0
