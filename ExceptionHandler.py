@@ -132,3 +132,16 @@ class ExceptionHandler(object):
                 main_vars.task_queue.append(start_updater_task)
                 # bot.send_message(chat_id, 'Критическая ошибка при слежении. Перезапустите /start_updater')
         return wrapped
+
+    @staticmethod
+    def game_details_builder_exception(function):
+        def wrapped(google_sheets_id):
+            try:
+                function(google_sheets_id)
+                result = 'Успех. Проверьте правильность переноса данных в движок.'
+            except Exception:
+                logging.exception("Exception в game_details_builder - проверьте логи")
+                result = 'Неудача. Exception в game_details_builder - проверьте движок логи.'
+            return result
+
+        return wrapped

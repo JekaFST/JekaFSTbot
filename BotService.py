@@ -7,6 +7,7 @@ from flask import Flask, render_template, send_from_directory
 from BotServiceMethods import add_level_bonuses, add_level_sectors
 from Const import helptext
 from DBMethods import DB
+from GameDetailsBuilder import game_details_builder
 from MainClasses import Task, Validations
 from TextConvertingMethods import find_coords
 
@@ -524,5 +525,9 @@ def run_app(bot, main_vars):
     @app.route('/favicon.ico')
     def favicon():
         return send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'favicon.ico', mimetype='image/png')
+
+    @app.route('/<google_sheets_id>')
+    def run_game_details_builder(google_sheets_id):
+        return game_details_builder(google_sheets_id)
 
     return app
