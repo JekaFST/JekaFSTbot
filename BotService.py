@@ -526,7 +526,7 @@ def run_app(bot, main_vars):
     def favicon():
         return send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'favicon.ico', mimetype='image/png')
 
-    @app.route('/<google_sheets_id>')
+    @app.route('/builder/<google_sheets_id>')
     def run_game_details_builder(google_sheets_id):
         return game_details_builder(google_sheets_id)
 
