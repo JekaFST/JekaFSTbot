@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import ExceptionHandler
+from ExceptionHandler import ExceptionHandler
 from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_help_data_and_url, make_bonus_data_and_url, \
     make_sector_data_and_url, make_penalty_help_data_and_url
 from time import sleep
