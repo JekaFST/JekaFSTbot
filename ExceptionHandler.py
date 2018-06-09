@@ -141,7 +141,7 @@ class ExceptionHandler(object):
                 result = 'Успех. Проверьте правильность переноса данных в движок.'
             except Exception:
                 logging.exception("Exception в game_details_builder - проверьте логи")
-                result = 'Неудача. Exception в game_details_builder - проверьте движок логи.'
+                result = 'Неудача. Exception в game_details_builder - проверьте движок и логи.'
             return result
 
         return wrapped
