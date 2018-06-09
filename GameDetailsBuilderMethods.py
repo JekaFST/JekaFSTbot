@@ -91,6 +91,15 @@ class ENConnection(object):
             level_ids_dict[option_tag.text] = option_tag.attrs['value']
         return level_ids_dict
 
+    def get_level_page(self, level_number, bonuses):
+        url = self.domain + '/Administration/Games/LevelEditor.aspx?gid=' + self.gameid + '&level=' + level_number
+        response = requests.get(url, headers={'Cookie': self.cookie})
+        bonus_ids = re.findall(r'BonusEdit.*bonus=(\d+)&action=view', response.text)
+        bonuses[level_number] = dict()
+        for i, bonus_id in enumerate(bonus_ids):
+            bonuses[level_number][str(i+1)] = bonus_id
+        return bonuses
+
     def create_en_object(self, url, data, type):
         try:
             for i in xrange(2):

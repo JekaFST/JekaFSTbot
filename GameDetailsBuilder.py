@@ -6,7 +6,8 @@ from time import sleep
 google_doc_connection = GoogleDocConnection('16--OmJQr9DeGCfLb3H19ddVJ0mp9UsiypX2xg67im6E')
 login, password, domain, gameid = google_doc_connection.get_setup()
 en_connection = ENConnection(domain, login, password, gameid)
-
+# bonuses = dict()
+# bonuses = en_connection.get_level_page('2', bonuses)
 
 for i, help in enumerate(google_doc_connection.get_helps()):
     if i % 30 == 0:
