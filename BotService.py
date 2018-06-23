@@ -6,7 +6,7 @@ import telebot
 from flask import Flask, render_template, send_from_directory
 from BotServiceMethods import add_level_bonuses, add_level_sectors
 from Const import helptext
-from DBMethods import DB
+from DBMethods import DB, DBSession
 from GameDetailsBuilder import game_details_builder
 from MainClasses import Task, Validations
 from TextConvertingMethods import find_coords
@@ -77,7 +77,7 @@ def run_app(bot, main_vars):
             bot.send_message(chat_id, 'Этот чат добавлен в список разрешенных для работы с ботом')
         else:
             bot.send_message(message.chat.id, 'Этот чат не добавлен в список разрешенных для работы с ботом\r\n'
-                                       'Insert не выполнен')
+                                              'Insert не выполнен')
 
     @bot.message_handler(commands=['add_game_id'])
     def add_game_id(message):
@@ -497,6 +497,16 @@ def run_app(bot, main_vars):
     @app.route("/", methods=['GET', 'POST'])
     def hello():
         return 'Hello world!'
+
+    @app.route("/session/<session_id>", methods=['GET', 'POST'])
+    def admin(session_id):
+        session = DBSession.get_session(session_id)
+        data = dict()
+        # chat = bot.get_chat(int(session_id))
+        # data['chat_title'] = chat.title.encode('utf-8')
+        data['updater'] = 'Stopped' if session['stopupdater'] else 'Launched'
+        data['updater_task'] = 'TRUE' if session['putupdatertask'] else 'FALSE'
+        return render_template("TemplateForSession.html", title='Session for chat: %s' % session_id, data=data)
 
     @app.route("/instruction", methods=['GET', 'POST'])
     def send_instruction():
