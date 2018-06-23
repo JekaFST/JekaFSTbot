@@ -43,7 +43,7 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
                 send_text(text_cut_links, header=header_not_bold, bot=bot, chat_id=chat_id, parse_mode=None,
                           raw_text=raw_text, text_pieces=list(), send_to_chat=True,
                           message=header + '\r\nТекст с вырезанными ссылками и без разметки не отправлен')
-                send_links = True
+            send_links = True
 
     if images:
         send_images(bot, chat_id, images=images, message='Exception - бот не смог отправить картинки')
