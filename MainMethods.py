@@ -98,6 +98,9 @@ def start(task, bot):
                                        'Краткая инструкция к боту доступна по ссылке:\n'
                                        'https://powerful-shelf-32284.herokuapp.com/instruction',
                          disable_web_page_preview=True)
+    chat = bot.get_chat(chat_id=task.chat_id)
+    bot.send_message(45839899, 'Title: %s\nTask: %s\nID: %s\nDescription:\n%s' %
+                     (chat.title, task.type, str(task.chat_id), chat.description), disable_web_page_preview=True)
 
 
 def stop_session(task, bot):
@@ -196,6 +199,9 @@ def start_session(task, bot):
     else:
         bot.send_message(task.chat_id, 'Сессия уже активирована. Если у вас проблемы со слежением - попробуйте '
                                        '/stop_updater, затем подождав ~ 5 секунд - /start_updater')
+    chat = bot.get_chat(chat_id=task.chat_id)
+    bot.send_message(45839899, 'Title: %s\nTask: %s\nID: %s\nDescription:\n%s' %
+                     (chat.title, task.type, str(task.chat_id), chat.description), disable_web_page_preview=True)
 
 
 def send_task(task, bot):
