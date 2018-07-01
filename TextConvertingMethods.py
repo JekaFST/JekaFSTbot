@@ -64,7 +64,7 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
 def cut_formatting(text, **kwargs):
     text = text.replace('&amp;', '&')
 
-    br_tags_to_cut = ['<br/>', '<br />', '<br>', '&nbsp;']
+    br_tags_to_cut = ['</br>', '</ br>', '<br/>', '<br />', '<br>', '&nbsp;']
     for br_tag in br_tags_to_cut:
         text = text.replace(br_tag, '\r\n')
 
