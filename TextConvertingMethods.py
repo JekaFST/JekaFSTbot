@@ -40,9 +40,16 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
                              message=header + '\r\nТекст с вырезанными ссылками, знаком меньше и разметкой не отправлен'):
                 header_not_bold = header.replace('<b>', '')
                 header_not_bold = header_not_bold.replace('</b>', '')
-                send_text(text_cut_links, header=header_not_bold, bot=bot, chat_id=chat_id, parse_mode=None,
-                          raw_text=raw_text, text_pieces=list(), send_to_chat=True,
-                          message=header + '\r\nТекст с вырезанными ссылками и без разметки не отправлен')
+                if not send_text(text_cut_links, header=header_not_bold, bot=bot, chat_id=chat_id, parse_mode=None,
+                                 raw_text=raw_text, text_pieces=list(), send_to_chat=True,
+                                 message=header + '\r\nТекст с вырезанными ссылками и без разметки не отправлен'):
+                    try:
+                        soup = BeautifulSoup(text_cut_links)
+                        send_text(soup.get_text(), header=header_not_bold, bot=bot, chat_id=chat_id, parse_mode=None,
+                                  raw_text=raw_text, text_pieces=list(), send_to_chat=True,
+                                  message=header + '\r\nТекст с вырезанными ссылками и без разметки, вытащенный методом парсером, не отправлен')
+                    except:
+                        pass
             send_links = True
 
     if images:
@@ -235,6 +242,7 @@ def cut_links_change_small_symbol(text, **kwargs):
         links_indexes.append(ahref.text.encode('utf-8') + link)
     text_cut_links = text
     text = text.replace('<', '&lt;')
+    text = text.replace('>', '&gt;')
     for i, link_index in enumerate(links_indexes):
         text = text.replace(link_index, links_text[i])
     return text, links, text_cut_links
