@@ -103,6 +103,7 @@ def cut_images(text, **kwargs):
         image = '(img%s)' % i
         text = text.replace(img, image)
     text = text.replace('<img>', '')
+    text = text.replace('</img>', '')
 
     return text, images, None
 
