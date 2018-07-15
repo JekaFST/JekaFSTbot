@@ -100,7 +100,7 @@ def cut_images(text, **kwargs):
         soup = BeautifulSoup(img)
         img_soup = soup.find_all('img') if 'img' in img else soup.find_all('image')
         images.append(img_soup[0].get('src').encode('utf-8'))
-        image = '(img%s)' % i
+        image = '(img%s)' % str(i+1)
         text = text.replace(img, image)
     text = text.replace('<img>', '')
     text = text.replace('</img>', '')
@@ -303,7 +303,7 @@ def send_links_to_chat(bot, chat_id, **kwargs):
 def send_images(bot, chat_id, **kwargs):
     if len(kwargs['images']) <= 5:
         for i, image in enumerate(kwargs['images']):
-            message = '(img%s)' % i
+            message = '(img%s)' % str(i+1)
             bot.send_photo(chat_id, image, caption=message)
     else:
         text = 'Найдено %s изображений. Их отправка заблокирована\r\n' \

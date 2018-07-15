@@ -201,8 +201,10 @@ def start_session(task, bot):
         bot.send_message(task.chat_id, 'Сессия уже активирована. Если у вас проблемы со слежением - попробуйте '
                                        '/stop_updater, затем подождав ~ 5 секунд - /start_updater')
     chat = bot.get_chat(chat_id=task.chat_id)
+    title = chat.title.encode('utf-8') if chat.title else 'None'
+    description = chat.description.encode('utf-8') if chat.description else 'None'
     bot.send_message(45839899, 'Title: %s\nTask: %s\nID: %s\nDescription:\n%s' %
-                     (chat.title.encode('utf-8'), task.type, str(task.chat_id), chat.description.encode('utf-8')),
+                     (title, task.type, str(task.chat_id), description),
                      disable_web_page_preview=True)
 
 
