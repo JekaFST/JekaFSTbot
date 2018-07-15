@@ -428,7 +428,7 @@ def send_coords(task, bot):
 
 
 def join(task, bot):
-    if DB.insert_add_chat_id(task.chat_id, task.add_chat_id):
+    if DB.insert_add_chat_id(task.chat_id, task.user_id):
         bot.send_message(task.chat_id, 'Теперь вы можете работать с ботом через личный чат',
                          reply_to_message_id=task.message_id)
     else:
