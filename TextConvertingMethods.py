@@ -17,10 +17,10 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
 
     text, _, _ = cut_script(text, bot=bot, chat_id=chat_id, message=header + '\r\nСкрипт не вырезан', raw_text=raw_text,
                             r2=None, r3=None)
-    text, _, _ = cut_formatting(text, tags_list=tags_list, bot=bot, chat_id=chat_id, raw_text=raw_text, r2=None, r3=None,
-                                message=header + '\r\nФорматирование не вырезано')
     text, images, _ = cut_images(text, bot=bot, chat_id=chat_id, message=header + '\r\nКартинки не вырезаны', r2=list(),
                                  r3=None, raw_text=raw_text)
+    text, _, _ = cut_formatting(text, tags_list=tags_list, bot=bot, chat_id=chat_id, raw_text=raw_text, r2=None, r3=None,
+                                message=header + '\r\nФорматирование не вырезано')
     text, _, _ = reformat_links(text, bot=bot, chat_id=chat_id, message=header + '\r\nСсылки не вырезаны', r2=None, r3=None,
                                 raw_text=raw_text)
     text, indexes, incommon_coords = handle_coords(text, session_id=session_id, from_updater=from_updater, storm=storm,
@@ -74,10 +74,6 @@ def cut_formatting(text, **kwargs):
     br_tags_to_cut = ['</br>', '</br >', '</ br>', '<br/>', '<br />', '<br>', '&nbsp;']
     for br_tag in br_tags_to_cut:
         text = text.replace(br_tag, '\r\n')
-
-    layout_tags_to_cut = ['<i>', '</i>', '<u>', '</u>', '<strong>', '</strong>', '<b>', '</b>']
-    for layout_tag in layout_tags_to_cut:
-        text = text.replace(layout_tag, '')
 
     text, _, _ = cut_style(text, bot=kwargs['bot'], chat_id=kwargs['chat_id'], message='Стили не вырезаны', r2=None, r3=None)
     for tag in kwargs['tags_list']:
