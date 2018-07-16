@@ -12,7 +12,7 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
     send_links = False
 
     if 'table' in text or 'script' in text or 'object' in text or 'audio' in text:
-        text = 'В тексте найдены и вырезаны скрипты таблицы, аудию и/или иные объекты\r\n' \
+        text = 'В тексте найдены и вырезаны скрипты, таблицы, аудио и/или иные объекты\r\n' \
                '\xE2\x9D\x97<b>Информация в чате может отличаться от движка</b>\xE2\x9D\x97\r\n' + text
 
     text, _, _ = cut_script(text, bot=bot, chat_id=chat_id, message=header + '\r\nСкрипт не вырезан', raw_text=raw_text,
