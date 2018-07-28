@@ -185,6 +185,7 @@ class DBLevels(object):
     @staticmethod
     def insert_level(session_id, game_id, level):
         name = level['LevelName'].encode('utf-8') if level['LevelName'] else ''
+        name = name.replace("'", "")
         sql = """INSERT INTO levels
                     (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, levelname)
                     VALUES (%s, %s, '%s', %s, %s, %s, False, '%s')
