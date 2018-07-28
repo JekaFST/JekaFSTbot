@@ -261,7 +261,7 @@ def cut_style(text, **kwargs):
     try:
         soup = BeautifulSoup(text)
         for rep in soup.find_all('style'):
-            string = str(rep.string)
+            string = str(rep.string.encode('utf-8'))
             text = text.replace(string, '')
 
         style_rests = ['<style>', '<style >', '<style/>', '<style />', '<style"">', '</style>', '<style  />']
