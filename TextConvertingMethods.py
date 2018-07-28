@@ -258,15 +258,20 @@ def cut_tag(text, **kwargs):
 
 @ExceptionHandler.convert_text_exception
 def cut_style(text, **kwargs):
-    soup = BeautifulSoup(text)
-    for rep in soup.find_all('style'):
-        string = str(rep.string)
-        text = text.replace(string, '')
+    try:
+        soup = BeautifulSoup(text)
+        for rep in soup.find_all('style'):
+            string = str(rep.string)
+            text = text.replace(string, '')
 
-    style_rests = ['<style>', '<style >', '<style/>', '<style />', '<style"">', '</style>', '<style  />']
-    for style_rest in style_rests:
-        for st in re.findall(style_rest, text):
-            text = text.replace(st, '')
+        style_rests = ['<style>', '<style >', '<style/>', '<style />', '<style"">', '</style>', '<style  />']
+        for style_rest in style_rests:
+            for st in re.findall(style_rest, text):
+                text = text.replace(st, '')
+    except Exception:
+        reps = re.findall(r'<style>[\s\S]*</style>', text)
+        for rep in reps:
+            text = text.replace(rep, '')
 
     return text, None, None
 
