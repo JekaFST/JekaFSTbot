@@ -124,7 +124,12 @@ def handle_coords(text, **kwargs):
             replacement = '(link%s)' % i
             text = text.replace(link, replacement)
 
-    coords = find_coords(text)
+    coords = list()
+    init_coords = find_coords(text)
+    for coord in init_coords:
+        if coord in coords:
+            continue
+        coords.append(coord)
     if coords:
         if kwargs['from_updater'] and not kwargs['storm']:
             for coord in coords:
@@ -210,6 +215,8 @@ def reformat_links(text, **kwargs):
             link_lower = link_lower.replace('link', a.get('href').encode('utf-8'))
             text = text.replace(link, link_lower)
     text = text.replace('</A>', '</a>')
+    text = text.replace('<A/>', '<a/>')
+    text = text.replace('<a/>', '</a>')
 
     links_to_check = re.findall(r'<a[^>]+>', text)
     for link in links_to_check:
