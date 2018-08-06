@@ -4,28 +4,38 @@ from bs4 import BeautifulSoup
 
 
 text = """
-Подсказка:
-<font color="yellow"><b>Координаты парковки:</b></font>
-51.723981, 39.286896
+<i style="color:#ff0"><b>Люди ведут себя так, как будто покер это новая игра, но это не так. Игра всегда одна и та же, а новички всегда разные.</b></i>
+<hr size=2><b style="color:#00ff00">ПОКЕР</b>
 
-<font color="yellow"><b>Координаты локации:</b></font>
-51.723981, 39.286896
+<a href="http://d1.endata.cx/data/games/61355/loka-2rkthyu5rhyo5485m8m95.jpg" target=_blank>КАРТА ЛОКАЦИИ</a>
 
-<font color="yellow"><b>Еще координаты:</b></font>
-60.723981, 30.286898
+<b style="color:#00ff00">Правила игры:</b>
 
-Код доезда слева от центрального входа на столбе.
+На уровне 52 метки. В радиусе 5 метров - код, который соответствует какой-то карте.
+Какая именно карта находится на какой метке Вы узнаете или когда найдёте код (закроется соответствующий сектор в движке), или когда разгадаете бонус с соответствующей меткой (в подсказке будет написано, какая карта находится на этой метке).
+<hr size=2><b style="color:#00ff00">Бонусы:</b>
 
-<font color="#0F0">Карта кликабельна</font>
+1-13 - ГаПоИФиКа.
+14-26 - Куб Рая.
+27-39 - Ребус.
+40-52 - Расчленёнка.
+<hr size=2><b style="color:#00ff00">Временные бонусы за комбинации:</b>
 
-<a target="_blank" href="https://pp.userapi.com/c834204/v834204623/19dac3/NnmJ3QlJ2HA.jpg"><img src="https://pp.userapi.com/c834204/v834204623/19dac3/NnmJ3QlJ2HA.jpg" width="40%"/></a>
-<b>Без награды</b>
+Каре - 2 минуты
+Стрит-флеш - 2 минуты
+<hr size=2><b style="color:#00ff00">Правила ввода кодов комбинаций:</b>
+
+Каре - 4 кода карт одного достоинства в порядке мастей пика, трефа, бубна, черва. Без пробелов.
+Стрит-флеш - 5 кодов карт одной масти, идущих подряд по достоинству. Порядок от карты с наименьшим достоинством к карте с наибольшим достоинством. Без пробелов.
+<hr size=2>
+<i><span style="color:#00ff00">Проходной код:</span> в подсказке через 45 минут.</i>
 """
 
 
 def send_object_text(text):
-    tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'table', 'hr', 'object', 'param', 'audio', 'source', 'embed',
-                 'link', 'iframe', 'address', 'body', 'html', 'li', 'ol', 'details', 'ul', 'script', 'video', 'b', 'center', 'u']
+    tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'th', 'table', 'hr', 'object', 'param', 'audio', 'source',
+                 'embed', 'link', 'iframe', 'address', 'body', 'html', 'li', 'ol', 'details', 'ul', 'script', 'video',
+                 'b', 'center', 'u', 'i', 'strong', 'em']
 
     if 'table' in text or 'script' in text or 'object' in text or 'audio' in text:
         text = 'В тексте найдены и вырезаны скрипты таблицы, аудию и/или иные объекты\r\n' \
