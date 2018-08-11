@@ -28,6 +28,8 @@ def send_object_text(text, header, bot, chat_id, session_id, from_updater, storm
                                                    message=header + '\r\nКоординаты не обработаны')
     while '\r\n\r\n\r\n' in text:
         text = text.replace('\r\n\r\n\r\n', '\r\n\r\n')
+    text, _, _ = cut_extra_links_endings(text, bot=bot, chat_id=chat_id, r2=None, r3=None, raw_text=raw_text,
+                                         message=header + '\r\nЛишние окончания ссылок не вырезаны')
 
     if not send_text(text, header=header, bot=bot, chat_id=chat_id, parse_mode='HTML', raw_text=raw_text, text_pieces=list(),
                      message=header + '\r\nТекст с не вырезанными ссылками и разметкой не отправлен', send_to_chat=False):
@@ -225,6 +227,23 @@ def reformat_links(text, **kwargs):
             soup = BeautifulSoup(link)
             for a in soup.find_all('a'):
                 text = text.replace(href, 'href="' + a.get('href').encode('utf-8') + '"')
+    return text, None, None
+
+
+@ExceptionHandler.convert_text_exception
+def cut_extra_links_endings(text, **kwargs):
+    # cut_links = list()
+
+    links = re.findall(r'<a\sh.+>.*</a>', text)
+    for i, link in enumerate(links):
+        cut_link = '(link%s)' % i
+        # pattern = link + '.*</a>'
+        # cut_links += re.findall(pattern, text)
+        text = text.replace(link, cut_link)
+    text = text.replace('</a>', '')
+    for i, link in enumerate(links):
+        cut_link = '(link%s)' % i
+        text = text.replace(cut_link, link)
     return text, None, None
 
 
