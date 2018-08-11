@@ -232,18 +232,17 @@ def reformat_links(text, **kwargs):
 
 @ExceptionHandler.convert_text_exception
 def cut_extra_links_endings(text, **kwargs):
-    # cut_links = list()
-
-    links = re.findall(r'<a\sh.+>.*</a>', text)
-    for i, link in enumerate(links):
-        cut_link = '(link%s)' % i
-        # pattern = link + '.*</a>'
-        # cut_links += re.findall(pattern, text)
-        text = text.replace(link, cut_link)
-    text = text.replace('</a>', '')
-    for i, link in enumerate(links):
-        cut_link = '(link%s)' % i
-        text = text.replace(cut_link, link)
+    a_opens = re.findall(r'<a[^>]+>', text)
+    a_closings = re.findall(r'</a>', text)
+    if len(a_closings) > len(a_opens):
+        links = re.findall(r'<a\sh.+>.*</a>', text)
+        for i, link in enumerate(links):
+            cut_link = '(link%s)' % i
+            text = text.replace(link, cut_link)
+        text = text.replace('</a>', '')
+        for i, link in enumerate(links):
+            cut_link = '(link%s)' % i
+            text = text.replace(cut_link, link)
     return text, None, None
 
 
