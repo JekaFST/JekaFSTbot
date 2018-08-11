@@ -103,6 +103,6 @@ def close_live_locations(chat_id, bot, session, ll_message_ids, point=None):
                 if "message can't be edited" in response_text:
                     del ll_message_ids[point]
             DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
-            bot.send_message(chat_id, 'Live location %s остановлена' % str(point))
+            bot.send_message(chat_id, 'Live location %s остановлена' % point)
         else:
-            bot.send_message(chat_id, 'Live location %s не поставлен' % str(point))
+            bot.send_message(chat_id, 'Live location %s не поставлен' % point)
