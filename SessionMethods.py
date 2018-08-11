@@ -565,7 +565,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
                                           'Повторите команду, если хотите поставить live_location для нового уровня')
                 return
             for k, v in locations.items():
-                if int(k) > 15:
+                if int(k) > 20:
                     continue
                 latitude = re.findall(r'\d\d\.\d{4,7}', str(v))[0]
                 longitude = re.findall(r'\d\d\.\d{4,7}', str(v))[1]
@@ -595,7 +595,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
             DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
     else:
         for k, v in custom_points.items():
-            if int(k) > 15:
+            if int(k) > 20:
                 bot.send_message(chat_id, 'Нельзя поставить точку с номером %s. Доступные номера: 1-15' % k)
                 continue
             latitude = re.findall(r'\d\d\.\d{4,7}', v)[0]

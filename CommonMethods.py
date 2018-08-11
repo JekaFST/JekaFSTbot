@@ -81,7 +81,7 @@ def close_live_locations(chat_id, bot, session, ll_message_ids, point=None):
                     response_text = json.loads(e.result.text)['description'].encode('utf-8')
                     if "message can't be edited" in response_text:
                         del ll_message_ids[k]
-            elif int(k) > 15:
+            elif int(k) > 20:
                 continue
             else:
                 try:
