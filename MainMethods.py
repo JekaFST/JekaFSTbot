@@ -493,6 +493,7 @@ def edit_live_locations(task, bot):
                 latitude = re.findall(r'\d\d\.\d{4,7}', coord)[0]
                 longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
                 bot.edit_message_live_location(latitude, longitude, task.chat_id, int(ll_message_ids['0']))
+                bot.send_message(task.chat_id, 'Live location основного бота изменен')
         else:
             bot.send_message(task.chat_id, 'Live location основного бота не отправлена. Чтобы изменить координаты точки, '
                                            'надо указать ее номер перед координатами '
@@ -504,6 +505,7 @@ def edit_live_locations(task, bot):
                 longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
                 telebot.TeleBot(DB.get_location_bot_token_by_number(task.point)).edit_message_live_location(
                     latitude, longitude, task.chat_id, int(ll_message_ids[task.point]))
+                bot.send_message(task.chat_id, 'Live location %s изменен' % task.point)
         else:
             bot.send_message(task.chat_id, 'Проверьте номер точки - соответствующая live location не найдена)')
 
