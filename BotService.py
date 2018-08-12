@@ -457,8 +457,6 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(regexp='^[!\.]\s*(.+)')
     def main_code_processor(message):
-        if message.chat.id == -1001204488259:
-            return
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
@@ -470,8 +468,6 @@ def run_app(bot, main_vars):
 
     @bot.message_handler(regexp='^\?\s*(.+)')
     def bonus_code_processor(message):
-        if message.chat.id == -1001204488259:
-            return
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
