@@ -89,10 +89,10 @@ class DBSession(object):
     @staticmethod
     def insert_session(main_chat_id, login=None, password=None, en_domain=None, channel_name=None):
         use_channel = True if channel_name else False
-        login = "'" + login + "'" if login else "''"
-        password = "'" + password + "'" if password else "''"
-        en_domain = "'" + en_domain + "'" if en_domain else "''"
-        channel_name = "'" + channel_name + "'" if channel_name else 'NULL'
+        login = "$$" + login + "$$" if login else "''"
+        password = "$$" + password + "$$" if password else "''"
+        en_domain = "$$" + en_domain + "$$" if en_domain else "''"
+        channel_name = "$$" + channel_name + "$$" if channel_name else 'NULL'
         sql = """INSERT INTO SessionConfig
                 (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, GameURLjs, LoginURL,
                 GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame, CurrLevelId,
@@ -153,7 +153,7 @@ class DBSession(object):
     @staticmethod
     def update_text_field(sessionid, header, value):
         sql = """UPDATE SessionConfig
-                        SET %s = '%s'
+                        SET %s = $$%s$$
                         WHERE sessionid = %s
                       """ % (header, value, sessionid)
         return db_connection.execute_insert_cur(sql)
@@ -185,10 +185,9 @@ class DBLevels(object):
     @staticmethod
     def insert_level(session_id, game_id, level):
         name = level['LevelName'].encode('utf-8') if level['LevelName'] else ''
-        name = name.replace("'", "")
         sql = """INSERT INTO levels
                     (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, levelname)
-                    VALUES (%s, %s, '%s', %s, %s, %s, False, '%s')
+                    VALUES (%s, %s, '%s', %s, %s, %s, False, $$%s$$)
                 """ % (session_id, level['LevelId'], game_id, level['LevelNumber'], level['IsPassed'], level['Dismissed'], name)
         return db_connection.execute_insert_cur(sql)
 
@@ -298,7 +297,7 @@ class DBBonuses(object):
         code = bonus['Answer']['Answer'].encode('utf-8') if bonus['IsAnswered'] else 'NULL'
         sql = """INSERT INTO bonuses
                         (SessionId, BonusId, GameId, InfoNotSent, AwardNotSent, levelid, code, bonusname, bonusnumber, player)
-                        VALUES (%s, %s, '%s', %s, %s, %s, '%s', '%s', %s, '%s')
+                        VALUES (%s, %s, '%s', %s, %s, %s, $$%s$$, $$%s$$, %s, $$%s$$)
                     """ % (session_id, bonus_id, game_id, info_not_sent, award_not_sent, level_id, code, bonus_name, bonus_number, player)
         return db_connection.execute_insert_cur(sql)
 
@@ -363,7 +362,7 @@ class DBBonuses(object):
         code = bonus['Answer']['Answer'].encode('utf-8')
         bonus_id = bonus['BonusId']
         sql = """UPDATE Bonuses
-                        SET %s = %s, code = '%s', player = '%s'
+                        SET %s = %s, code = $$%s$$, player = $$%s$$
                         WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
                         """ % (header, value, code, player, session_id, game_id, bonus_id)
         db_connection.execute_insert_cur(sql)
@@ -377,7 +376,7 @@ class DBSectors(object):
         sector_order = sector['Order']
         sql = """INSERT INTO sectors
                     (SessionId, SectorId, GameId, AnswerInfoNotSent, code, levelid, sectorname, sectororder, player)
-                    VALUES (%s, %s, '%s', True, %s, %s, '%s', %s, '%s')
+                    VALUES (%s, %s, '%s', True, %s, %s, $$%s$$, %s, '%s')
                 """ % (session_id, sector_id, game_id, code, level_id, sector_name, sector_order, player)
         return db_connection.execute_insert_cur(sql)
 
@@ -407,7 +406,7 @@ class DBSectors(object):
     @staticmethod
     def update_answer_info_not_sent(session_id, game_id, sector_id, active, code, player):
         sql = """UPDATE Sectors
-                    SET answerinfonotsent = %s, code = '%s', player = '%s'
+                    SET answerinfonotsent = %s, code = $$%s$$, player = $$%s$$
                     WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
                     """ % (active, code, player, session_id, game_id, sector_id)
         db_connection.execute_insert_cur(sql)
@@ -415,7 +414,7 @@ class DBSectors(object):
     @staticmethod
     def update_level_last_code(session_id, game_id, sector_id, code, player):
         sql = """UPDATE Sectors
-                        SET code = '%s', player = '%s'
+                        SET code = $$%s$$, player = $$%s$$
                         WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
                         """ % (code, player, session_id, game_id, sector_id)
         db_connection.execute_insert_cur(sql)
