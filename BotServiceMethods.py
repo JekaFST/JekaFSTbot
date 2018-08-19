@@ -49,39 +49,39 @@ def run_db_cleanup(bot):
     logging.log(logging.INFO, "DB cleanup is launched")
     try:
         urls_messages = DB.get_gameurls_messages()
-        print("urls_messages got")
-        print str(urls_messages)
+        logging.log(logging.INFO, "urls_messages got")
+        logging.log(logging.INFO, '%s' % str(urls_messages))
         elements_cleanup(urls_messages, 'messages')
-        print("After messages cleanup started")
+        logging.log(logging.INFO, "After messages cleanup started")
 
         urls_levels = DB.get_gameurls_levels()
-        print("urls_levels got")
-        print str(urls_levels)
+        logging.log(logging.INFO, "urls_levels got")
+        logging.log(logging.INFO, '%s' % str(urls_levels))
         elements_cleanup(urls_levels, 'levels')
-        print("After levels cleanup started")
+        logging.log(logging.INFO, "After levels cleanup started")
 
         urls_helps = DB.get_gameurls_helps()
-        print("urls_helps got")
-        print str(urls_helps)
+        logging.log(logging.INFO, "urls_helps got")
+        logging.log(logging.INFO, '%s' % str(urls_helps))
         elements_cleanup(urls_helps, 'helps')
-        print("After helps cleanup started")
+        logging.log(logging.INFO, "After helps cleanup started")
 
         urls_bonuses = DB.get_gameurls_bonuses()
-        print("urls_bonuses got")
-        print str(urls_bonuses)
+        logging.log(logging.INFO, "urls_bonuses got")
+        logging.log(logging.INFO, '%s' % str(urls_bonuses))
         elements_cleanup(urls_bonuses, 'bonuses')
-        print("After bonuss cleanup started")
+        logging.log(logging.INFO, "After bonuss cleanup started")
 
         urls_sectors = DB.get_gameurls_sectors()
-        print("urls_sectors got")
-        print str(urls_sectors)
+        logging.log(logging.INFO, "urls_sectors got")
+        logging.log(logging.INFO, '%s' % (urls_sectors))
         elements_cleanup(urls_sectors, 'sectors')
-        print("After sectors cleanup started")
+        logging.log(logging.INFO, "After sectors cleanup started")
 
         bot.send_message(45839899, 'db_cleanup выполнен')
     except Exception:
         logging.exception("Exception during DB cleanup")
-    print("DB cleanup is finished")
+    logging.log(logging.INFO, "DB cleanup is finished")
     return
 
 
