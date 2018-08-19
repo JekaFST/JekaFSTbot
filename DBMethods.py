@@ -633,7 +633,7 @@ class DB(object):
     @staticmethod
     def get_gameurls_levels():
         sql = """
-                        SELECT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        SELECT DISTINCT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
                         FROM sessionconfig sc JOIN levels l ON
                         (
                         l.sessionid = sc.sessionid
@@ -646,7 +646,7 @@ class DB(object):
     @staticmethod
     def get_gameurls_bonuses():
         sql = """
-                        SELECT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        SELECT DISTINCT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
                         FROM sessionconfig sc JOIN bonuses b ON
                         (
                         b.sessionid = sc.sessionid
@@ -659,7 +659,7 @@ class DB(object):
     @staticmethod
     def get_gameurls_sectors():
         sql = """
-                        SELECT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        SELECT DISTINCT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
                         FROM sessionconfig sc JOIN sectors s ON
                         (
                         s.sessionid = sc.sessionid
@@ -672,7 +672,7 @@ class DB(object):
     @staticmethod
     def get_gameurls_helps():
         sql = """
-                        SELECT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        SELECT DISTINCT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
                         FROM sessionconfig sc JOIN helps h ON
                         (
                         h.sessionid = sc.sessionid
@@ -685,7 +685,7 @@ class DB(object):
     @staticmethod
     def get_gameurls_messages():
         sql = """
-                        SELECT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        SELECT DISTINCT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
                         FROM sessionconfig sc JOIN messages m ON
                         (
                         m.sessionid = sc.sessionid
