@@ -511,7 +511,8 @@ def run_app(bot, main_vars):
 
     @app.route("/DBcleanup", methods=['GET', 'POST'])
     def db_cleanup():
-        th_db_cleanup = threading.Thread(name='th_db_cleanup', target=run_db_cleanup, args=(bot))
+        th_db_cleanup = threading.Thread(name='th_db_cleanup', target=run_db_cleanup,
+                                         args=(telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")))
         th_db_cleanup.start()
         return 'Чистка базы от элементов закончившихся игр запущена'
 
