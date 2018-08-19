@@ -94,7 +94,7 @@ def elements_cleanup(urls, elements):
             response = requests.get(line['gameurljs'], headers={'Cookie': cookie})
             game_model = json.loads(response.text)
             print str(game_model['Event'])
-            if game_model['Event'] == 17:
+            if game_model['Event'] in [6, 17]:
                 DBSession.drop_session_vars(line['sessionid'])
                 DB.cleanup_for_ended_game(line['sessionid'], line['gameid'])
         except Exception:
