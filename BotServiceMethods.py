@@ -45,6 +45,21 @@ def add_level_bonuses(levels_dict, bonus_lines):
     return levels_dict
 
 
+def run_db_cleanup(bot):
+    urls_levels = DB.get_gameurls_levels()
+    elements_cleanup(urls_levels, 'levels')
+    urls_bonuses = DB.get_gameurls_bonuses()
+    elements_cleanup(urls_bonuses, 'bonuses')
+    urls_sectors = DB.get_gameurls_sectors()
+    elements_cleanup(urls_sectors, 'sectors')
+    urls_helps = DB.get_gameurls_helps()
+    elements_cleanup(urls_helps, 'helps')
+    urls_messages = DB.get_gameurls_messages()
+    elements_cleanup(urls_messages, 'messages')
+    bot.send_message(45839899, 'db_cleanup выполнен')
+    return
+
+
 def elements_cleanup(urls, elements):
     for line in urls:
         try:
