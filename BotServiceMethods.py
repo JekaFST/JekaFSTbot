@@ -46,6 +46,7 @@ def add_level_bonuses(levels_dict, bonus_lines):
 
 
 def run_db_cleanup(bot):
+    logging.info("DB cleanup is launched")
     try:
         urls_messages = DB.get_gameurls_messages()
         logging.info("urls_messages got")
@@ -75,6 +76,7 @@ def run_db_cleanup(bot):
         bot.send_message(45839899, 'db_cleanup выполнен')
     except Exception:
         logging.exception("Exception during DB cleanup")
+    logging.info("DB cleanup is finished")
     return
 
 
