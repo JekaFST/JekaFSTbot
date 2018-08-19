@@ -4,7 +4,7 @@ import flask
 import re
 import telebot
 from flask import Flask, render_template, send_from_directory
-from BotServiceMethods import add_level_bonuses, add_level_sectors
+from BotServiceMethods import add_level_bonuses, add_level_sectors, elements_cleanup
 from Const import helptext
 from DBMethods import DB, DBSession
 from GameDetailsBuilder import game_details_builder
@@ -507,6 +507,20 @@ def run_app(bot, main_vars):
     @app.route("/instruction", methods=['GET', 'POST'])
     def send_instruction():
         return render_template("TemplateForInstruction.html")
+
+    @app.route("/DBcleanup", methods=['GET', 'POST'])
+    def db_cleanup():
+        urls_levels = DB.get_gameurls_levels()
+        elements_cleanup(urls_levels, 'levels')
+        urls_bonuses = DB.get_gameurls_bonuses()
+        elements_cleanup(urls_bonuses, 'bonuses')
+        urls_sectors = DB.get_gameurls_sectors()
+        elements_cleanup(urls_sectors, 'sectors')
+        urls_helps = DB.get_gameurls_helps()
+        elements_cleanup(urls_helps, 'helps')
+        urls_messages = DB.get_gameurls_messages()
+        elements_cleanup(urls_messages, 'messages')
+        return 'Чистка базы от элементов закончившихся игр выполнена'
 
     @app.route("/<session_id>/<game_id>", methods=['GET', 'POST'])
     def all_codes_per_game(session_id, game_id):
