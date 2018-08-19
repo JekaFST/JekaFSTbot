@@ -46,7 +46,7 @@ def add_level_bonuses(levels_dict, bonus_lines):
 
 
 def run_db_cleanup(bot):
-    logging.log(logging.INFO, "DB cleanup is launched")
+    logging.log(logging.INFO, "DB cleanup is started")
     try:
         urls_messages = DB.get_gameurls_messages()
         logging.log(logging.INFO, "urls_messages got")
