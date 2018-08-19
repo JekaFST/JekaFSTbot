@@ -46,37 +46,42 @@ def add_level_bonuses(levels_dict, bonus_lines):
 
 
 def run_db_cleanup(bot):
-    logging.log("DB cleanup is launched")
+    print("DB cleanup is launched")
     try:
         urls_messages = DB.get_gameurls_messages()
-        logging.log("urls_messages got")
+        print("urls_messages got")
+        print str(urls_messages)
         elements_cleanup(urls_messages, 'messages')
-        logging.log("After messages cleanup started")
+        print("After messages cleanup started")
 
         urls_levels = DB.get_gameurls_levels()
-        logging.log("urls_levels got")
+        print("urls_levels got")
+        print str(urls_levels)
         elements_cleanup(urls_levels, 'levels')
-        logging.log("After levels cleanup started")
+        print("After levels cleanup started")
 
         urls_helps = DB.get_gameurls_helps()
-        logging.log("urls_helps got")
+        print("urls_helps got")
+        print str(urls_helps)
         elements_cleanup(urls_helps, 'helps')
-        logging.log("After helps cleanup started")
+        print("After helps cleanup started")
 
         urls_bonuses = DB.get_gameurls_bonuses()
-        logging.log("urls_bonuses got")
+        print("urls_bonuses got")
+        print str(urls_bonuses)
         elements_cleanup(urls_bonuses, 'bonuses')
-        logging.log("After bonuss cleanup started")
+        print("After bonuss cleanup started")
 
         urls_sectors = DB.get_gameurls_sectors()
-        logging.log("urls_sectors got")
+        print("urls_sectors got")
+        print str(urls_sectors)
         elements_cleanup(urls_sectors, 'sectors')
-        logging.log("After sectors cleanup started")
+        print("After sectors cleanup started")
 
         bot.send_message(45839899, 'db_cleanup выполнен')
     except Exception:
         logging.exception("Exception during DB cleanup")
-    logging.log("DB cleanup is finished")
+    print("DB cleanup is finished")
     return
 
 
@@ -88,6 +93,7 @@ def elements_cleanup(urls, elements):
             cookie = response.request.headers['Cookie']
             response = requests.get(line['gameurljs'], headers={'Cookie': cookie})
             game_model = json.loads(response.text)
+            print str(game_model['Event'])
             if game_model['Event'] == 17:
                 DBSession.drop_session_vars(line['sessionid'])
                 DB.cleanup_for_ended_game(line['sessionid'], line['gameid'])
