@@ -629,3 +629,68 @@ class DB(object):
                     """ % (session_id, game_id, level_number)
         rows = db_connection.execute_dict_select_cur(sql)
         return rows
+
+    @staticmethod
+    def get_gameurls_levels():
+        sql = """
+                        SELECT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        FROM sessionconfig sc JOIN levels l ON
+                        (
+                        l.sessionid = sc.sessionid
+                        AND l.gameid = sc.gameid
+                        )
+                        """
+        rows = db_connection.execute_dict_select_cur(sql)
+        return rows
+
+    @staticmethod
+    def get_gameurls_bonuses():
+        sql = """
+                        SELECT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        FROM sessionconfig sc JOIN bonuses b ON
+                        (
+                        b.sessionid = sc.sessionid
+                        AND b.gameid = sc.gameid
+                        )
+                        """
+        rows = db_connection.execute_dict_select_cur(sql)
+        return rows
+
+    @staticmethod
+    def get_gameurls_sectors():
+        sql = """
+                        SELECT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        FROM sessionconfig sc JOIN sectors s ON
+                        (
+                        s.sessionid = sc.sessionid
+                        AND s.gameid = sc.gameid
+                        )
+                        """
+        rows = db_connection.execute_dict_select_cur(sql)
+        return rows
+
+    @staticmethod
+    def get_gameurls_helps():
+        sql = """
+                        SELECT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        FROM sessionconfig sc JOIN helps h ON
+                        (
+                        h.sessionid = sc.sessionid
+                        AND h.gameid = sc.gameid
+                        )
+                        """
+        rows = db_connection.execute_dict_select_cur(sql)
+        return rows
+
+    @staticmethod
+    def get_gameurls_messages():
+        sql = """
+                        SELECT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        FROM sessionconfig sc JOIN messages m ON
+                        (
+                        m.sessionid = sc.sessionid
+                        AND m.gameid = sc.gameid
+                        )
+                        """
+        rows = db_connection.execute_dict_select_cur(sql)
+        return rows
