@@ -162,14 +162,22 @@ def send_up_message(bot, chat_id, **kwargs):
 
     bot.send_message(chat_id, up_message, parse_mode='HTML')
     if kwargs['channel_name'] and kwargs['use_channel']:
-        bot.send_message(kwargs['channel_name'], up_message, parse_mode='HTML')
+        try:
+            bot.send_message(kwargs['channel_name'], up_message, parse_mode='HTML')
+        except Exception as error:
+            channel_error_handling(bot, chat_id, error, 'Инфа об АПе не отправлена в канал.\r\n')
+            logging.exception('Exception - updater не смог прислать информацию об АПе в канал')
 
 
 @ExceptionHandler.common_updater_exception
 def send_task_after_up(bot, chat_id, session, **kwargs):
     send_task(session['sessionid'], kwargs['loaded_level'], bot, chat_id, from_updater=True)
     if session['channelname'] and session['usechannel']:
-        send_task(session['sessionid'], kwargs['loaded_level'], bot, session['channelname'])
+        try:
+            send_task(session['sessionid'], kwargs['loaded_level'], bot, session['channelname'])
+        except Exception as error:
+            channel_error_handling(bot, chat_id, error, 'Задание не отправлено в канал.\r\n')
+            logging.exception('Exception - updater не смог прислать задание в канал')
 
 
 @ExceptionHandler.common_updater_exception
@@ -187,9 +195,10 @@ def send_unclosed_sectors_to_channel(bot, chat_id, session, **kwargs):
         message = '<b>Осталось закрыть: %s из %s:</b>\r\n%s' % (str(codes_to_find), str(codes_all), sectors_to_close)
         try:
             response = bot.send_message(session['channelname'], message, parse_mode='HTML')
-        except Exception:
-            response = bot.send_message(session['channelname'], 'Exception - updater не смог прислать не закрытые сектора')
-            logging.exception('Exception - updater не смог прислать не закрытые сектора')
+        except Exception as error:
+            channel_error_handling(bot, chat_id, error, '')
+            response = bot.send_message(session['channelname'], 'Не закрытые сектора не отправлены в канал')
+            logging.exception('Exception - updater не смог прислать не закрытые сектора в канал')
         DBSession.update_int_field(session['sessionid'], 'sectorsmessageid', response.message_id)
 
 
@@ -349,3 +358,12 @@ def get_sectors_to_close(sectors, get_sector_names=False):
 
 def get_unclosed_sectors(sectors):
     return [sector for sector in sectors if not sector['IsAnswered']]
+
+
+def channel_error_handling(bot, chat_id, error, message_type):
+    if error.result.status_code == 400 and 'chat not found' in error.message:
+        bot.send_message(chat_id, message_type + 'Канал не найден - проверьте публичность канала и заданное имя')
+    elif error.result.status_code == 403 and 'Forbidden' in error.message:
+        bot.send_message(chat_id, message_type + 'Forbidden - бот не является админом канала')
+    else:
+        bot.send_message(chat_id, message_type + 'Непредвиденная ошибка при постинге в канал')
