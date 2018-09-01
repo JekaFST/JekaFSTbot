@@ -28,23 +28,23 @@ def reload_backup(bot, main_vars):
         game_model, normal = get_current_game_model(session, bot, session['sessionid'], from_updater=False)
         if game_model and normal:
             if not session['stopupdater']:
-                text = 'Бот был перезагружен. Игра в нормальном состоянии\r\nСлежение будет запущено автоматически'
+                # text = 'Бот был перезагружен. Игра в нормальном состоянии\r\nСлежение будет запущено автоматически'
                 start_updater_task = Task(session['sessionid'], 'start_updater', main_vars=main_vars, session_id=session['sessionid'])
                 main_vars.task_queue.append(start_updater_task)
-            else:
-                text = 'Бот был перезагружен. Игра в нормальном состоянии. Слежение выключено'
-            try:
-                bot.send_message(session['sessionid'], text)
-            except Exception:
-                logging.exception("Не удалось отправить сообщение о перезапуске сессии %s" % str(session['sessionid']))
+            # else:
+            #     text = 'Бот был перезагружен. Игра в активном состоянии. Слежение выключено'
+            # try:
+            #     bot.send_message(session['sessionid'], text)
+            # except Exception:
+            #     logging.exception("Не удалось отправить сообщение о перезапуске сессии %s" % str(session['sessionid']))
         elif game_model and not normal and not session['stopupdater']:
-            text = 'Бот был перезагружен\r\nСлежение будет запущено автоматически'
+            # text = 'Бот был перезагружен\r\nСлежение будет запущено автоматически'
             start_updater_task = Task(session['sessionid'], 'start_updater', main_vars=main_vars, session_id=session['sessionid'])
             main_vars.task_queue.append(start_updater_task)
-            try:
-                bot.send_message(session['sessionid'], text)
-            except Exception:
-                logging.exception("Не удалось отправить сообщение о перезапуске сессии %s" % str(session['sessionid']))
+            # try:
+            #     bot.send_message(session['sessionid'], text)
+            # except Exception:
+            #     logging.exception("Не удалось отправить сообщение о перезапуске сессии %s" % str(session['sessionid']))
         else:
             pass
 
