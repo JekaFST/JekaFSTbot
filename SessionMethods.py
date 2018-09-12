@@ -623,13 +623,11 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
 
 def send_map_file(bot, chat_id, session, locations):
     kml = simplekml.Kml()
-    filename = str(session['sessionid']) + str(session['gameid'])
+    filename = str(session['sessionid']) + '_' + str(session['gameid'])
     for k, v in locations.items():
         latitude = re.findall(r'\d\d\.\d{4,7}', str(v))[0]
         longitude = re.findall(r'\d\d\.\d{4,7}', str(v))[1]
         kml.newpoint(name=str(k), coords=[(float(longitude), float(latitude))])  # lon, lat, optional height
-    if os.path.exists(str(session['sessionid']) + '.kml'):
-        print 'file exists'
     if os.path.exists(filename + '.kml'):
         os.remove(filename + '.kml')
     kml.save(filename + '.kml')
