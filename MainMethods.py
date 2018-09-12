@@ -536,3 +536,12 @@ def get_codes_links(task, bot):
               'Для просмотра кодов по отдельному уровню игры:\r\n' + link_to_codes_per_level + '\r\n' \
               'где level_number - номер уровня'
     bot.send_message(task.chat_id, message, reply_to_message_id=task.message_id, disable_web_page_preview=True)
+
+
+def get_map_file(task, bot):
+    session = DBSession.get_session(task.session_id)
+    locations = json.loads(session['locations'])
+    if not locations:
+        bot.send_message(task.chat_id, 'Нет координат для отправки')
+        return
+    send_map_file(bot, task.chat_id, session, locations)

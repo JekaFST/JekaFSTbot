@@ -452,6 +452,15 @@ def run_app(bot, main_vars):
             get_codes_links_task = Task(message.chat.id, 'get_codes_links', session_id=message.chat.id, message_id=message.message_id)
             main_vars.task_queue.append(get_codes_links_task)
 
+    @bot.message_handler(commands=['get_map_file'])
+    def get_map_file(message):
+        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
+        if allowed and Validations.check_session_available(message.chat.id, bot):
+
+            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
+            get_map_file_task = Task(message.chat.id, 'get_map_file', session_id=main_chat_id)
+            main_vars.task_queue.append(get_map_file_task)
+
     @bot.message_handler(commands=['instruction'])
     def send_instruction(message):
         bot.send_message(message.chat.id, 'https://powerful-shelf-32284.herokuapp.com/instruction')
@@ -536,6 +545,10 @@ def run_app(bot, main_vars):
 
         levels_list = [level for level in levels_dict.values()]
         return render_template("TemplateForCodes.html", title='All codes per %s level' % level_number, levels_list=levels_list)
+
+    @app.route("/map/<session_id>/<game_id>", methods=['GET', 'POST'])
+    def map_link(session_id):
+        return '/map/' + str(session_id) + '.kml'
 
     @app.route('/favicon.ico')
     def favicon():

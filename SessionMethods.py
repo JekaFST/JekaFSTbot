@@ -4,6 +4,7 @@ import logging
 import requests
 import json
 import telebot
+import simplekml
 from bs4 import BeautifulSoup
 from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, send_adm_message
 from Const import game_wrong_statuses, urls
@@ -617,3 +618,16 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
             bot.send_message(chat_id, 'Live location для следующих точек не отправлен: %s.\r\n'
                                       'В чате нет соответствующего(-их) бота(-ов)' % str(not_in_chat_bots))
         DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
+
+
+def send_map_file(bot, chat_id, session, locations):
+    kml = simplekml.Kml()
+    filename = str(session['sessionid'])
+    for k, v in locations.items():
+        latitude = re.findall(r'\d\d\.\d{4,7}', str(v))[0]
+        longitude = re.findall(r'\d\d\.\d{4,7}', str(v))[1]
+        kml.newpoint(name=str(k), coords=[(int(longitude), int(latitude))])  # lon, lat, optional height
+    kml.save('/map/' + filename + ".kml")
+    link_to_all_codes = 'https://powerful-shelf-32284.herokuapp.com/map/%s/%s' % \
+                        (str(session['sessionid']), str(session['game_id']))
+    bot.send_message(chat_id, link_to_all_codes)

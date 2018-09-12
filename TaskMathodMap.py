@@ -40,6 +40,7 @@ task_method_dict = {
     'add_points_ll': add_custom_live_locations,
     'clean_ll': clean_live_locations,
     'get_codes_links': get_codes_links,
+    'get_map_file': get_map_file,
 }
 
 
