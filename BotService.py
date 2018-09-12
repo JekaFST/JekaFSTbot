@@ -548,7 +548,7 @@ def run_app(bot, main_vars):
 
     @app.route("/map/<session_id>/<game_id>", methods=['GET', 'POST'])
     def map_link(session_id):
-        return '/map/' + str(session_id) + '.kml'
+        return str(session_id) + '.kml'
 
     @app.route('/favicon.ico')
     def favicon():
