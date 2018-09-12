@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import os
 import logging
 import requests
 import json
@@ -627,7 +628,8 @@ def send_map_file(bot, chat_id, session, locations):
         latitude = re.findall(r'\d\d\.\d{4,7}', str(v))[0]
         longitude = re.findall(r'\d\d\.\d{4,7}', str(v))[1]
         kml.newpoint(name=str(k), coords=[(float(longitude), float(latitude))])  # lon, lat, optional height
+    os.remove(filename + ".kml")
     kml.save(filename + ".kml")
     link_to_all_codes = 'https://powerful-shelf-32284.herokuapp.com/map/%s/%s' % \
-                        (str(session['sessionid']), str(session['game_id']))
+                        (str(session['sessionid']), str(session['gameid']))
     bot.send_message(chat_id, link_to_all_codes)
