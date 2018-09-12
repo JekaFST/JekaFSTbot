@@ -623,7 +623,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
 
 def send_map_file(bot, chat_id, session, locations):
     kml = simplekml.Kml()
-    filename = str(session['sessionid']) + str(session['gameid'])
+    filename = str(session['sessionid']) + str(session['gameid']) + '.kml'
     print filename
     for k, v in locations.items():
         latitude = re.findall(r'\d\d\.\d{4,7}', str(v))[0]
@@ -631,7 +631,11 @@ def send_map_file(bot, chat_id, session, locations):
         kml.newpoint(name=str(k), coords=[(float(longitude), float(latitude))])  # lon, lat, optional height
     if os.path.exists(filename + '.kml'):
         os.remove(filename + '.kml')
-    kml.save(filename + '.kml')
-    link_to_all_codes = 'https://powerful-shelf-32284.herokuapp.com/map/%s/%s' % \
-                        (str(session['sessionid']), str(session['gameid']))
-    bot.send_message(chat_id, link_to_all_codes)
+    kml.save(filename)
+    # link_to_all_codes = 'https://powerful-shelf-32284.herokuapp.com/map/%s/%s' % \
+    #                     (str(session['sessionid']), str(session['gameid']))
+    doc = open(filename, 'rb')
+    bot.send_document(chat_id, doc)
+    bot.send_document(chat_id, "FILEID")
+    # file = open(os.path.join(app.root_path), str(session_id) + str(game_id) + '.kml')
+    # bot.send_message(chat_id, link_to_all_codes)

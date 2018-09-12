@@ -546,9 +546,9 @@ def run_app(bot, main_vars):
         levels_list = [level for level in levels_dict.values()]
         return render_template("TemplateForCodes.html", title='All codes per %s level' % level_number, levels_list=levels_list)
 
-    @app.route("/map/<session_id>/<game_id>", methods=['GET', 'POST'])
-    def map_link(session_id, game_id):
-        return send_from_directory(os.path.join(app.root_path), str(session_id) + str(game_id) + '.kml')
+    # @app.route("/map/<session_id>/<game_id>", methods=['GET', 'POST'])
+    # def map_link(session_id, game_id):
+    #     return send_from_directory(os.path.join(app.root_path), str(session_id) + str(game_id) + '.kml')
 
     @app.route('/favicon.ico')
     def favicon():
