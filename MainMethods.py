@@ -439,7 +439,7 @@ def join(task, bot):
 
 
 def reset_join(task, bot):
-    DB.delete_add_chat_id(task.add_chat_id)
+    DB.delete_add_chat_id(task.user_id)
     bot.send_message(task.chat_id, 'Взаимодействие с ботом через личный чат сброшено',
                      reply_to_message_id=task.message_id)
 
