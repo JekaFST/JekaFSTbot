@@ -623,7 +623,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
 
 def send_map_file(bot, chat_id, session, locations):
     kml = simplekml.Kml()
-    filename = str(session['sessionid']) + '_' + str(session['gameid'])
+    filename = str(session['sessionid']) + str(session['gameid'])
     for k, v in locations.items():
         latitude = re.findall(r'\d\d\.\d{4,7}', str(v))[0]
         longitude = re.findall(r'\d\d\.\d{4,7}', str(v))[1]
