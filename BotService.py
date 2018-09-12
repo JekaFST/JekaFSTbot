@@ -458,7 +458,7 @@ def run_app(bot, main_vars):
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
             main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
-            get_map_file_task = Task(message.chat.id, 'get_map_file', session_id=main_chat_id)
+            get_map_file_task = Task(message.chat.id, 'get_map_file', session_id=main_chat_id, message_id=message.message_id)
             main_vars.task_queue.append(get_map_file_task)
 
     @bot.message_handler(commands=['instruction'])
@@ -545,10 +545,6 @@ def run_app(bot, main_vars):
 
         levels_list = [level for level in levels_dict.values()]
         return render_template("TemplateForCodes.html", title='All codes per %s level' % level_number, levels_list=levels_list)
-
-    # @app.route("/map/<session_id>/<game_id>", methods=['GET', 'POST'])
-    # def map_link(session_id, game_id):
-    #     return send_from_directory(os.path.join(app.root_path), str(session_id) + str(game_id) + '.kml')
 
     @app.route('/favicon.ico')
     def favicon():

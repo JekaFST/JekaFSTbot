@@ -544,4 +544,4 @@ def get_map_file(task, bot):
     if not locations:
         bot.send_message(task.chat_id, 'Нет координат для отправки')
         return
-    send_map_file(bot, task.chat_id, session, locations)
+    send_map_file(bot, task.chat_id, session, locations, task.message_id)

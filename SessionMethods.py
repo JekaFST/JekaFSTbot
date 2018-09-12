@@ -621,7 +621,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
         DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
 
 
-def send_map_file(bot, chat_id, session, locations):
+def send_map_file(bot, chat_id, session, locations, message_id):
     kml = simplekml.Kml()
     filename = str(session['sessionid']) + str(session['gameid']) + '.kml'
     print filename
@@ -632,10 +632,5 @@ def send_map_file(bot, chat_id, session, locations):
     if os.path.exists(filename + '.kml'):
         os.remove(filename + '.kml')
     kml.save(filename)
-    # link_to_all_codes = 'https://powerful-shelf-32284.herokuapp.com/map/%s/%s' % \
-    #                     (str(session['sessionid']), str(session['gameid']))
     doc = open(filename, 'rb')
-    bot.send_document(chat_id, doc)
-    bot.send_document(chat_id, "FILEID")
-    # file = open(os.path.join(app.root_path), str(session_id) + str(game_id) + '.kml')
-    # bot.send_message(chat_id, link_to_all_codes)
+    bot.send_document(chat_id, doc, reply_to_message_id=message_id)
