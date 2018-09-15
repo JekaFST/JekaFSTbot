@@ -308,7 +308,7 @@ def cut_script(text, **kwargs):
         coords = str()
         coords_in_script = find_coords(str(script))
         for coord in coords_in_script:
-            coords += 'Корды из скрипта: ' + coord if not coords else '\r\nКорды из скрипта: ' + coord
+            coords += '\r\nКорды из скрипта: ' + coord
         text = text.replace(str(script), coords)
 
     return text, None, None
