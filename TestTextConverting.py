@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 text = """
 <h3>Подсказка 1</h3>
-		<p><script src="http://d1.endata.cx/data/games/60889/copy_kord_vsebel.js" language="JavaScript" ></SCRIPT> <script language="JavaScript">createCoord("53.548102, 25.832155");</script>
+<p><script src="http://d1.endata.cx/data/games/60889/copy_kord_vsebel.js" language="JavaScript" ></SCRIPT> <script language="JavaScript">createCoord("53.548102, 25.832155");</script>
 <br/>Код доезда с обратной стороны здания на входе</p>
 """
 
@@ -206,7 +206,7 @@ def cut_style(text):
 def cut_script(text):
     soup = BeautifulSoup(text)
     for script in soup.find_all('script'):
-        coords = ''
+        coords = str()
         coords_in_script = find_coords(str(script))
         for coord in coords_in_script:
             coords += 'Корды из скрипта: ' + coord if not coords else '\r\nКорды из скрипта: ' + coord
