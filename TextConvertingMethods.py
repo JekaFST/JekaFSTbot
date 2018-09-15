@@ -305,7 +305,11 @@ def cut_style(text, **kwargs):
 def cut_script(text, **kwargs):
     soup = BeautifulSoup(text)
     for script in soup.find_all('script'):
-        text = text.replace(str(script), '')
+        coords = ''
+        coords_in_script = find_coords(str(script))
+        for coord in coords_in_script:
+            coords += 'Корды из скрипта: ' + coord if not coords else '\r\nКорды из скрипта: ' + coord
+        text = text.replace(str(script), coords)
 
     return text, None, None
 
