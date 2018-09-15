@@ -622,8 +622,10 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
 
 
 def send_map_file(bot, chat_id, session, locations, message_id):
+    os.chdir(os.getcwd() + '\static\map')
     kml = simplekml.Kml()
-    filename = str(session['sessionid']) + str(session['gameid']) + '.kml'
+    level_number = DBLevels.get_level_number(session['sessionid'], session['currlevelid'])
+    filename = 'level' + str(level_number) + '_' + str(session['sessionid'])[-4:] + '.kml'
     for k, v in locations.items():
         latitude = re.findall(r'\d\d\.\d{4,7}', str(v))[0]
         longitude = re.findall(r'\d\d\.\d{4,7}', str(v))[1]
@@ -633,3 +635,4 @@ def send_map_file(bot, chat_id, session, locations, message_id):
     kml.save(filename)
     doc = open(filename, 'rb')
     bot.send_document(chat_id, doc, reply_to_message_id=message_id)
+    doc.close()

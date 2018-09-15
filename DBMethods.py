@@ -230,6 +230,12 @@ class DBLevels(object):
         return rows[0][0]
 
     @staticmethod
+    def get_level_number(session_id, level_id):
+        sql = "SELECT number FROM Levels WHERE sessionid = %s AND levelid = %s" % (session_id, level_id)
+        rows = db_connection.execute_select_cur(sql)
+        return rows[0][0]
+
+    @staticmethod
     def update_time_to_up_sent(session_id, level_id, active):
         sql = """UPDATE Levels
                 SET timetoupsent = %s
