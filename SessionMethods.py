@@ -628,8 +628,8 @@ def send_map_file(bot, chat_id, session, locations, message_id):
         latitude = re.findall(r'\d\d\.\d{4,7}', str(v))[0]
         longitude = re.findall(r'\d\d\.\d{4,7}', str(v))[1]
         kml.newpoint(name=str(k), coords=[(float(longitude), float(latitude))])  # lon, lat, optional height
-    if os.path.exists(filename + '.kml'):
-        os.remove(filename + '.kml')
+    if os.path.exists(filename):
+        os.remove(filename)
     kml.save(filename)
     doc = open(filename, 'rb')
     bot.send_document(chat_id, doc, reply_to_message_id=message_id)
