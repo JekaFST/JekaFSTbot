@@ -622,7 +622,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
 
 
 def send_map_file(bot, chat_id, session, locations, message_id):
-    os.chdir(os.getcwd() + '/static/map')
+    # os.chdir(os.getcwd() + '/static/map')
     kml = simplekml.Kml()
     level_number = DBLevels.get_level_number(session['sessionid'], session['currlevelid'])
     filename = 'level' + str(level_number) + '_' + str(session['sessionid'])[-4:] + '.kml'
