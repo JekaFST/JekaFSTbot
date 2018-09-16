@@ -321,7 +321,7 @@ def start_updater(task, bot):
         name = 'updater_%s' % task.chat_id
         threads = threading.enumerate()
         for thread in threads:
-            if thread.name == name:
+            if thread.getName() == name:
                 bot.send_message(task.chat_id, 'Нельзя запустить слежение повторно')
                 return
         DBSession.update_bool_flag(task.session_id, 'stopupdater', 'False')
