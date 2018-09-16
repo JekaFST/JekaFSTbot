@@ -12,14 +12,7 @@ from CommonMethods import send_help, send_time_to_help, send_task, time_converte
 
 def updater(task, bot):
     session = DBSession.get_session(task.session_id)
-    if not session['stormgame']:
-        name = 'upd_thread_%s' % task.chat_id
-        threading.Thread(name=name, target=linear_updater, args=(bot, task.chat_id, session)).start()
-        return
-    else:
-        name = 'upd_thread_%s' % task.chat_id
-        threading.Thread(name=name, target=storm_updater, args=(bot, task.chat_id, session)).start()
-        return
+    storm_updater(bot, task.chat_id, session) if session['stormgame'] else linear_updater(bot, task.chat_id, session)
 
 
 @ExceptionHandler.updater_exception
