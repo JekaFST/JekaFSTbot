@@ -128,7 +128,7 @@ class ExceptionHandler(object):
             except Exception:
                 logging.exception('Exception - упал updater_scheduler')
                 start_updater_task = Task(chat_id, 'start_updater', queue=queue, session_id=chat_id)
-                queue.append(start_updater_task)
+                queue.put((2, start_updater_task))
                 # bot.send_message(chat_id, 'Критическая ошибка при слежении. Перезапустите /start_updater')
         return wrapped
 

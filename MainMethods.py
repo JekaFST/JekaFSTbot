@@ -30,7 +30,7 @@ def reload_backup(bot, queue):
             if not session['stopupdater']:
                 # text = 'Бот был перезагружен. Игра в нормальном состоянии\r\nСлежение будет запущено автоматически'
                 start_updater_task = Task(session['sessionid'], 'start_updater', queue=queue, session_id=session['sessionid'])
-                queue.append(start_updater_task)
+                queue.put((2, start_updater_task))
             # else:
             #     text = 'Бот был перезагружен. Игра в активном состоянии. Слежение выключено'
             # try:
@@ -40,7 +40,7 @@ def reload_backup(bot, queue):
         elif game_model and not normal and not session['stopupdater']:
             # text = 'Бот был перезагружен\r\nСлежение будет запущено автоматически'
             start_updater_task = Task(session['sessionid'], 'start_updater', queue=queue, session_id=session['sessionid'])
-            queue.append(start_updater_task)
+            queue.put((2, start_updater_task))
             # try:
             #     bot.send_message(session['sessionid'], text)
             # except Exception:
@@ -339,7 +339,7 @@ def updater_scheduler(chat_id, bot, queue, session_id):
             # time.sleep(DBSession.get_field_value(session_id, 'delay'))
             time.sleep(2)
             updater_task = Task(chat_id, 'updater', session_id=session_id)
-            queue.append(updater_task)
+            queue.put((2, updater_task))
             DBSession.update_bool_flag(session_id, 'putupdatertask', 'False')
     else:
         bot.send_message(chat_id, 'Слежение остановлено')
