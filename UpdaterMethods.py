@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import threading
 import json
 import logging
 from time import sleep
