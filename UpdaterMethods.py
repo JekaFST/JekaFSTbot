@@ -14,15 +14,11 @@ def updater(task, bot):
     session = DBSession.get_session(task.session_id)
     if not session['stormgame']:
         name = 'upd_thread_%s' % task.chat_id
-        task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=linear_updater,
-                                                            args=(bot, task.chat_id, session))
-        task.updaters_dict[task.chat_id].start()
+        threading.Thread(name=name, target=linear_updater, args=(bot, task.chat_id, session)).start()
         return
     else:
         name = 'upd_thread_%s' % task.chat_id
-        task.updaters_dict[task.chat_id] = threading.Thread(name=name, target=storm_updater,
-                                                            args=(bot, task.chat_id, session))
-        task.updaters_dict[task.chat_id].start()
+        threading.Thread(name=name, target=storm_updater, args=(bot, task.chat_id, session)).start()
         return
 
 

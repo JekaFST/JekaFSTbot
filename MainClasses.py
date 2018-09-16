@@ -2,13 +2,6 @@
 from DBMethods import DB, DBSession
 
 
-class MainVars(object):
-    def __init__(self):
-        self.task_queue = list()
-        self.updater_schedulers_dict = dict()
-        self.updaters_dict = dict()
-
-
 class Validations(object):
     @staticmethod
     def check_permission(chat_id, bot):
@@ -74,17 +67,15 @@ class Validations(object):
 
 
 class Task(object):
-    def __init__(self, chat_id, type, session_id=None, message_id=None, user_id=None, main_vars=None,
-                 updaters_dict=None, new_delay=None, new_login=None, new_password=None, new_domain=None, duration=None,
-                 new_game_id=None, new_channel_name=None, code=None, coords=None, storm_level_number=None, point=None,
-                 points_dict=None):
+    def __init__(self, chat_id, type, session_id=None, message_id=None, user_id=None, queue=None, new_delay=None,
+                 new_login=None, new_password=None, new_domain=None, duration=None, new_game_id=None,
+                 new_channel_name=None, code=None, coords=None, storm_level_number=None, point=None, points_dict=None):
         self.chat_id = chat_id
         self.type = type
         self.session_id = session_id
         self.message_id = message_id
         self.user_id = user_id
-        self.main_vars = main_vars
-        self.updaters_dict = updaters_dict
+        self.queue = queue
         self.new_delay = new_delay
         self.new_login = new_login
         self.new_password = new_password

@@ -17,9 +17,9 @@ class ExceptionHandler(object):
 
     @staticmethod
     def reload_backup_exception(function):
-        def wrapped(bot, main_vars):
+        def wrapped(bot, queue):
             try:
-                function(bot, main_vars)
+                function(bot, queue)
             except Exception:
                 logging.exception("Exception в main - не удалось сделать reload backup")
         return wrapped
@@ -122,14 +122,13 @@ class ExceptionHandler(object):
 
     @staticmethod
     def updater_scheduler_exception(function):
-        def wrapped(chat_id, bot, main_vars, session_id):
+        def wrapped(chat_id, bot, queue, session_id):
             try:
-                function(chat_id, bot, main_vars, session_id)
+                function(chat_id, bot, queue, session_id)
             except Exception:
                 logging.exception('Exception - упал updater_scheduler')
-                del main_vars.updater_schedulers_dict[chat_id]
-                start_updater_task = Task(chat_id, 'start_updater', main_vars=main_vars, session_id=chat_id)
-                main_vars.task_queue.append(start_updater_task)
+                start_updater_task = Task(chat_id, 'start_updater', queue=queue, session_id=chat_id)
+                queue.append(start_updater_task)
                 # bot.send_message(chat_id, 'Критическая ошибка при слежении. Перезапустите /start_updater')
         return wrapped
 

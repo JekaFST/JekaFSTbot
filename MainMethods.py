@@ -14,7 +14,7 @@ from ExceptionHandler import ExceptionHandler
 
 
 @ExceptionHandler.reload_backup_exception
-def reload_backup(bot, main_vars):
+def reload_backup(bot, queue):
     sessions = DBSession.get_all_sessions()
     for session in sessions:
         try:
@@ -29,8 +29,8 @@ def reload_backup(bot, main_vars):
         if game_model and normal:
             if not session['stopupdater']:
                 # text = 'Бот был перезагружен. Игра в нормальном состоянии\r\nСлежение будет запущено автоматически'
-                start_updater_task = Task(session['sessionid'], 'start_updater', main_vars=main_vars, session_id=session['sessionid'])
-                main_vars.task_queue.append(start_updater_task)
+                start_updater_task = Task(session['sessionid'], 'start_updater', queue=queue, session_id=session['sessionid'])
+                queue.append(start_updater_task)
             # else:
             #     text = 'Бот был перезагружен. Игра в активном состоянии. Слежение выключено'
             # try:
@@ -39,8 +39,8 @@ def reload_backup(bot, main_vars):
             #     logging.exception("Не удалось отправить сообщение о перезапуске сессии %s" % str(session['sessionid']))
         elif game_model and not normal and not session['stopupdater']:
             # text = 'Бот был перезагружен\r\nСлежение будет запущено автоматически'
-            start_updater_task = Task(session['sessionid'], 'start_updater', main_vars=main_vars, session_id=session['sessionid'])
-            main_vars.task_queue.append(start_updater_task)
+            start_updater_task = Task(session['sessionid'], 'start_updater', queue=queue, session_id=session['sessionid'])
+            queue.append(start_updater_task)
             # try:
             #     bot.send_message(session['sessionid'], text)
             # except Exception:
@@ -317,32 +317,32 @@ def send_auth_messages(task, bot):
 
 
 def start_updater(task, bot):
-    if DBSession.get_field_value(task.session_id, 'active') and task.chat_id not in task.main_vars.updater_schedulers_dict.keys():
+    if DBSession.get_field_value(task.session_id, 'active'):
+        name = 'updater_%s' % task.chat_id
+        threads = threading.enumerate()
+        for thread in threads:
+            if thread.name == name:
+                bot.send_message(task.chat_id, 'Нельзя запустить слежение повторно')
+                return
         DBSession.update_bool_flag(task.session_id, 'stopupdater', 'False')
         DBSession.update_bool_flag(task.session_id, 'putupdatertask', 'True')
-        name = 'updater_%s' % task.chat_id
-        task.main_vars.updater_schedulers_dict[task.chat_id] = threading.Thread(name=name, target=updater_scheduler,
-                                                                                args=(task.chat_id, bot, task.main_vars,
-                                                                                      task.session_id))
-        task.main_vars.updater_schedulers_dict[task.chat_id].start()
+        threading.Thread(name=name, target=updater_scheduler, args=(task.chat_id, bot, task.queue, task.session_id)).start()
         bot.send_message(task.chat_id, 'Слежение запущено')
     else:
-        bot.send_message(task.chat_id, 'Нельзя запустить слежение повторно или при неактивной сессии')
+        bot.send_message(task.chat_id, 'Нельзя запустить слежение при неактивной сессии')
 
 
 @ExceptionHandler.updater_scheduler_exception
-def updater_scheduler(chat_id, bot, main_vars, session_id):
+def updater_scheduler(chat_id, bot, queue, session_id):
     while not DBSession.get_field_value(session_id, 'stopupdater'):
         if DBSession.get_field_value(session_id, 'putupdatertask'):
             # time.sleep(DBSession.get_field_value(session_id, 'delay'))
             time.sleep(2)
-            updater_task = Task(chat_id, 'updater', session_id=session_id, updaters_dict=main_vars.updaters_dict)
-            main_vars.task_queue.append(updater_task)
+            updater_task = Task(chat_id, 'updater', session_id=session_id)
+            queue.append(updater_task)
             DBSession.update_bool_flag(session_id, 'putupdatertask', 'False')
     else:
         bot.send_message(chat_id, 'Слежение остановлено')
-        if chat_id in main_vars.updater_schedulers_dict.keys():
-            del main_vars.updater_schedulers_dict[chat_id]
         return
 
 
