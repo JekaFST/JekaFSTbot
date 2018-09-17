@@ -474,8 +474,7 @@ def run_app(bot, queue):
             code = re.findall(r'[!\.]\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
             send_code_main_task = Task(message.chat.id, 'send_code_main', session_id=main_chat_id, code=code,
                                        message_id=message.message_id)
-            for _ in xrange(100):
-                queue.put((1, send_code_main_task))
+            queue.put((1, send_code_main_task))
 
     @bot.message_handler(regexp='^\?\s*(.+)')
     def bonus_code_processor(message):
@@ -483,10 +482,10 @@ def run_app(bot, queue):
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
             main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
-            if message.text[0] == '?':
-                code = re.findall(r'\?\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
-                send_code_bonus_task = Task(message.chat.id, 'send_code_bonus', session_id=main_chat_id, code=code,
-                                            message_id=message.message_id)
+            code = re.findall(r'\?\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
+            send_code_bonus_task = Task(message.chat.id, 'send_code_bonus', session_id=main_chat_id, code=code,
+                                        message_id=message.message_id)
+            for _ in xrange(100):
                 queue.put((1, send_code_bonus_task))
 
     @bot.message_handler(regexp='\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
