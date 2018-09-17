@@ -32,13 +32,13 @@ def worker():
             counter.drop_counter()
         if not queue.empty():
             task = queue.get()[1]
-            if task.type == 'send_code_main':
+            if task.type == 'send_code_bonus':
                 counter.code_tasks_in += 1
             if counter.code_tasks_in == 1:
                 counter.a = time.time()
             TaskMethodMap.run_task(task, bot)
             queue.task_done()
-            if task.type == 'send_code_main':
+            if task.type == 'send_code_bonus':
                 counter.code_tasks_out += 1
             if counter.code_tasks_out == 100:
                 counter.b = time.time()
