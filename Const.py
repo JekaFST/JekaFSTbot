@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-prod = True
+prod = False
 
 urls = {
     'game_url_ending': '/gameengines/encounter/play/',
