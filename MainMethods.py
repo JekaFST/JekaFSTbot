@@ -381,10 +381,11 @@ def stop_channel(task, bot):
 def send_code_main(task, bot):
     session = DBSession.get_session(task.session_id)
     if not session['active']:
-        bot.send_message(task.chat_id, 'Нельзя сдавать коды при неактивной сессии')
+        bot.send_message(task.chat_id, 'Нельзя сдавать коды при неактивной сессии', reply_to_message_id=task.message_id)
         return
     if not session['sendcodes']:
-        bot.send_message(task.chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
+        bot.send_message(task.chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on',
+                         reply_to_message_id=task.message_id)
         return
     if not session['stormgame']:
         send_code_to_level(task.code, bot, task.chat_id, task.message_id, session)
@@ -402,10 +403,11 @@ def send_code_main(task, bot):
 def send_code_bonus(task, bot):
     session = DBSession.get_session(task.session_id)
     if not session['active']:
-        bot.send_message(task.chat_id, 'Нельзя сдавать коды при неактивной сессии')
+        bot.send_message(task.chat_id, 'Нельзя сдавать коды при неактивной сессии', reply_to_message_id=task.message_id)
         return
     if not session['sendcodes']:
-        bot.send_message(task.chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on')
+        bot.send_message(task.chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on',
+                         reply_to_message_id=task.message_id)
         return
     if not session['stormgame']:
         send_code_to_level(task.code, bot, task.chat_id, task.message_id, session, bonus_only=True)
