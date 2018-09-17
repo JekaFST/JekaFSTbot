@@ -18,13 +18,18 @@ class Counter(object):
         self.a = float()
         self.b = float()
 
+    def drop_counter(self):
+        self.code_tasks_in = 0
+        self.code_tasks_out = 0
+        self.a = float()
+        self.b = float()
+
 
 def worker():
     while True:
         if counter.a and counter.b:
             print str(counter.b-counter.a)
-            counter.a = 0
-            counter.b = 0
+            counter.drop_counter()
         if not queue.empty():
             task = queue.get()[1]
             if task.type == 'send_code_main':
@@ -35,7 +40,7 @@ def worker():
             queue.task_done()
             if task.type == 'send_code_main':
                 counter.code_tasks_out += 1
-            if counter.code_tasks_out == 5:
+            if counter.code_tasks_out == 100:
                 counter.b = time.time()
 
 

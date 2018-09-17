@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-prod = False
+prod = True
 num_worker_threads = 10
 
 urls = {
