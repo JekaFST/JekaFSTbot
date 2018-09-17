@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 prod = True
-num_worker_threads = 5
+num_worker_threads = 3
 
 urls = {
     'game_url_ending': '/gameengines/encounter/play/',
