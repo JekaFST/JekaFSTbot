@@ -485,8 +485,7 @@ def run_app(bot, queue):
             code = re.findall(r'\?\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
             send_code_bonus_task = Task(message.chat.id, 'send_code_bonus', session_id=main_chat_id, code=code,
                                         message_id=message.message_id)
-            for _ in xrange(100):
-                queue.put((1, send_code_bonus_task))
+            queue.put((1, send_code_bonus_task))
 
     @bot.message_handler(regexp='\d\d\.\d{4,7},\s{0,3}\d\d\.\d{4,7}|'
                                 '\d\d\.\d{4,7}\s{0,3}\d\d\.\d{4,7}|'
