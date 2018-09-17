@@ -474,7 +474,8 @@ def run_app(bot, queue):
             code = re.findall(r'[!\.]\s*(.+)', str(message.text.lower().encode('utf-8')))[0]
             send_code_main_task = Task(message.chat.id, 'send_code_main', session_id=main_chat_id, code=code,
                                        message_id=message.message_id)
-            queue.append(send_code_main_task)
+            for _ in xrange(5):
+                queue.append(send_code_main_task)
 
     @bot.message_handler(regexp='^\?\s*(.+)')
     def bonus_code_processor(message):
