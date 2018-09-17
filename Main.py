@@ -18,6 +18,12 @@ class Counter(object):
         self.a = float()
         self.b = float()
 
+    def drop_counter(self):
+        self.code_tasks_in = 0
+        self.code_tasks_out = 0
+        self.a = float()
+        self.b = float()
+
 
 port = int(os.environ.get('PORT', 5000)) if prod else 443
 
@@ -38,8 +44,7 @@ reload_backup(bot, queue)
 while True:
     if counter.a and counter.b:
         print str(counter.b - counter.a)
-        counter.a = 0
-        counter.b = 0
+        counter.drop_counter()
         counter.code_tasks_in = 0
         counter.code_tasks_out = 0
     if not queue.empty():
@@ -52,5 +57,5 @@ while True:
         queue.task_done()
         if task.type == 'send_code_main':
             counter.code_tasks_out += 1
-        if counter.code_tasks_out == 5:
+        if counter.code_tasks_out == 100:
             counter.b = time.time()
