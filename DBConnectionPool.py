@@ -33,3 +33,6 @@ def get_conn():
 #use with the following
 with get_conn() as db_connection:
     db_connection.select_dict()  # или как там
+
+
+# Добавить проверку на падение и переподъем
