@@ -4,8 +4,8 @@ import time
 import logging
 import psycopg2.extras
 from contextlib import contextmanager
+import telebot
 from Const import prod, num_worker_threads
-from Main import bot
 
 
 class DBConnection(object):
@@ -68,7 +68,7 @@ class DBConnection(object):
 class ConnectionPool(object):
     def __init__(self):
         self.connection_pool = []
-        self.max_conns = num_worker_threads
+        self.max_conns = num_worker_threads + 2
 
     def init_pool(self):
         for _ in xrange(self.max_conns):
@@ -87,7 +87,7 @@ class ConnectionPool(object):
                 time.sleep(1)
             tries -= 1
         else:
-            bot.send_message(45839899, 'Нет доступного коннекшена к базе')
+            telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo").send_message(45839899, 'Нет доступного коннекшена к базе')
             raise Exception('Нет доступного коннекшена к базе')
 
         yield conn
