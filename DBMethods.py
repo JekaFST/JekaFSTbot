@@ -62,7 +62,7 @@ class DBConnection(object):
         cur = self.db_conn_insert.cursor()
         try:
             cur.execute(sql)
-            db_connection.db_conn_insert.commit()
+            self.db_conn_insert.commit()
             cur.close()
             return True
         except psycopg2.DatabaseError:
