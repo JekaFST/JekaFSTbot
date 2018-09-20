@@ -68,7 +68,7 @@ class DBConnection(object):
 class ConnectionPool(object):
     def __init__(self):
         self.connection_pool = []
-        self.max_conns = num_worker_threads + 2
+        self.max_conns = num_worker_threads + (num_worker_threads // 2)
 
     def init_pool(self):
         for _ in xrange(self.max_conns):
