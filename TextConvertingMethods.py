@@ -97,7 +97,7 @@ def cut_images(text, **kwargs):
     for i, img in enumerate(re.findall(r'<img[^>]*>|<image[^>]*>', text)):
         soup = BeautifulSoup(img)
         img_soup = soup.find_all('img') if 'img' in img else soup.find_all('image')
-        images.append(img_soup[0].get('src').encode('utf-8'))
+        images.append(str.strip(img_soup[0].get('src').encode('utf-8')))
         image = '(img%s)' % str(i+1)
         text = text.replace(img, image)
     text = text.replace('<img>', '')

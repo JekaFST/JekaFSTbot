@@ -4,9 +4,9 @@ from bs4 import BeautifulSoup
 
 
 text = """
-<h3>Подсказка 1</h3>
-<p><script src="http://d1.endata.cx/data/games/60889/copy_kord_vsebel.js" language="JavaScript" ></SCRIPT> <script language="JavaScript">createCoord("53.548102, 25.832155");</script>
-<br/>Код доезда с обратной стороны здания на входе</p>
+<p>Местонахождение ключей обозначено на карте
+<br/>
+<br/><a href=" http://d1.endata.cx/data/games/62612/ysp2.jpg "><img style="width: 20%; height=20%" src="http://d1.endata.cx/data/games/62612/ysp2.jpg " ></a></p>
 """
 
 
@@ -56,7 +56,7 @@ def cut_images(text):
     for i, img in enumerate(re.findall(r'<img[^>]*>|<image[^>]*>', text)):
         soup = BeautifulSoup(img)
         img_soup = soup.find_all('img') if 'img' in img else soup.find_all('image')
-        images.append(img_soup[0].get('src').encode('utf-8'))
+        images.append(str.strip(img_soup[0].get('src').encode('utf-8')))
         image = '(img%s)' % str(i+1)
         text = text.replace(img, image)
     text = text.replace('<img>', '')
