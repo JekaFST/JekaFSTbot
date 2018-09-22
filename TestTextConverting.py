@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 import re
+
+import telebot
 from bs4 import BeautifulSoup
 
 
 text = """
-<p>Местонахождение ключей обозначено на карте
-<br/>
-<br/><a href=" http://d1.endata.cx/data/games/62612/ysp2.jpg "><img style="width: 20%; height=20%" src="http://d1.endata.cx/data/games/62612/ysp2.jpg " ></a></p>
+<a href=" http://d1.endata.cx/data/games/62612/ysp2.jpg "><img style="width: 20%; height=20%" src=" http://d1.endata.cx/data/games/62612/ysp2.jpg " ></a></p>
+<a href = 'http://d1.endata.cx/data/games/62612/ysp2.jpg '><img style="width: 20%; height=20%" src=" http://d1.endata.cx/data/games/62612/ysp2.jpg " ></a></p>
+<a href=http://d1.endata.cx/data/games/62612/ysp2.jpg><img style="width: 20%; height=20%" src=" http://d1.endata.cx/data/games/62612/ysp2.jpg " ></a></p>
+<a href = http://d1.endata.cx/data/games/62612/ysp2.jpg><img style="width: 20%; height=20%" src=" http://d1.endata.cx/data/games/62612/ysp2.jpg " ></a></p>
+<A HREF = http://d1.endata.cx/data/games/62612/ysp2.jpg><img style="width: 20%; height=20%" src=" http://d1.endata.cx/data/games/62612/ysp2.jpg " ></A></p>
 """
 
 
@@ -117,27 +121,13 @@ def make_Y_G_links(coord):
 
 
 def reformat_links(text):
-    links_to_lower = re.findall(r'<A\sH[^>]+>|'
-                                r'<A\sh[^>]+>', text)
-    for link in links_to_lower:
+    links = re.findall(r'<A[^>]+>|<a[^>]+>', text)
+    for link in links:
         soup = BeautifulSoup(link)
-        for a in soup.find_all('a'):
-            link_lower = link.replace(a.get('href').encode('utf-8'), 'link')
-            link_lower = link_lower.lower()
-            link_lower = link_lower.replace('link', a.get('href').encode('utf-8'))
-            text = text.replace(link, link_lower)
-    text = text.replace('</A>', '</a>')
-    text = text.replace('<A/>', '<a/>')
-    text = text.replace('<a/>', '</a>')
-
-    links_to_check = re.findall(r'<a[^>]+>', text)
-    for link in links_to_check:
-
-        href = re.search(r'href\s*=\s*[^>\s]+', link).group(0)
-        if '"' not in href:
-            soup = BeautifulSoup(link)
-            for a in soup.find_all('a'):
-                text = text.replace(href, 'href="' + a.get('href').encode('utf-8') + '"')
+        text = text.replace(link, '<a href="' + str.strip(soup.find_all('a')[0].get('href').encode('utf-8')) + '">')
+        text = text.replace('</A>', '</a>')
+        text = text.replace('<A/>', '<a/>')
+        text = text.replace('<a/>', '</a>')
     return text
 
 
@@ -224,4 +214,5 @@ def find_coords(text):
 
 
 text, images, indexes = send_object_text(text)
+telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo").send_message(45839899, text, parse_mode='HTML')
 print text

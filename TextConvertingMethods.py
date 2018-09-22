@@ -207,26 +207,13 @@ def send_text(text, **kwargs):
 
 @ExceptionHandler.convert_text_exception
 def reformat_links(text, **kwargs):
-    links_to_lower = re.findall(r'<A\sH[^>]+>|'
-                                r'<A\sh[^>]+>', text)
-    for link in links_to_lower:
+    links = re.findall(r'<A[^>]+>|<a[^>]+>', text)
+    for link in links:
         soup = BeautifulSoup(link)
-        for a in soup.find_all('a'):
-            link_lower = link.replace(a.get('href').encode('utf-8'), 'link')
-            link_lower = link_lower.lower()
-            link_lower = link_lower.replace('link', a.get('href').encode('utf-8'))
-            text = text.replace(link, link_lower)
-    text = text.replace('</A>', '</a>')
-    text = text.replace('<A/>', '<a/>')
-    text = text.replace('<a/>', '</a>')
-
-    links_to_check = re.findall(r'<a[^>]+>', text)
-    for link in links_to_check:
-        href = re.search(r'href\s*=\s*[^>\s]+', link).group(0)
-        if '"' not in href:
-            soup = BeautifulSoup(link)
-            for a in soup.find_all('a'):
-                text = text.replace(href, 'href="' + a.get('href').encode('utf-8') + '"')
+        text = text.replace(link, '<a href="' + str.strip(soup.find_all('a')[0].get('href').encode('utf-8')) + '">')
+        text = text.replace('</A>', '</a>')
+        text = text.replace('<A/>', '</a>')
+        text = text.replace('<a/>', '</a>')
     return text, None, None
 
 
