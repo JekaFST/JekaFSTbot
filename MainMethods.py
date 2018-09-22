@@ -335,12 +335,12 @@ def start_updater(task, bot):
 @ExceptionHandler.updater_scheduler_exception
 def updater_scheduler(chat_id, bot, queue, session_id):
     while not DBSession.get_field_value(session_id, 'stopupdater'):
-        time.sleep(0.05)
+        time.sleep(0.1)
         if DBSession.get_field_value(session_id, 'putupdatertask'):
             # time.sleep(DBSession.get_field_value(session_id, 'delay'))
             time.sleep(2)
             updater_task = Task(chat_id, 'updater', session_id=session_id)
-            queue.put((2, updater_task))
+            queue.put((1, updater_task))
             DBSession.update_bool_flag(session_id, 'putupdatertask', 'False')
     else:
         bot.send_message(chat_id, 'Слежение остановлено')

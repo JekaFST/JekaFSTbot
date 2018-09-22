@@ -494,6 +494,7 @@ def run_app(bot, queue):
     def coords_processor(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed:
+
             coords = find_coords(message.text)
             if coords:
                 send_coords_task = Task(message.chat.id, 'send_coords', coords=coords, message_id=message.message_id)
