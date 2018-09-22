@@ -6,7 +6,7 @@ from DBMethods import DBSession, DBLevels, DBHelps, DBBonuses, DBSectors, DBMess
 from ExceptionHandler import ExceptionHandler
 from SessionMethods import get_current_level, get_storm_level, get_current_game_model
 from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
-    send_bonus_award_answer, send_adm_message, close_live_locations
+    send_bonus_award_answer, send_adm_message, close_live_locations, channel_error_handling
 
 
 def updater(task, bot):
@@ -346,12 +346,3 @@ def get_sectors_to_close(sectors, get_sector_names=False):
 
 def get_unclosed_sectors(sectors):
     return [sector for sector in sectors if not sector['IsAnswered']]
-
-
-def channel_error_handling(bot, chat_id, error, message_type):
-    if error.result.status_code == 400 and 'chat not found' in error.message:
-        bot.send_message(chat_id, message_type + 'Канал не найден - проверьте публичность канала и заданное имя')
-    elif error.result.status_code == 403 and 'Forbidden' in error.message:
-        bot.send_message(chat_id, message_type + 'Forbidden - бот не является админом канала')
-    else:
-        bot.send_message(chat_id, message_type + 'Непредвиденная ошибка при постинге в канал')

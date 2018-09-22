@@ -363,15 +363,24 @@ def set_channel_name(task, bot):
     new_channel_name = "@" + task.new_channel_name if "@" not in task.new_channel_name else task.new_channel_name
     if DBSession.update_text_field(task.session_id, 'channelname', new_channel_name):
         bot.send_message(task.chat_id, 'Канал успешно задан')
-        if DBSession.update_bool_flag(task.session_id, 'usechannel', 'True'):
-            bot.send_message(task.chat_id, 'Постинг в канал разрешен')
+        if check_channel(bot, task.chat_id, new_channel_name):
+            if DBSession.update_bool_flag(task.session_id, 'usechannel', 'True'):
+                bot.send_message(task.chat_id, 'Постинг в канал включен')
+        else:
+            if DBSession.update_bool_flag(task.session_id, 'usechannel', 'False'):
+                bot.send_message(task.chat_id, 'Постинг в канал отключен')
     else:
         bot.send_message(task.chat_id, 'Канал не задан, повторите')
 
 
 def start_channel(task, bot):
-    if DBSession.update_bool_flag(task.session_id, 'usechannel', 'True'):
-        bot.send_message(task.chat_id, 'Постинг в канал разрешен')
+    session = DBSession.get_session(task.session_id)
+    if check_channel(bot, task.chat_id, session['channelname']):
+        if DBSession.update_bool_flag(task.session_id, 'usechannel', 'True'):
+            bot.send_message(task.chat_id, 'Постинг в канал включен')
+    else:
+        if DBSession.update_bool_flag(task.session_id, 'usechannel', 'False'):
+            bot.send_message(task.chat_id, 'Постинг в канал отключен')
 
 
 def stop_channel(task, bot):
