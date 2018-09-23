@@ -6,18 +6,72 @@ from bs4 import BeautifulSoup
 
 
 text = """
-<a href=" http://d1.endata.cx/data/games/62612/ysp2.jpg "><img style="width: 20%; height=20%" src=" http://d1.endata.cx/data/games/62612/ysp2.jpg " ></a></p>
-<a href = 'http://d1.endata.cx/data/games/62612/ysp2.jpg '><img style="width: 20%; height=20%" src=" http://d1.endata.cx/data/games/62612/ysp2.jpg " ></a></p>
-<a href=http://d1.endata.cx/data/games/62612/ysp2.jpg><img style="width: 20%; height=20%" src=" http://d1.endata.cx/data/games/62612/ysp2.jpg " ></a></p>
-<a href = http://d1.endata.cx/data/games/62612/ysp2.jpg><img style="width: 20%; height=20%" src=" http://d1.endata.cx/data/games/62612/ysp2.jpg " ></a></p>
-<A HREF = http://d1.endata.cx/data/games/62612/ysp2.jpg><img style="width: 20%; height=20%" src=" http://d1.endata.cx/data/games/62612/ysp2.jpg " ></A></p>
+<svg style="background: url(http://d1.endata.cx/data/games/60649/final_moryartysherlock_yusgfbhzisguish.png)" width="640" height="404">
+  <rect width="148" height="8" x="53" y="32" fill="yellow" id="HealthSher"></rect>
+  <rect width="148" height="8" x="440" y="32" fill="yellow" id="HealthMory"></rect>
+</svg>
+<hr>
+<audio src="http://d1.endata.cx/data/games/60649/%5bChiptune%5d+-+Sherlock.mp3" controls></audio>
+<hr>
+<script>
+function HealthSher(n) {
+ const HealthSher = document.getElementById("HealthSher")
+ const width = parseInt(HealthSher.getAttribute("width")) + n
+  if(width < 148 && width>0)
+   HealthSher.setAttribute("width", width)
+}
+
+function HealthMory(n) {
+ const HealthMory = document.getElementById("HealthMory")
+ const width = parseInt(HealthMory.getAttribute("width")) + n
+  const x = parseInt(HealthMory.getAttribute("x")) - n
+  if(width < 148 && width>0) {
+   HealthMory.setAttribute("width", width)
+   HealthMory.setAttribute("x", x)
+  }
+}
+</script>
+
+<div>
+Нанес урона:<br>
+<b>Шерлок:</b> <span id="TimeMory"></span><br>
+<b>Мориарти:</b> <span id="TimeSher"></span></div>
+
+
+<script>
+    var minTimerMory = 0;
+    var i1 = 0;
+    function changeTimerMory ( i1 ) {
+        minTimerMory += i1;
+        document.getElementById("TimeMory").innerHTML=minTimerMory;
+        if (minTimerMory >= 200) {
+/КОД, ВВОД КОТОРОГО САМОСТОЯТЕЛЬНО РАССМАТРИВАЕТСЯ КАК ЧИТЕРСТВО!/
+            $("#lnkAnswerBoxMarker+form input#Answer").val("ВРЕШЬНЕУЙДЕШЬ5429").closest("form").submit();
+/КОД, ВВОД КОТОРОГО САМОСТОЯТЕЛЬНО РАССМАТРИВАЕТСЯ КАК ЧИТЕРСТВО!/
+        }
+    }
+</script>
+
+<script>
+    var minTimerSher = 0;
+    var i2 = 0;
+    function changeTimerSher ( i2 ) {
+        minTimerSher += i2;
+        document.getElementById("TimeSher").innerHTML=minTimerSher;
+        if (minTimerSher >= 200) {
+/КОД, ВВОД КОТОРОГО САМОСТОЯТЕЛЬНО РАССМАТРИВАЕТСЯ КАК ЧИТЕРСТВО!/
+            $("#lnkAnswerBoxMarker+form input#Answer").val("АВОТИНЕУГАДАЛ2485").closest("form").submit();
+/КОД, ВВОД КОТОРОГО САМОСТОЯТЕЛЬНО РАССМАТРИВАЕТСЯ КАК ЧИТЕРСТВО!/
+        }
+    }
+</script>
 """
 
 
 def send_object_text(text):
     tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'th', 'table', 'hr', 'object', 'param', 'audio', 'source',
                  'embed', 'link', 'iframe', 'address', 'body', 'html', 'li', 'ol', 'details', 'ul', 'script', 'video',
-                 'b', 'center', 'u', 'i', 'strong', 'em', 'style', 'script']
+                 'b', 'center', 'u', 'i', 'strong', 'em', 'style', 'script', 's', 'svg', 'rect', 'del']
 
     if 'table' in text or 'script' in text or 'object' in text or 'audio' in text:
         text = 'В тексте найдены и вырезаны скрипты таблицы, аудию и/или иные объекты\r\n' \
@@ -174,7 +228,9 @@ def cut_tag(text, tag):
     for tag_rep in tag_reps:
         text = text.replace(tag_rep, '')
     text = text.replace('</%s>' % tag, '')
+    text = text.replace('</%s >' % tag, '')
     text = text.replace('</%s>' % tag.upper(), '')
+    text = text.replace('</%s >' % tag.upper(), '')
 
     return text
 

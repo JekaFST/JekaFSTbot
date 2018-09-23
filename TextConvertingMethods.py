@@ -263,7 +263,9 @@ def cut_tag(text, **kwargs):
     for tag_rep in tag_reps:
         text = text.replace(tag_rep, '')
     text = text.replace('</%s>' % kwargs['tag'], '')
+    text = text.replace('</%s >' % kwargs['tag'], '')
     text = text.replace('</%s>' % kwargs['tag'].upper(), '')
+    text = text.replace('</%s >' % kwargs['tag'].upper(), '')
 
     return text, None, None
 
