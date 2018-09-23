@@ -106,3 +106,12 @@ def close_live_locations(chat_id, bot, session, ll_message_ids, point=None):
             bot.send_message(chat_id, 'Live location %s остановлена' % point)
         else:
             bot.send_message(chat_id, 'Live location %s не поставлен' % point)
+
+
+def channel_error_handling(bot, chat_id, error, message_type):
+    if error.result.status_code == 400 and 'chat not found' in error.message:
+        bot.send_message(chat_id, message_type + 'Канал не найден - проверьте публичность канала и заданное имя')
+    elif error.result.status_code == 403 and 'Forbidden' in error.message:
+        bot.send_message(chat_id, message_type + 'Forbidden - бот не является админом канала')
+    else:
+        bot.send_message(chat_id, message_type + 'Непредвиденная ошибка при постинге в канал')

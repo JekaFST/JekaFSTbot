@@ -1,19 +1,76 @@
 # -*- coding: utf-8 -*-
 import re
+import telebot
 from bs4 import BeautifulSoup
 
 
 text = """
-<h3>Подсказка 1</h3>
-<p><script src="http://d1.endata.cx/data/games/60889/copy_kord_vsebel.js" language="JavaScript" ></SCRIPT> <script language="JavaScript">createCoord("53.548102, 25.832155");</script>
-<br/>Код доезда с обратной стороны здания на входе</p>
+<svg style="background: url(http://d1.endata.cx/data/games/60649/final_moryartysherlock_yusgfbhzisguish.png)" width="640" height="404">
+  <rect width="148" height="8" x="53" y="32" fill="yellow" id="HealthSher"></rect>
+  <rect width="148" height="8" x="440" y="32" fill="yellow" id="HealthMory"></rect>
+</svg>
+<hr>
+<audio src="http://d1.endata.cx/data/games/60649/%5bChiptune%5d+-+Sherlock.mp3" controls></audio>
+<hr>
+<script>
+function HealthSher(n) {
+ const HealthSher = document.getElementById("HealthSher")
+ const width = parseInt(HealthSher.getAttribute("width")) + n
+  if(width < 148 && width>0)
+   HealthSher.setAttribute("width", width)
+}
+
+function HealthMory(n) {
+ const HealthMory = document.getElementById("HealthMory")
+ const width = parseInt(HealthMory.getAttribute("width")) + n
+  const x = parseInt(HealthMory.getAttribute("x")) - n
+  if(width < 148 && width>0) {
+   HealthMory.setAttribute("width", width)
+   HealthMory.setAttribute("x", x)
+  }
+}
+</script>
+
+<div>
+Нанес урона:<br>
+<b>Шерлок:</b> <span id="TimeMory"></span><br>
+<b>Мориарти:</b> <span id="TimeSher"></span></div>
+
+
+<script>
+    var minTimerMory = 0;
+    var i1 = 0;
+    function changeTimerMory ( i1 ) {
+        minTimerMory += i1;
+        document.getElementById("TimeMory").innerHTML=minTimerMory;
+        if (minTimerMory >= 200) {
+/КОД, ВВОД КОТОРОГО САМОСТОЯТЕЛЬНО РАССМАТРИВАЕТСЯ КАК ЧИТЕРСТВО!/
+            $("#lnkAnswerBoxMarker+form input#Answer").val("ВРЕШЬНЕУЙДЕШЬ5429").closest("form").submit();
+/КОД, ВВОД КОТОРОГО САМОСТОЯТЕЛЬНО РАССМАТРИВАЕТСЯ КАК ЧИТЕРСТВО!/
+        }
+    }
+</script>
+
+<script>
+    var minTimerSher = 0;
+    var i2 = 0;
+    function changeTimerSher ( i2 ) {
+        minTimerSher += i2;
+        document.getElementById("TimeSher").innerHTML=minTimerSher;
+        if (minTimerSher >= 200) {
+/КОД, ВВОД КОТОРОГО САМОСТОЯТЕЛЬНО РАССМАТРИВАЕТСЯ КАК ЧИТЕРСТВО!/
+            $("#lnkAnswerBoxMarker+form input#Answer").val("АВОТИНЕУГАДАЛ2485").closest("form").submit();
+/КОД, ВВОД КОТОРОГО САМОСТОЯТЕЛЬНО РАССМАТРИВАЕТСЯ КАК ЧИТЕРСТВО!/
+        }
+    }
+</script>
 """
 
 
 def send_object_text(text):
     tags_list = ['font', 'p', 'div', 'span', 'td', 'tr', 'th', 'table', 'hr', 'object', 'param', 'audio', 'source',
                  'embed', 'link', 'iframe', 'address', 'body', 'html', 'li', 'ol', 'details', 'ul', 'script', 'video',
-                 'b', 'center', 'u', 'i', 'strong', 'em', 'style', 'script']
+                 'b', 'center', 'u', 'i', 'strong', 'em', 'style', 'script', 's', 'svg', 'rect', 'del']
 
     if 'table' in text or 'script' in text or 'object' in text or 'audio' in text:
         text = 'В тексте найдены и вырезаны скрипты таблицы, аудию и/или иные объекты\r\n' \
@@ -56,7 +113,7 @@ def cut_images(text):
     for i, img in enumerate(re.findall(r'<img[^>]*>|<image[^>]*>', text)):
         soup = BeautifulSoup(img)
         img_soup = soup.find_all('img') if 'img' in img else soup.find_all('image')
-        images.append(img_soup[0].get('src').encode('utf-8'))
+        images.append(str.strip(img_soup[0].get('src').encode('utf-8')))
         image = '(img%s)' % str(i+1)
         text = text.replace(img, image)
     text = text.replace('<img>', '')
@@ -117,27 +174,13 @@ def make_Y_G_links(coord):
 
 
 def reformat_links(text):
-    links_to_lower = re.findall(r'<A\sH[^>]+>|'
-                                r'<A\sh[^>]+>', text)
-    for link in links_to_lower:
+    links = re.findall(r'<A[^>]+>|<a[^>]+>', text)
+    for link in links:
         soup = BeautifulSoup(link)
-        for a in soup.find_all('a'):
-            link_lower = link.replace(a.get('href').encode('utf-8'), 'link')
-            link_lower = link_lower.lower()
-            link_lower = link_lower.replace('link', a.get('href').encode('utf-8'))
-            text = text.replace(link, link_lower)
-    text = text.replace('</A>', '</a>')
-    text = text.replace('<A/>', '<a/>')
-    text = text.replace('<a/>', '</a>')
-
-    links_to_check = re.findall(r'<a[^>]+>', text)
-    for link in links_to_check:
-
-        href = re.search(r'href\s*=\s*[^>\s]+', link).group(0)
-        if '"' not in href:
-            soup = BeautifulSoup(link)
-            for a in soup.find_all('a'):
-                text = text.replace(href, 'href="' + a.get('href').encode('utf-8') + '"')
+        text = text.replace(link, '<a href="' + str.strip(soup.find_all('a')[0].get('href').encode('utf-8')) + '">')
+        text = text.replace('</A>', '</a>')
+        text = text.replace('<A/>', '<a/>')
+        text = text.replace('<a/>', '</a>')
     return text
 
 
@@ -184,7 +227,9 @@ def cut_tag(text, tag):
     for tag_rep in tag_reps:
         text = text.replace(tag_rep, '')
     text = text.replace('</%s>' % tag, '')
+    text = text.replace('</%s >' % tag, '')
     text = text.replace('</%s>' % tag.upper(), '')
+    text = text.replace('</%s >' % tag.upper(), '')
 
     return text
 
@@ -224,4 +269,5 @@ def find_coords(text):
 
 
 text, images, indexes = send_object_text(text)
+telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo").send_message(45839899, text, parse_mode='HTML')
 print text

@@ -7,7 +7,8 @@ import json
 import telebot
 import simplekml
 from bs4 import BeautifulSoup
-from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, send_adm_message
+from CommonMethods import send_help, send_time_to_help, send_bonus_info, send_bonus_award_answer, send_task, send_adm_message, \
+    channel_error_handling
 from Const import game_wrong_statuses, urls
 from DBMethods import DB, DBSession, DBLevels, DBSectors
 from TextConvertingMethods import make_Y_G_links
@@ -643,3 +644,13 @@ def send_map_file(bot, chat_id, session, locations, message_id):
     doc = open(filename, 'rb')
     bot.send_document(chat_id, doc, reply_to_message_id=message_id)
     doc.close()
+
+
+def check_channel(bot, chat_id, new_channel_name):
+    try:
+        bot.send_message(new_channel_name, 'Тестовое сообщение')
+        return True
+    except Exception as error:
+        channel_error_handling(bot, chat_id, error, 'Тестовое сообщение не отправлено в канал.\r\n')
+        logging.exception('Exception - updater не смог прислать тестовое сообщение в канал')
+        return False
