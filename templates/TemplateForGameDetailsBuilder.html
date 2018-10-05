@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Game details builder form</title>
+    <script>
+        function getXmlHttp() {
+            var xmlhttp;
+            try {
+              xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+            } catch (e) {
+            try {
+              xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            } catch (E) {
+              xmlhttp = false;
+            }
+            }
+            if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
+              xmlhttp = new XMLHttpRequest();
+            }
+            return xmlhttp;
+        }
+        function run_builder() {
+            var googledoc = document.getElementById("googledoc").value;
+            var xmlhttp = getXmlHttp(); // Создаём объект XMLHTTP
+            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com//builder/' + googledoc, true); // Открываем асинхронное соединение
+            xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); // Отправляем кодировку
+            xmlhttp.send(); // Отправляем POST-запрос
+            xmlhttp.onreadystatechange = function() { // Ждём ответа от сервера
+            if (xmlhttp.readyState == 4) { // Ответ пришёл
+                if(xmlhttp.status == 200) { // Сервер вернул код 200 (что хорошо)
+                document.getElementById("answer").innerHTML = xmlhttp.responseText; // Выводим ответ сервера
+                }
+            }
+         };
+        }
+    </script>
+</head>
+<body>
+   <div id="container">
+       <input type="text" name="Google sheet id" id="googledoc" />
+       <br />
+       <button id="the-button" onclick="">Click me</button>
+    <div>
+        <p>Сумма равна: <span id="answer"></span></p>
+   </div>
+   </div>
+</body>
+</html>

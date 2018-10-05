@@ -553,4 +553,8 @@ def run_app(bot, queue):
     def run_game_details_builder(google_sheets_id):
         return game_details_builder(google_sheets_id)
 
+    @app.route('/builder')
+    def run_game_details_builder_form():
+        return render_template("TemplateForGameDetailsBuilder.html")
+
     return app
