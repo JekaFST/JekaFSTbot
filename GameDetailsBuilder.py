@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-from ExceptionHandler import ExceptionHandler
+# from ExceptionHandler import ExceptionHandler
 from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_help_data_and_url, make_bonus_data_and_url, \
-    make_sector_data_and_url, make_penalty_help_data_and_url
+    make_sector_data_and_url, make_penalty_help_data_and_url, make_task_data_and_url
 from time import sleep
 
 
-@ExceptionHandler.game_details_builder_exception
+# @ExceptionHandler.game_details_builder_exception
 def game_details_builder(google_sheets_id):
     google_doc_connection = GoogleDocConnection(google_sheets_id)
     login, password, domain, gameid = google_doc_connection.get_setup()
@@ -36,3 +36,11 @@ def game_details_builder(google_sheets_id):
             sleep(5)
         pen_help_data, pen_help_url = make_penalty_help_data_and_url(penalty_help, domain, gameid)
         en_connection.create_en_object(pen_help_url, pen_help_data, 'PenaltyHelp')
+
+    for i, task in enumerate(google_doc_connection.get_tasks()):
+        if i % 30 == 0:
+            sleep(5)
+        task_data, task_url = make_task_data_and_url(task, domain, gameid)
+        en_connection.create_en_object(task_url, task_data, 'task')
+
+game_details_builder('16--OmJQr9DeGCfLb3H19ddVJ0mp9UsiypX2xg67im6E')

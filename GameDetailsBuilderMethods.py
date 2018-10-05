@@ -61,6 +61,12 @@ class GoogleDocConnection(object):
         values = result.get('values', [])[1:]
         return values
 
+    def get_tasks(self):
+        RANGE_NAME = 'Tasks'
+        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        values = result.get('values', [])[1:]
+        return values
+
 
 class ENConnection(object):
     def __init__(self, domain, login, password, gameid):
@@ -163,7 +169,11 @@ def make_bonus_data_and_url(row, domain, gameid, level_ids_dict):
         bonus_data['txtValidHours'] = int(row[12]) if row[12] else 0
         bonus_data['txtValidMinutes'] = int(row[13]) if row[13] else 0
         bonus_data['txtValidSeconds'] = int(row[14]) if row[14] else 0
-    bonus_url = domain + '/Administration/Games/BonusEdit.aspx?gid=' + gameid + '&level=' + str(row[15]) + '&bonus=0&action=save'
+    if row[15] and row[16]:
+        bonus_data['chkAbsoluteLimit'] = 'on'
+        bonus_data['txtValidFrom'] = row[15] if row[15] else ''
+        bonus_data['txtValidTo'] = row[16] if row[16] else ''
+    bonus_url = domain + '/Administration/Games/BonusEdit.aspx?gid=' + gameid + '&level=' + str(row[17]) + '&bonus=0&action=save'
     return bonus_data, bonus_url
 
 
@@ -181,6 +191,8 @@ def make_sector_data_and_url(row, domain, gameid):
     return sector_data, sector_url
 
 
+# PenaltyComment - help description
+# NewPrompt - penalty help text
 # PromptTimeout - delay
 # PenaltyPrompt - penalty time
 def make_penalty_help_data_and_url(row, domain, gameid):
@@ -201,6 +213,17 @@ def make_penalty_help_data_and_url(row, domain, gameid):
         pen_help_data['chkRequestPenaltyConfirm'] = 'on'
     pen_help_url = domain + '/Administration/Games/PromptEdit.aspx?gid=' + gameid + '&level=' + str(row[10]) + '&penalty=1'
     return pen_help_data, pen_help_url
+
+
+def make_task_data_and_url(row, domain, gameid):
+    task_data = {
+        'forMemberID': 0,
+        'inputTask': row[0] if row[0] else ''
+    }
+    if 'false' not in row[1].lower():
+        task_data['chkReplaceNlToBr'] = 'on'
+    task_url = domain + '/Administration/Games/TaskEdit.aspx?gid=' + gameid + '&level=' + str(row[2])
+    return task_data, task_url
 
 
 def response_checker(data, type, text):
@@ -235,9 +258,14 @@ def penalty_help_checker(data, text):
         logging.warning("Penalty help text mismatch. Data: %s" % str(data))
 
 
+def task_checker(data, text):
+    return
+
+
 type_checker_map = {
     'help': help_checker,
     'bonus': bonus_checker,
     'sector': sector_checker,
     'PenaltyHelp': penalty_help_checker,
+    'task': task_checker
 }
