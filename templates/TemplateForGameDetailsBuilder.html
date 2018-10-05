@@ -3,6 +3,11 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Game details builder form</title>
+    <style>
+       #googledoc {
+        width: 400px;
+       }
+    </style>
     <script>
         function getXmlHttp() {
             var xmlhttp;
@@ -24,7 +29,6 @@
             var googledoc = document.getElementById("googledoc").value;
             var xmlhttp = getXmlHttp(); // Создаём объект XMLHTTP
             xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/' + googledoc, true); // Открываем асинхронное соединение
-            xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); // Отправляем кодировку
             xmlhttp.send(); // Отправляем POST-запрос
             xmlhttp.onreadystatechange = function() { // Ждём ответа от сервера
             if (xmlhttp.readyState == 4) { // Ответ пришёл
@@ -38,12 +42,17 @@
 </head>
 <body>
    <div id="container">
-       <input type="text" name="Google sheet id" id="googledoc" />
-       <br />
-       <button id="the-button" onclick="run_builder()">Click me</button>
-    <div>
-        <p>Результат: <span id="answer"></span></p>
+       <input type="text" placeholder="Введите айди гуглдока" name="Google sheet id" id="googledoc">
+       <button id="builder button" onclick="run_builder()">Заполнить движок</button>
+       <br>
+       <details>
+           <summary>Что такое айди гуглдока</summary>
+           <img src="/static/images/googledocid.jpg">
+       </details>
+       <hr>
    </div>
+   <div>
+        <p>Результат: <span id="answer"></span></p>
    </div>
 </body>
 </html>
