@@ -186,19 +186,19 @@ def make_penalty_help_data_and_url(row, domain, gameid):
     pen_help_data = {
         'ForMemberID': 0,
         'txtPenaltyComment': row[0] if row[0] else '',
-        'NewPromptTimeoutDays': int(row[1]) if row[1] else 0,
-        'NewPromptTimeoutHours': int(row[2]) if row[2] else 0,
-        'NewPromptTimeoutMinutes': int(row[3]) if row[3] else 0,
-        'NewPromptTimeoutSeconds': int(row[4]) if row[4] else 0,
-        'PenaltyPromptHours': int(row[6]) if row[6] else 0,
-        'PenaltyPromptMinutes': int(row[7]) if row[7] else 0,
-        'PenaltyPromptSeconds': int(row[8]) if row[8] else 0,
+        'NewPrompt': row[1] if row[1] else '',
+        'NewPromptTimeoutDays': int(row[2]) if row[2] else 0,
+        'NewPromptTimeoutHours': int(row[3]) if row[3] else 0,
+        'NewPromptTimeoutMinutes': int(row[4]) if row[4] else 0,
+        'NewPromptTimeoutSeconds': int(row[5]) if row[5] else 0,
+        'PenaltyPromptHours': int(row[7]) if row[7] else 0,
+        'PenaltyPromptMinutes': int(row[8]) if row[8] else 0,
+        'PenaltyPromptSeconds': int(row[9]) if row[9] else 0,
 
     }
-    if 'false' not in row[5].lower():
+    if 'false' not in row[6].lower():
         pen_help_data['chkRequestPenaltyConfirm'] = 'on'
-    pen_help_data['NewPrompt'] = ''
-    pen_help_url = domain + '/Administration/Games/PromptEdit.aspx?gid=' + gameid + '&level=' + str(row[9]) + '&penalty=1'
+    pen_help_url = domain + '/Administration/Games/PromptEdit.aspx?gid=' + gameid + '&level=' + str(row[10]) + '&penalty=1'
     return pen_help_data, pen_help_url
 
 
