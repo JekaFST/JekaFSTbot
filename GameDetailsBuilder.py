@@ -42,5 +42,3 @@ def game_details_builder(google_sheets_id):
             sleep(5)
         task_data, task_url = make_task_data_and_url(task, domain, gameid)
         en_connection.create_en_object(task_url, task_data, 'task')
-
-game_details_builder('16--OmJQr9DeGCfLb3H19ddVJ0mp9UsiypX2xg67im6E')
