@@ -23,7 +23,7 @@
         function run_builder() {
             var googledoc = document.getElementById("googledoc").value;
             var xmlhttp = getXmlHttp(); // Создаём объект XMLHTTP
-            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com//builder/' + googledoc, true); // Открываем асинхронное соединение
+            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/' + googledoc, true); // Открываем асинхронное соединение
             xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); // Отправляем кодировку
             xmlhttp.send(); // Отправляем POST-запрос
             xmlhttp.onreadystatechange = function() { // Ждём ответа от сервера
