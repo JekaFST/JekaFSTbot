@@ -159,7 +159,8 @@ def make_bonus_data_and_url(row, domain, gameid, level_ids_dict):
         bonus_data['txtDelayMinutes'] = int(row[10]) if row[10] else 0
         bonus_data['txtDelaySeconds'] = int(row[11]) if row[11] else 0
     if row[12] or row[13] or row[14]:
-        bonus_data['txtValidMinutes'] = int(row[12]) if row[12] else 0
+        bonus_data['chkRelativeLimit'] = 'on'
+        bonus_data['txtValidHours'] = int(row[12]) if row[12] else 0
         bonus_data['txtValidMinutes'] = int(row[13]) if row[13] else 0
         bonus_data['txtValidSeconds'] = int(row[14]) if row[14] else 0
     bonus_url = domain + '/Administration/Games/BonusEdit.aspx?gid=' + gameid + '&level=' + str(row[15]) + '&bonus=0&action=save'
