@@ -549,6 +549,10 @@ def run_app(bot, queue):
     def favicon():
         return send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'favicon.ico', mimetype='image/png')
 
+    @app.route('/googledocid')
+    def googledocid():
+        return send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'googledocid.png', mimetype='image/png')
+
     @app.route('/builder/<google_sheets_id>')
     def run_game_details_builder(google_sheets_id):
         return game_details_builder(google_sheets_id)
