@@ -578,7 +578,7 @@ def run_app(bot, queue):
                        'пока предыдущий запуск не отработает.'
         try:
             launch_id = str(DB.insert_building_result_row)
-            threading.Thread(name=name, target=game_details_builder(), args=(google_sheets_id, launch_id)).start()
+            threading.Thread(name=name, target=game_details_builder, args=(google_sheets_id, launch_id)).start()
         except Exception:
             launch_id = 'Builder is not started'
         return launch_id
