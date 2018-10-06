@@ -95,6 +95,18 @@ def run_app(bot, queue):
             else:
                 bot.send_message(message.chat.id, 'Игра не разрешена. Insert не выполнен')
 
+    @bot.message_handler(commands=['add_builder_game_id'])
+    def add_builder_game_id(message):
+        if message.chat.id != 45839899:
+            bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
+            return
+        game_id = re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)
+        if game_id not in DB.get_gameids_for_builder_list():
+            if DB.insert_gameids_for_builder(game_id):
+                bot.send_message(message.chat.id, 'Игра %s добавлена в разрешенные для game builder' % game_id)
+            else:
+                bot.send_message(message.chat.id, 'Игра для game builder не разрешена. Insert не выполнен')
+
     @bot.message_handler(commands=['start'])
     def start(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
@@ -519,8 +531,11 @@ def run_app(bot, queue):
 
     @app.route("/DBcleanup", methods=['GET', 'POST'])
     def db_cleanup():
-        th_db_cleanup = threading.Thread(name='th_db_cleanup', target=run_db_cleanup, args=[bot])
-        th_db_cleanup.start()
+        threads = threading.enumerate()
+        for thread in threads:
+            if thread.getName() == 'th_db_cleanup':
+                return 'Чистка базы от элементов закончившихся игр уже запущена. Нельзя запустить повторно.'
+        threading.Thread(name='th_db_cleanup', target=run_db_cleanup, args=[bot]).start()
         return 'Чистка базы от элементов закончившихся игр запущена'
 
     @app.route("/<session_id>/<game_id>", methods=['GET', 'POST'])
@@ -555,7 +570,23 @@ def run_app(bot, queue):
 
     @app.route('/builder/<google_sheets_id>')
     def run_game_details_builder(google_sheets_id):
-        return game_details_builder(google_sheets_id)
+        name = 'builder_%s' % google_sheets_id[-4:]
+        threads = threading.enumerate()
+        for thread in threads:
+            if thread.getName() == name:
+                return 'Заполнение движка из этого гуглдока уже запущено. Нельзя запустить повторно, ' \
+                       'пока предыдущий запуск не отработает.'
+        try:
+            launch_id = str(DB.insert_building_result_row)
+            threading.Thread(name=name, target=game_details_builder(), args=[google_sheets_id, launch_id]).start()
+        except Exception:
+            launch_id = 'Builder is not started'
+        return launch_id
+
+    @app.route('/builder/result/<launch_id>')
+    def get_launch_result(launch_id):
+        launch_result = DB.get_building_result(launch_id)
+        return launch_result
 
     @app.route('/builder')
     def run_game_details_builder_form():

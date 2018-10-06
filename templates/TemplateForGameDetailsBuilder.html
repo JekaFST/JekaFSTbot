@@ -25,7 +25,24 @@
             }
             return xmlhttp;
         }
+
+        function get_builder_result(){
+            var launchid = document.getElementById("launchid").value;
+            var xmlhttp = getXmlHttp();
+            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/result/' + launchid, true);
+            xmlhttp.send();
+            xmlhttp.onreadystatechange = function() {
+            if (xmlhttp.readyState == 4) { // Ответ пришёл
+                if(xmlhttp.status == 200) { // Сервер вернул код 200 (что хорошо)
+                    var buider_result = xmlhttp.responseText;
+                    return builder_result;
+                }
+            }
+         };
+        }
+
         function run_builder() {
+            var builder_result = '';
             var googledoc = document.getElementById("googledoc").value;
             var xmlhttp = getXmlHttp(); // Создаём объект XMLHTTP
             xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/' + googledoc, true); // Открываем асинхронное соединение
@@ -33,7 +50,18 @@
             xmlhttp.onreadystatechange = function() { // Ждём ответа от сервера
             if (xmlhttp.readyState == 4) { // Ответ пришёл
                 if(xmlhttp.status == 200) { // Сервер вернул код 200 (что хорошо)
-                document.getElementById("answer").innerHTML = xmlhttp.responseText; // Выводим ответ сервера
+                    if (xmlhttp.responseText == 'Builder is not started') {
+                        document.getElementById("builderstatus").innerHTML = 'Заполнение движка не запущено. Сообщите @JekaFST в телеграмме.';
+                    } else {
+                        document.getElementById("builderstatus").innerHTML = 'Заполнение движка запущено.';
+                        document.getElementById("launchid").innerHTML = xmlhttp.responseText;
+                        while (builder_result == '') {
+                            builder_result = setTimeout(get_builder_result, 5000);
+                            if (builder_result != '') {
+                                document.getElementById("answer").innerHTML = builder_result;
+                            }
+                        }
+                    }
                 }
             }
          };
@@ -56,7 +84,11 @@
        <hr>
    </div>
    <div>
-        <p>Результат: <span id="answer"></span></p>
+       <p>Статус запуска: <span id="builderstatus"></span></p>
+       <br>
+       <p>ID запуска: <span id="launchid"></span></p>
+       <br>
+       <p>Результат: <span id="answer"></span></p>
    </div>
 </body>
 </html>

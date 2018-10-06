@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from DBMethods import DBSession
+from DBMethods import DBSession, DB
 from MainClasses import Task
 
 
@@ -134,13 +134,12 @@ class ExceptionHandler(object):
 
     @staticmethod
     def game_details_builder_exception(function):
-        def wrapped(google_sheets_id):
+        def wrapped(google_sheets_id, launch_id):
             try:
-                function(google_sheets_id)
-                result = 'Успех. Проверьте правильность переноса данных в движок.'
+                result = function(google_sheets_id, launch_id)
             except Exception:
                 logging.exception("Exception в game_details_builder - проверьте логи")
-                result = 'Неудача. Exception в game_details_builder - проверьте движок и логи.'
+                result = 'Неудача. Проверьте движок и сообщите @JekaFST в телеграмме.'
+            DB.update_building_result(result, launch_id)
             return result
-
         return wrapped

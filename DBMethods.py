@@ -473,13 +473,6 @@ class DB(object):
             return rows[0][0]
 
     @staticmethod
-    def get_config_by_chat_id(chat_id):
-        sql = "SELECT Login, Password, ENdomain, ChannelName FROM ChatConfigs WHERE ChatId = %s" % (chat_id)
-        with connection_pool.get_conn() as db_connection:
-            rows = db_connection.execute_dict_select_cur(sql)
-            return rows[0] if rows else None
-
-    @staticmethod
     def get_allowed_chat_ids():
         sql_main = "SELECT ChatId FROM AllowedChats"
         sql_add = "SELECT AddChatId FROM AllowedChats WHERE AddChatId IS NOT NULL"
@@ -699,3 +692,38 @@ class DB(object):
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_dict_select_cur(sql)
             return rows
+
+    @staticmethod
+    def get_gameids_for_builder_list():
+        sql = "SELECT DISTINCT * FROM gamesforbuilder"
+        with connection_pool.get_conn() as db_connection:
+            rows = db_connection.execute_select_cur(sql)
+            return [row[0] for row in rows]
+
+    @staticmethod
+    def insert_gameids_for_builder(gameid):
+        sql = """
+                INSERT INTO gamesforbuilder (gameid)
+                VALUES ('%s')""" % gameid
+        with connection_pool.get_conn() as db_connection:
+            return db_connection.execute_insert_cur(sql)
+
+    @staticmethod
+    def insert_building_result_row():
+        sql = "INSERT INTO buildingresults (result) VALUES ('') RETURNING id;"
+        with connection_pool.get_conn() as db_connection:
+            _, rows = db_connection.execute_returning_insert_cur(sql)
+            return rows[0][0]
+
+    @staticmethod
+    def update_building_result(result, launch_id):
+        sql = "UPDATE buildingresults SET result = '%s' WHERE id = %s" % (result, launch_id)
+        with connection_pool.get_conn() as db_connection:
+            db_connection.execute_insert_cur(sql)
+
+    @staticmethod
+    def get_building_result(launch_id):
+        sql = "SELECT result FROM buildingresults WHERE id = %s" % launch_id
+        with connection_pool.get_conn() as db_connection:
+            rows = db_connection.execute_select_cur(sql)
+            return rows[0][0]

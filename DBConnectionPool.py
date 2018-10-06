@@ -64,6 +64,23 @@ class DBConnection(object):
             logging.exception(sql)
             return False
 
+    def execute_returning_insert_cur(self, sql):
+        if self.db_conn.closed != 0:
+            self.open_db_conn()
+        cur = self.db_conn.cursor()
+        try:
+            cur.execute(sql)
+            self.db_conn.commit()
+            result = cur.fetchall()
+            cur.close()
+            return True, result
+        except psycopg2.DatabaseError:
+            cur.close()
+            self.db_conn.rollback()
+            self.db_conn.close()
+            logging.exception(sql)
+            return False, None
+
 
 class ConnectionPool(object):
     def __init__(self):

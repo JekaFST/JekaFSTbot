@@ -33,9 +33,8 @@ def reload_backup(bot, queue):
 
 
 def start(task, bot):
-    config = DB.get_config_by_chat_id(task.chat_id)
     sessions_ids = DBSession.get_sessions_ids()
-    if task.chat_id not in sessions_ids and not config:
+    if task.chat_id not in sessions_ids:
         result = DBSession.insert_session(task.chat_id)
         if result:
             bot.send_message(task.chat_id, '<b>Сессия создана</b>\n'
@@ -45,27 +44,6 @@ def start(task, bot):
                                            '- ввести логин игрока (/login abc)\n'
                                            '- ввести пароль игрока (/password abc)\n'
                                            '- активировать сессию (/start_session)\n'
-                                           'Краткое описание доступно по команде /help\n'
-                                           'Краткая инструкция к боту доступна по ссылке:\n'
-                                           'https://powerful-shelf-32284.herokuapp.com/instruction',
-                             disable_web_page_preview=True, parse_mode='HTML')
-        else:
-            bot.send_message(task.chat_id, 'Сессия не создана. Ошибка SQL\n'
-                                           'Краткая инструкция к боту доступна по ссылке:\n'
-                                           'https://powerful-shelf-32284.herokuapp.com/instruction',
-                             disable_web_page_preview=True)
-    elif task.chat_id not in sessions_ids and config:
-        result = DBSession.insert_session(task.chat_id, login=config['login'], password=config['password'],
-                                   en_domain=config['endomain'], channel_name=config['channelname'])
-        if result:
-            bot.send_message(task.chat_id, '<b>Сессия создана</b>\n'
-                                           'Для данного чата найдена конфигурация по умолчанию. Проверить: /config\n'
-                                           'Чтобы начать использовать бота, необходимо:\n'
-                                           '- ввести game id игры (/gameid 26991)\n'
-                                           '- активировать сессию (/start_session)\n'
-                                           '- сменить домен игры (/domain http://demo.en.cx)\n'
-                                           '- сменить логин игрока (/login abc)\n'
-                                           '- сменить пароль игрока (/password abc)\n'
                                            'Краткое описание доступно по команде /help\n'
                                            'Краткая инструкция к боту доступна по ссылке:\n'
                                            'https://powerful-shelf-32284.herokuapp.com/instruction',
