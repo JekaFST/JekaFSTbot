@@ -710,7 +710,7 @@ class DB(object):
 
     @staticmethod
     def insert_building_result_row():
-        sql = "INSERT INTO buildingresults (result) VALUES ('') RETURNING id;"
+        sql = "INSERT INTO buildingresults (result) VALUES ('waiting') RETURNING id;"
         with connection_pool.get_conn() as db_connection:
             _, rows = db_connection.execute_returning_insert_cur(sql)
             return rows[0][0]

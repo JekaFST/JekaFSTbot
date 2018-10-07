@@ -42,7 +42,7 @@
         }
 
         function run_builder() {
-            var builder_result = '';
+            var builder_result = 'waiting';
             var googledoc = document.getElementById("googledoc").value;
             var xmlhttp = getXmlHttp(); // Создаём объект XMLHTTP
             xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/' + googledoc, true); // Открываем асинхронное соединение
@@ -55,9 +55,9 @@
                     } else {
                         document.getElementById("builderstatus").innerHTML = 'Заполнение движка запущено.';
                         document.getElementById("launchid").innerHTML = xmlhttp.responseText;
-                        while (builder_result == '') {
+                        while (builder_result == 'waiting') {
                             builder_result = get_builder_result()
-                            if (builder_result != '') {
+                            if (builder_result != 'waiting') {
                                 document.getElementById("answer").innerHTML = builder_result;
                             }
                         }
