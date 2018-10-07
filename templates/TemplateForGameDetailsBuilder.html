@@ -38,8 +38,7 @@
                             document.getElementById("builderstatus").innerHTML = 'Заполнение движка не запущено. Сообщите @JekaFST в телеграмме.';
                         } else {
                             document.getElementById("builderstatus").innerHTML = 'Заполнение движка запущено.';
-                            var launchid = xmlhttp.responseText;
-                            document.getElementById("launchid").innerHTML = launchid;
+                            document.getElementById("launchid").innerHTML = xmlhttp.responseText;
                         }
                     }
                 }
@@ -47,6 +46,7 @@
         }
 
         function get_result() {
+            var launchid = document.getElementById("launchid").innerHTML;
             var xmlhttp = getXmlHttp();
             xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/result/' + launchid, true);
             xmlhttp.send(); // Отправляем POST-запрос
