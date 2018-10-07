@@ -578,7 +578,7 @@ def run_app(bot, queue):
                 return 'Заполнение движка из этого гуглдока уже запущено. Нельзя запустить повторно, ' \
                        'пока предыдущий запуск не отработает.'
         try:
-            _, launch_id = DB.insert_building_result_row
+            launch_id = DB.insert_building_result_row
             launch_id = str(launch_id)
             threading.Thread(name=name, target=game_details_builder, args=(google_sheets_id, launch_id)).start()
         except Exception:
