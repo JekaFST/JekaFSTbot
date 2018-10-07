@@ -26,21 +26,6 @@
             return xmlhttp;
         }
 
-        function get_builder_result(){
-            var launchid = document.getElementById("launchid").innerHTML;
-            var xmlhttp = getXmlHttp();
-            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/result/' + launchid, true);
-            xmlhttp.send();
-            xmlhttp.onreadystatechange = function() {
-            if (xmlhttp.readyState == 4) { // Ответ пришёл
-                if(xmlhttp.status == 200) { // Сервер вернул код 200 (что хорошо)
-                    var builder_result = xmlhttp.responseText;
-                    return builder_result;
-                }
-            }
-         };
-        }
-
         function run_builder() {
             var builder_result = 'waiting';
             var googledoc = document.getElementById("googledoc").value;
@@ -54,9 +39,18 @@
                         document.getElementById("builderstatus").innerHTML = 'Заполнение движка не запущено. Сообщите @JekaFST в телеграмме.';
                     } else {
                         document.getElementById("builderstatus").innerHTML = 'Заполнение движка запущено.';
-                        document.getElementById("launchid").innerHTML = xmlhttp.responseText;
+                        var launchid = xmlhttp.responseText;
+                        document.getElementById("launchid").innerHTML = launchid;
                         while (builder_result == 'waiting') {
-                            builder_result = get_builder_result()
+                            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/result/' + launchid, true);
+                            xmlhttp.send();
+                            xmlhttp.onreadystatechange = function() {
+                                if (xmlhttp_2.readyState == 4) { // Ответ пришёл
+                                    if(xmlhttp_2.status == 200) { // Сервер вернул код 200 (что хорошо)
+                                    builder_result = xmlhttp.responseText;
+                                    }
+                                }
+                            };
                             if (builder_result != 'waiting') {
                                 document.getElementById("answer").innerHTML = builder_result;
                             }
