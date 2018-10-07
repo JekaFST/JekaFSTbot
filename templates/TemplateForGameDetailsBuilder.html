@@ -27,7 +27,7 @@
         }
 
         function get_builder_result(){
-            var launchid = document.getElementById("launchid").value;
+            var launchid = document.getElementById("launchid").innerHTML;
             var xmlhttp = getXmlHttp();
             xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/result/' + launchid, true);
             xmlhttp.send();
@@ -56,7 +56,7 @@
                         document.getElementById("builderstatus").innerHTML = 'Заполнение движка запущено.';
                         document.getElementById("launchid").innerHTML = xmlhttp.responseText;
                         while (builder_result == '') {
-                            builder_result = setTimeout(get_builder_result, 5000);
+                            builder_result = get_builder_result()
                             if (builder_result != '') {
                                 document.getElementById("answer").innerHTML = builder_result;
                             }
