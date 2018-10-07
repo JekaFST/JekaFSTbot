@@ -46,9 +46,9 @@
         }
 
         function get_result() {
-            var launchid = document.getElementById("launchid").innerHTML;
+            var launch_id = document.getElementById("launchid").innerText;
             var xmlhttp = getXmlHttp();
-            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/result/' + launchid, true);
+            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/result/' + launch_id, true);
             xmlhttp.send(); // Отправляем POST-запрос
             xmlhttp.onreadystatechange = function() {
                 if (xmlhttp.readyState == 4) { // Ответ пришёл
