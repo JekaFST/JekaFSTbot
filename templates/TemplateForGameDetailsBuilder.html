@@ -51,8 +51,8 @@
             xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/result/' + launchid, true);
             xmlhttp.send(); // Отправляем POST-запрос
             xmlhttp.onreadystatechange = function() {
-                if (xmlhttp_2.readyState == 4) { // Ответ пришёл
-                    if(xmlhttp_2.status == 200) { // Сервер вернул код 200 (что хорошо)
+                if (xmlhttp.readyState == 4) { // Ответ пришёл
+                    if(xmlhttp.status == 200) { // Сервер вернул код 200 (что хорошо)
                         var builder_result = xmlhttp.responseText;
                         document.getElementById("answer").innerHTML = builder_result;
                     }
