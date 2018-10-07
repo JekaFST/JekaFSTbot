@@ -27,38 +27,37 @@
         }
 
         function run_builder() {
-            var builder_result = 'waiting';
             var googledoc = document.getElementById("googledoc").value;
             var xmlhttp = getXmlHttp(); // Создаём объект XMLHTTP
             xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/' + googledoc, true); // Открываем асинхронное соединение
             xmlhttp.send(); // Отправляем POST-запрос
             xmlhttp.onreadystatechange = function() { // Ждём ответа от сервера
-            if (xmlhttp.readyState == 4) { // Ответ пришёл
-                if(xmlhttp.status == 200) { // Сервер вернул код 200 (что хорошо)
-                    if (xmlhttp.responseText == 'Builder is not started') {
-                        document.getElementById("builderstatus").innerHTML = 'Заполнение движка не запущено. Сообщите @JekaFST в телеграмме.';
-                    } else {
-                        document.getElementById("builderstatus").innerHTML = 'Заполнение движка запущено.';
-                        var launchid = xmlhttp.responseText;
-                        document.getElementById("launchid").innerHTML = launchid;
-                        while (builder_result == 'waiting') {
-                            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/result/' + launchid, true);
-                            xmlhttp.send();
-                            xmlhttp.onreadystatechange = function() {
-                                if (xmlhttp_2.readyState == 4) { // Ответ пришёл
-                                    if(xmlhttp_2.status == 200) { // Сервер вернул код 200 (что хорошо)
-                                    builder_result = xmlhttp.responseText;
-                                    }
-                                }
-                            };
-                            if (builder_result != 'waiting') {
-                                document.getElementById("answer").innerHTML = builder_result;
-                            }
+                if (xmlhttp.readyState == 4) { // Ответ пришёл
+                    if(xmlhttp.status == 200) { // Сервер вернул код 200 (что хорошо)
+                        if (xmlhttp.responseText == 'Builder is not started') {
+                            document.getElementById("builderstatus").innerHTML = 'Заполнение движка не запущено. Сообщите @JekaFST в телеграмме.';
+                        } else {
+                            document.getElementById("builderstatus").innerHTML = 'Заполнение движка запущено.';
+                            var launchid = xmlhttp.responseText;
+                            document.getElementById("launchid").innerHTML = launchid;
                         }
                     }
                 }
-            }
-         };
+            };
+        }
+
+        function get_result() {
+            var xmlhttp = getXmlHttp();
+            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/result/' + launchid, true);
+            xmlhttp.send(); // Отправляем POST-запрос
+            xmlhttp.onreadystatechange = function() {
+                if (xmlhttp_2.readyState == 4) { // Ответ пришёл
+                    if(xmlhttp_2.status == 200) { // Сервер вернул код 200 (что хорошо)
+                        var builder_result = xmlhttp.responseText;
+                        document.getElementById("answer").innerHTML = builder_result;
+                    }
+                }
+            };
         }
     </script>
 </head>
@@ -75,6 +74,8 @@
            <summary>Что такое айди гуглдока</summary>
            <img src="googledocid">
        </details>
+       <br>
+       <button id="result button" onclick="get_result()">Обновить статус заполнения</button>
        <hr>
    </div>
    <div>
