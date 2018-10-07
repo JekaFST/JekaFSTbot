@@ -581,6 +581,7 @@ def run_app(bot, queue):
             threading.Thread(name=name, target=game_details_builder, args=(google_sheets_id, launch_id)).start()
         except Exception:
             launch_id = 'Builder is not started'
+        print launch_id
         return launch_id
 
     @app.route('/builder/result/<launch_id>')
