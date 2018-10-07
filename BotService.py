@@ -581,8 +581,8 @@ def run_app(bot, queue):
             _, launch_id = DB.insert_building_result_row
             launch_id = str(launch_id)
             threading.Thread(name=name, target=game_details_builder, args=(google_sheets_id, launch_id)).start()
-        except Exception as err:
-            logging.exception('Buikder is not launched', err)
+        except Exception:
+            logging.exception('Builder is not started')
             launch_id = 'Builder is not started'
         print launch_id
         return launch_id
