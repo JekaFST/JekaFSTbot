@@ -27,14 +27,14 @@
         }
 
         function get_builder_result(){
-            var launch_id = document.getElementById("launchid").value;
-            var xmlhttp_2 = getXmlHttp();
-            xmlhttp_2.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/result/' + launch_id, true);
-            xmlhttp_2.send();
-            xmlhttp_2.onreadystatechange = function() {
-            if (xmlhttp_2.readyState == 4) { // Ответ пришёл
-                if(xmlhttp_2.status == 200) { // Сервер вернул код 200 (что хорошо)
-                    var buider_result = xmlhttp_2.responseText;
+            var launchid = document.getElementById("launchid").value;
+            var xmlhttp = getXmlHttp();
+            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/result/' + launchid, true);
+            xmlhttp.send();
+            xmlhttp.onreadystatechange = function() {
+            if (xmlhttp.readyState == 4) { // Ответ пришёл
+                if(xmlhttp.status == 200) { // Сервер вернул код 200 (что хорошо)
+                    var buider_result = xmlhttp.responseText;
                     return builder_result;
                 }
             }

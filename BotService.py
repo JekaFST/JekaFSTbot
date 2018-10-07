@@ -4,6 +4,7 @@ import threading
 import flask
 import re
 import telebot
+import logging
 from flask import Flask, render_template, send_from_directory
 from BotServiceMethods import add_level_bonuses, add_level_sectors, run_db_cleanup
 from Const import helptext
@@ -577,9 +578,11 @@ def run_app(bot, queue):
                 return 'Заполнение движка из этого гуглдока уже запущено. Нельзя запустить повторно, ' \
                        'пока предыдущий запуск не отработает.'
         try:
-            _, launch_id = str(DB.insert_building_result_row)
+            _, launch_id = DB.insert_building_result_row
+            launch_id = str(launch_id)
             threading.Thread(name=name, target=game_details_builder, args=(google_sheets_id, launch_id)).start()
-        except Exception:
+        except Exception as err:
+            logging.exception('Buikder is not launched', err)
             launch_id = 'Builder is not started'
         print launch_id
         return launch_id
