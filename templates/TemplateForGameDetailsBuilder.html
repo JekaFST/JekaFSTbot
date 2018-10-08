@@ -28,12 +28,16 @@
 
         function run_builder() {
             var googledoc = document.getElementById("googledoc").value;
-            var xmlhttp = getXmlHttp(); // Создаём объект XMLHTTP
-            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/' + googledoc, true); // Открываем асинхронное соединение
-            xmlhttp.send(); // Отправляем POST-запрос
-            xmlhttp.onreadystatechange = function() { // Ждём ответа от сервера
-                if (xmlhttp.readyState == 4) { // Ответ пришёл
-                    if(xmlhttp.status == 200) { // Сервер вернул код 200 (что хорошо)
+            if (googledoc == '') {
+                document.getElementById("builderstatus").innerHTML = 'Введите айди гуглдока';
+                return
+            }
+            var xmlhttp = getXmlHttp();
+            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/' + googledoc, true);
+            xmlhttp.send();
+            xmlhttp.onreadystatechange = function() {
+                if (xmlhttp.readyState == 4) {
+                    if(xmlhttp.status == 200) {
                         if (xmlhttp.responseText == 'Previous is in progress') {
                             document.getElementById("builderstatus").innerHTML = 'Выполнение предыдущего запуска еще не закончено. Нельзя запустить повторно.';
                         } else if (xmlhttp.responseText == 'Not started') {
