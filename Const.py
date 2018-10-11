@@ -6,7 +6,6 @@ num_worker_threads = 10
 urls = {
     'game_url_ending': '/gameengines/encounter/play/',
     'login_url_ending': '/Login.aspx',
-    'json': '?json=1',
 }
 
 game_wrong_statuses = {

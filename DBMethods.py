@@ -55,16 +55,16 @@ class DBSession(object):
     @staticmethod
     def update_session_urls(sessionid, urls):
         sql = """UPDATE SessionConfig
-                SET gameurl = '%s', gameurljs = '%s', loginurl = '%s'
+                SET gameurl = '%s', loginurl = '%s'
                 WHERE sessionid = %s
-              """ % (urls['game_url'], urls['game_url_js'], urls['login_url'], sessionid)
+              """ % (urls['game_url'], urls['login_url'], sessionid)
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def drop_session_vars(session_id):
         sql = """UPDATE SessionConfig
-                SET CurrLevelId = NULL, GameURL = NULL, GameURLjs = NULL, LoginURL = NULL, StormGame = NULL,
+                SET CurrLevelId = NULL, GameURL = NULL, LoginURL = NULL, StormGame = NULL,
                 SendCodes = True, GameModelStatus = '', PutUpdaterTask = Null, StopUpdater = True, Locations = '{}', llmessageids = '{}'
                 WHERE sessionid = %s
               """ % session_id
@@ -626,7 +626,7 @@ class DB(object):
     @staticmethod
     def get_gameurls_levels():
         sql = """
-                        SELECT DISTINCT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        SELECT DISTINCT sc.gameurl, sc.loginurl, sc.sessionid, sc.gameid
                         FROM sessionconfig sc JOIN levels l ON
                         (
                         l.sessionid = sc.sessionid
@@ -640,7 +640,7 @@ class DB(object):
     @staticmethod
     def get_gameurls_bonuses():
         sql = """
-                        SELECT DISTINCT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        SELECT DISTINCT sc.gameurl, sc.loginurl, sc.sessionid, sc.gameid
                         FROM sessionconfig sc JOIN bonuses b ON
                         (
                         b.sessionid = sc.sessionid
@@ -654,7 +654,7 @@ class DB(object):
     @staticmethod
     def get_gameurls_sectors():
         sql = """
-                        SELECT DISTINCT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        SELECT DISTINCT sc.gameurl, sc.loginurl, sc.sessionid, sc.gameid
                         FROM sessionconfig sc JOIN sectors s ON
                         (
                         s.sessionid = sc.sessionid
@@ -668,7 +668,7 @@ class DB(object):
     @staticmethod
     def get_gameurls_helps():
         sql = """
-                        SELECT DISTINCT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        SELECT DISTINCT sc.gameurl, sc.loginurl, sc.sessionid, sc.gameid
                         FROM sessionconfig sc JOIN helps h ON
                         (
                         h.sessionid = sc.sessionid
@@ -682,7 +682,7 @@ class DB(object):
     @staticmethod
     def get_gameurls_messages():
         sql = """
-                        SELECT DISTINCT sc.gameurljs, sc.loginurl, sc.sessionid, sc.gameid
+                        SELECT DISTINCT sc.gameurl, sc.loginurl, sc.sessionid, sc.gameid
                         FROM sessionconfig sc JOIN messages m ON
                         (
                         m.sessionid = sc.sessionid

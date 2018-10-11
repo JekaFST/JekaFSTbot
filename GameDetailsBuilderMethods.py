@@ -89,8 +89,9 @@ class ENConnection(object):
 
     def get_level_ids(self):
         level_ids_dict = dict()
-        url = self.domain + '/Administration/Games/LevelManager.aspx?gid=' + self.gameid
-        response = requests.get(url, headers={'Cookie': self.cookie})
+        url = self.domain + '/Administration/Games/LevelManager.aspx'
+        params = {'gid': self.gameid}
+        response = requests.get(url, headers={'Cookie': self.cookie}, params=params)
         soup = BeautifulSoup(response.text, 'html.parser')
         td = soup.find(id='ddlCopyFrom')
         for option_tag in td.contents:
@@ -98,18 +99,19 @@ class ENConnection(object):
         return level_ids_dict
 
     def get_level_page(self, level_number, bonuses):
-        url = self.domain + '/Administration/Games/LevelEditor.aspx?gid=' + self.gameid + '&level=' + level_number
-        response = requests.get(url, headers={'Cookie': self.cookie})
+        url = self.domain + '/Administration/Games/LevelEditor.aspx'
+        params = {'gid': self.gameid, 'level': level_number}
+        response = requests.get(url, headers={'Cookie': self.cookie}, params=params)
         bonus_ids = re.findall(r'BonusEdit.*bonus=(\d+)&action=view', response.text)
         bonuses[level_number] = dict()
         for i, bonus_id in enumerate(bonus_ids):
             bonuses[level_number][str(i+1)] = bonus_id
         return bonuses
 
-    def create_en_object(self, url, data, type):
+    def create_en_object(self, url, data, type, params):
         try:
             for i in xrange(2):
-                response = requests.post(url, data=data, headers={'Cookie': self.cookie}, allow_redirects=False)
+                response = requests.post(url, data=data, headers={'Cookie': self.cookie}, allow_redirects=False, params=params)
                 if not response.status_code == 302:
                     logging.warning("Failed to create %s. Data: %s" % (type, str(data)))
                     break
@@ -133,8 +135,9 @@ def make_help_data_and_url(row, domain, gameid):
         'NewPromptTimeoutSeconds': int(row[4]) if row[4] else 0,
         'NewPrompt': row[0] if row[0] else ''
     }
-    help_url = domain + '/Administration/Games/PromptEdit.aspx?gid=' + gameid + '&level=' + str(row[5])
-    return help_data, help_url
+    help_url = domain + '/Administration/Games/PromptEdit.aspx'
+    params = {'gid': gameid, 'level': str(row[5])}
+    return help_data, help_url, params
 
 
 # txt - award
@@ -173,8 +176,9 @@ def make_bonus_data_and_url(row, domain, gameid, level_ids_dict):
         bonus_data['chkAbsoluteLimit'] = 'on'
         bonus_data['txtValidFrom'] = row[15] if row[15] else ''
         bonus_data['txtValidTo'] = row[16] if row[16] else ''
-    bonus_url = domain + '/Administration/Games/BonusEdit.aspx?gid=' + gameid + '&level=' + str(row[17]) + '&bonus=0&action=save'
-    return bonus_data, bonus_url
+    bonus_url = domain + '/Administration/Games/BonusEdit.aspx'
+    params = {'gid': gameid, 'level': str(row[17]), 'bonus': '0', 'action': 'save'}
+    return bonus_data, bonus_url, params
 
 
 def make_sector_data_and_url(row, domain, gameid):
@@ -187,8 +191,9 @@ def make_sector_data_and_url(row, domain, gameid):
         sector_data['txtAnswer_%s' % str(i)] = answer
         sector_data['ddlAnswerFor_%s' % str(i)] = 0
     sector_data['savesector'] = ''
-    sector_url = domain + '/Administration/Games/LevelEditor.aspx?gid=' + gameid + '&level=' + str(row[2])
-    return sector_data, sector_url
+    sector_url = domain + '/Administration/Games/LevelEditor.aspx'
+    params = {'gid': gameid, 'level': str(row[2])}
+    return sector_data, sector_url, params
 
 
 # PenaltyComment - help description
@@ -211,8 +216,9 @@ def make_penalty_help_data_and_url(row, domain, gameid):
     }
     if 'false' not in row[6].lower():
         pen_help_data['chkRequestPenaltyConfirm'] = 'on'
-    pen_help_url = domain + '/Administration/Games/PromptEdit.aspx?gid=' + gameid + '&level=' + str(row[10]) + '&penalty=1'
-    return pen_help_data, pen_help_url
+    pen_help_url = domain + '/Administration/Games/PromptEdit.aspx'
+    params = {'gid': gameid, 'level': str(row[10]), 'penalty': '1'}
+    return pen_help_data, pen_help_url, params
 
 
 def make_task_data_and_url(row, domain, gameid):
@@ -223,7 +229,8 @@ def make_task_data_and_url(row, domain, gameid):
     if 'false' not in row[1].lower():
         task_data['chkReplaceNlToBr'] = 'on'
     task_url = domain + '/Administration/Games/TaskEdit.aspx?gid=' + gameid + '&level=' + str(row[2])
-    return task_data, task_url
+    params = {'gid': gameid, 'level': str(row[2])}
+    return task_data, task_url, params
 
 
 def response_checker(data, type, text):

@@ -17,7 +17,6 @@ from TextConvertingMethods import make_Y_G_links
 def compile_urls(session_id, chat_id, bot, game_id, en_domain):
     session_urls = dict()
     session_urls['game_url'] = str(en_domain + urls['game_url_ending'] + game_id)
-    session_urls['game_url_js'] = str(en_domain + urls['game_url_ending'] + game_id + urls['json'])
     session_urls['login_url'] = str(en_domain + urls['login_url_ending'])
     if DBSession.update_session_urls(session_id, session_urls):
         return True
@@ -143,7 +142,9 @@ def initiate_session_vars(session, bot, chat_id, from_updater=False):
         return None, None, None
 
 
-def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=None):
+def get_current_game_model(session, bot, chat_id, from_updater, params=None):
+    if not params:
+        params = {'json': '1'}
     game_model = None
     normal = None
     for i in xrange(2):
@@ -151,10 +152,7 @@ def get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=
             _ = upd_session_cookie(session, bot, chat_id)
             session = DBSession.get_session(session['sessionid'])
         try:
-            if not storm_level_url:
-                response = requests.get(session['gameurljs'], headers={'Cookie': session['cookie']})
-            else:
-                response = requests.get(storm_level_url, headers={'Cookie': session['cookie']})
+            response = requests.get(session['gameurl'], headers={'Cookie': session['cookie']}, params=params)
             game_model = json.loads(response.text)
             if game_model['Event'] == 0:
                 normal = True
@@ -214,9 +212,8 @@ def get_current_level(session, bot, chat_id, from_updater=False):
 
 
 def get_storm_level(level_number, session, bot, chat_id, from_updater):
-    url_ending = '?level=%s&json=1' % str(level_number)
-    url = str(session['endomain'] + urls['game_url_ending'] + session['gameid'] + url_ending)
-    storm_level_game_model, normal = get_current_game_model(session, bot, chat_id, from_updater, storm_level_url=url)
+    storm_level_game_model, normal = get_current_game_model(session, bot, chat_id, from_updater,
+                                                            params={'json': '1', 'level': str(level_number)})
     if normal:
         storm_level = storm_level_game_model['Level']
         return storm_level
@@ -397,7 +394,7 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
             _ = upd_session_cookie(session, bot, chat_id)
             session = DBSession.get_session(session['sessionid'])
         try:
-            response = requests.post(session['gameurljs'], data=code_request, headers={'Cookie': session['cookie']})
+            response = requests.post(session['gameurl'], data=code_request, headers={'Cookie': session['cookie']}, params={'json': '1'})
             game_model = json.loads(response.text)
             break
         except Exception:
