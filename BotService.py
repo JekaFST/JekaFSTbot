@@ -34,22 +34,45 @@ def run_app(bot, queue):
         if message.chat.id in main_chat_ids:
             bot.send_message(message.chat.id, 'Данный чат уже разрешен для работы с ботом')
             return
-        title = str(message.chat.title.encode('utf-8')) if message.chat.title else ''
-        text = '<b>%s</b> запрашивает разрешение на работу с ботом из чата "%s"\r\nchat_id: %s' % \
-               (str(message.from_user.username.encode('utf-8')), title, str(message.chat.id))
-        admin_id = message.from_user.id if message.from_user.id in [66204553] else 45839899
-        bot.send_message(admin_id, text, parse_mode='HTML')
+        try:
+            title = str(message.chat.title.encode('utf-8')) if message.chat.title else ''
+            text = '<b>%s</b> запрашивает разрешение на работу с ботом из чата "%s"\r\nchat_id: %s' % \
+                   (str(message.from_user.username.encode('utf-8')), title, str(message.chat.id))
+            admin_id = message.from_user.id if message.from_user.id in [66204553] else 45839899
+            bot.send_message(admin_id, text, parse_mode='HTML')
+            bot.send_message(message.chat.id, 'Запрос на разрешение использования бота отправлен администратору\n'
+                                              'Если вам не придет ответ в течение нескольких часов - напишите в личку @JekaFST',
+                             reply_to_message_id=message.message_id)
+        except Exception:
+            logging.exception('Запрос на разрешение не отправлен')
+            bot.send_message(message.chat.id, 'Запрос на разрешение использования бота не отправлен администратору\n'
+                                              'Напишите в личку @JekaFST',
+                             reply_to_message_id=message.message_id)
+
 
     @bot.message_handler(commands=['ask_to_add_gameid'])
     def ask_to_add_gameid(message):
         allowed, main_chat_ids, _ = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
-            title = str(message.chat.title.encode('utf-8')) if message.chat.title else ''
+            allowed_game_ids = DB.get_allowed_game_ids(message.chat.id)
             game_id = re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)
-            text = '<b>%s</b> запрашивает разрешение на игру %s для чата "%s"\r\nchat_id: %s' % \
-                   (str(message.from_user.username.encode('utf-8')), game_id, title, str(message.chat.id))
-            admin_id = message.from_user.id if message.from_user.id in [66204553] else 45839899
-            bot.send_message(admin_id, text, parse_mode='HTML')
+            if game_id in allowed_game_ids:
+                bot.send_message(message.chat.id, 'Данная игра уже разрешена для этого чата')
+                return
+            try:
+                title = str(message.chat.title.encode('utf-8')) if message.chat.title else ''
+                text = '<b>%s</b> запрашивает разрешение на игру %s для чата "%s"\r\nchat_id: %s' % \
+                       (str(message.from_user.username.encode('utf-8')), game_id, title, str(message.chat.id))
+                admin_id = message.from_user.id if message.from_user.id in [66204553] else 45839899
+                bot.send_message(admin_id, text, parse_mode='HTML')
+                bot.send_message(message.chat.id, 'Запрос на разрешение игры для этого чата отправлен администратору\n'
+                                                  'Если вам не придет ответ в течение нескольких часов - напишите в личку @JekaFST',
+                                 reply_to_message_id=message.message_id)
+            except Exception:
+                logging.exception('Запрос на разрешение игры не отправлен')
+                bot.send_message(message.chat.id, 'Запрос на разрешение игры из этого чата не отправлен администратору\n'
+                                                  'Напишите в личку @JekaFST',
+                                 reply_to_message_id=message.message_id)
 
     @bot.message_handler(commands=['join'])
     def join_session(message):
