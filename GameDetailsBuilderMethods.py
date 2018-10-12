@@ -154,7 +154,7 @@ def make_help_data_and_url(row, domain, gameid):
         'NewPromptTimeoutSeconds': int(row[4]) if row[4] else 0,
         'NewPrompt': row[0] if row[0] else ''
     }
-    help_url = domain + '/Administration/Games/PromptEdit.aspx'
+    help_url = domain + obj_type_url_mapping['help']
     params = {'gid': gameid, 'level': str(row[5])}
     return help_data, help_url, params
 
@@ -195,7 +195,7 @@ def make_bonus_data_and_url(row, domain, gameid, level_ids_dict):
         bonus_data['chkAbsoluteLimit'] = 'on'
         bonus_data['txtValidFrom'] = row[15] if row[15] else ''
         bonus_data['txtValidTo'] = row[16] if row[16] else ''
-    bonus_url = domain + '/Administration/Games/BonusEdit.aspx'
+    bonus_url = domain + obj_type_url_mapping['bonus']
     params = {'gid': gameid, 'level': str(row[17]), 'bonus': '0', 'action': 'save'}
     return bonus_data, bonus_url, params
 
@@ -210,7 +210,7 @@ def make_sector_data_and_url(row, domain, gameid):
         sector_data['txtAnswer_%s' % str(i)] = str.strip(answer)
         sector_data['ddlAnswerFor_%s' % str(i)] = 0
     sector_data['savesector'] = ''
-    sector_url = domain + '/Administration/Games/LevelEditor.aspx'
+    sector_url = domain + obj_type_url_mapping['sector']
     params = {'gid': gameid, 'level': str(row[2])}
     return sector_data, sector_url, params
 
@@ -235,7 +235,7 @@ def make_penalty_help_data_and_url(row, domain, gameid):
     }
     if 'false' not in row[6].lower():
         pen_help_data['chkRequestPenaltyConfirm'] = 'on'
-    pen_help_url = domain + '/Administration/Games/PromptEdit.aspx'
+    pen_help_url = domain + obj_type_url_mapping['pen_help']
     params = {'gid': gameid, 'level': str(row[10]), 'penalty': '1'}
     return pen_help_data, pen_help_url, params
 
@@ -247,7 +247,7 @@ def make_task_data_and_url(row, domain, gameid):
     }
     if 'false' not in row[1].lower():
         task_data['chkReplaceNlToBr'] = 'on'
-    task_url = domain + '/Administration/Games/TaskEdit.aspx?gid=' + gameid + '&level=' + str(row[2])
+    task_url = domain + obj_type_url_mapping['task']
     params = {'gid': gameid, 'level': str(row[2])}
     return task_data, task_url, params
 

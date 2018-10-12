@@ -13,7 +13,8 @@ obj_type_url_mapping = {
     'pen_help': '/Administration/Games/PromptEdit.aspx',
     'bonus': '/Administration/Games/BonusEdit.aspx',
     'sector': '/Administration/Games/LevelEditor.aspx',
-    'level': '/Administration/Games/LevelEditor.aspx'
+    'level': '/Administration/Games/LevelEditor.aspx',
+    'task': '/Administration/Games/TaskEdit.aspx',
 }
 
 game_wrong_statuses = {
