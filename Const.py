@@ -9,6 +9,14 @@ urls = {
     'json': '?json=1',
 }
 
+obj_type_url_mapping = {
+    'help': '/Administration/Games/PromptEdit.aspx',
+    'pen_help': '/Administration/Games/PromptEdit.aspx',
+    'bonus': '/Administration/Games/BonusEdit.aspx',
+    'sector': '/Administration/Games/LevelEditor.aspx',
+    'level': '/Administration/Games/LevelEditor.aspx'
+}
+
 game_wrong_statuses = {
                 2: 'Игра с указанным ID не существует',
                 3: 'Запрошенная игра не соответствует запрошенному Engine',
