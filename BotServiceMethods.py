@@ -91,7 +91,7 @@ def elements_cleanup(urls, elements):
             response = requests.post(line['loginurl'], data={'Login': 'JekaFST', 'Password': 'hjccbz1412'},
                                      headers={'Cookie': 'lang=ru'})
             cookie = response.request.headers['Cookie']
-            response = requests.get(line['gameurl'], headers={'Cookie': cookie}, params={'json': '1'})
+            response = requests.get(line['gameurl'], params={'json': '1'}, headers={'Cookie': cookie})
             game_model = json.loads(response.text)
             print str(game_model['Event'])
             if game_model['Event'] in [6, 17]:

@@ -152,7 +152,7 @@ def get_current_game_model(session, bot, chat_id, from_updater, params=None):
             _ = upd_session_cookie(session, bot, chat_id)
             session = DBSession.get_session(session['sessionid'])
         try:
-            response = requests.get(session['gameurl'], headers={'Cookie': session['cookie']}, params=params)
+            response = requests.get(session['gameurl'], params=params, headers={'Cookie': session['cookie']})
             game_model = json.loads(response.text)
             if game_model['Event'] == 0:
                 normal = True

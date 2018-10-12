@@ -6,6 +6,7 @@ from time import sleep
 import logging
 import requests
 from bs4 import BeautifulSoup
+from Const import obj_type_url_mapping
 
 
 class GoogleDocConnection(object):
@@ -67,6 +68,12 @@ class GoogleDocConnection(object):
         values = result.get('values', [])[1:]
         return values
 
+    def get_cleanup_level_rows(self):
+        RANGE_NAME = 'Cleanup'
+        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        values = result.get('values', [])[1:]
+        return values
+
 
 class ENConnection(object):
     def __init__(self, domain, login, password, gameid):
@@ -91,22 +98,18 @@ class ENConnection(object):
         level_ids_dict = dict()
         url = self.domain + '/Administration/Games/LevelManager.aspx'
         params = {'gid': self.gameid}
-        response = requests.get(url, headers={'Cookie': self.cookie}, params=params)
+        response = requests.get(url, params=params, headers={'Cookie': self.cookie})
         soup = BeautifulSoup(response.text, 'html.parser')
         td = soup.find(id='ddlCopyFrom')
         for option_tag in td.contents:
             level_ids_dict[option_tag.text] = option_tag.attrs['value']
         return level_ids_dict
 
-    def get_level_page(self, level_number, bonuses):
-        url = self.domain + '/Administration/Games/LevelEditor.aspx'
+    def get_level_page(self, level_number):
+        url = self.domain + obj_type_url_mapping['level']
         params = {'gid': self.gameid, 'level': level_number}
-        response = requests.get(url, headers={'Cookie': self.cookie}, params=params)
-        bonus_ids = re.findall(r'BonusEdit.*bonus=(\d+)&action=view', response.text)
-        bonuses[level_number] = dict()
-        for i, bonus_id in enumerate(bonus_ids):
-            bonuses[level_number][str(i+1)] = bonus_id
-        return bonuses
+        response = requests.get(url, params=params, headers={'Cookie': self.cookie})
+        return response.text
 
     def create_en_object(self, url, data, type, params):
         try:
@@ -124,6 +127,22 @@ class ENConnection(object):
                 break
         except Exception:
             logging.exception("Failed to create %s. Data: %s" % (type, str(data)))
+
+    def delete_en_object(self, params, type):
+        url = self.domain + obj_type_url_mapping[type]
+        try:
+            for i in xrange(2):
+                response = requests.get(url, params=params, headers={'Cookie': self.cookie})
+                if not response.status_code == 200:
+                    logging.warning("Failed to delete %s. Data: %s" % (type, str(params)))
+                    break
+                if "your requests have been classified as robot's requests." in response.text.lower():
+                    sleep(5)
+                    self.cookie = self.update_cookies()
+                    continue
+                break
+        except Exception:
+            logging.exception("Failed to delete %s. Data: %s" % (type, str(params)))
 
 
 def make_help_data_and_url(row, domain, gameid):
@@ -157,11 +176,11 @@ def make_bonus_data_and_url(row, domain, gameid, level_ids_dict):
     # answers = re.findall(r'.+', row[2])
     answers = re.findall(r'[^/]+', row[2])
     for i, answer in enumerate(answers):
-        bonus_data['answer_-%s' % str(i+1)] = answer
+        bonus_data['answer_-%s' % str(i+1)] = str.strip(answer)
     # level_numbers = re.findall(r'.+', row[4])
     level_numbers = re.findall(r'[^/]+', row[4])
     for level_number in level_numbers:
-        bonus_data[str('level_%s' % level_ids_dict[level_number])] = 'on'
+        bonus_data['level_%s' % str.strip(level_ids_dict[level_number])] = 'on'
     if row[9] or row[10] or row[11]:
         bonus_data['chkDelay'] = 'on'
         bonus_data['txtDelayHours'] = int(row[9]) if row[9] else 0
@@ -188,7 +207,7 @@ def make_sector_data_and_url(row, domain, gameid):
     # answers = re.findall(r'.+', row[1])
     answers = re.findall(r'[^/]+', row[1])
     for i, answer in enumerate(answers):
-        sector_data['txtAnswer_%s' % str(i)] = answer
+        sector_data['txtAnswer_%s' % str(i)] = str.strip(answer)
         sector_data['ddlAnswerFor_%s' % str(i)] = 0
     sector_data['savesector'] = ''
     sector_url = domain + '/Administration/Games/LevelEditor.aspx'
@@ -269,6 +288,19 @@ def task_checker(data, text):
     return
 
 
+def parse_level_page(row, level_page, sectors_to_del=list(), helps_to_del=list(), bonuses_to_del=list(), pen_helps_to_del=list()):
+    if row[1]:
+        help_ids = re.findall(r'prid=(\d+)\'', level_page)
+        helps_to_del = help_ids if 'all' in row[1] else get_exact_ids(re.findall(r'[^/]+', row[1]), help_ids)
+    if row[2]:
+        bonus_ids = re.findall(r'bonus=(\d+)', level_page)
+        bonuses_to_del = bonus_ids if 'all' in row[2] else get_exact_ids(re.findall(r'[^/]+', row[2]), bonus_ids)
+    if row[3]:
+        pen_helps_ids = re.findall(r'prid=(\d+)&penalty', level_page)
+        pen_helps_to_del = pen_helps_ids if 'all' in row[3] else get_exact_ids(re.findall(r'[^/]+', row[3]), pen_helps_ids)
+    return sectors_to_del, helps_to_del, bonuses_to_del, pen_helps_to_del
+
+
 type_checker_map = {
     'help': help_checker,
     'bonus': bonus_checker,
@@ -276,3 +308,10 @@ type_checker_map = {
     'PenaltyHelp': penalty_help_checker,
     'task': task_checker
 }
+
+
+def get_exact_ids(exact_ids, all_ids):
+    ids = list()
+    for id in exact_ids:
+        ids.append(all_ids[int(str.strip(str(id)))-1])
+    return ids

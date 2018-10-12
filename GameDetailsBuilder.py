@@ -2,7 +2,7 @@
 from ExceptionHandler import ExceptionHandler
 from DBMethods import DB
 from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_help_data_and_url, make_bonus_data_and_url, \
-    make_sector_data_and_url, make_penalty_help_data_and_url, make_task_data_and_url
+    make_sector_data_and_url, make_penalty_help_data_and_url, make_task_data_and_url, parse_level_page
 from time import sleep
 
 
@@ -13,8 +13,37 @@ def game_details_builder(google_sheets_id, launch_id):
     if 'demo' not in domain and gameid not in DB.get_gameids_for_builder_list():
         return 'Заполнение данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'
     en_connection = ENConnection(domain, login, password, gameid)
-    # bonuses = dict()
-    # bonuses = en_connection.get_level_page('2', bonuses)
+
+    for i, level_row in enumerate(google_doc_connection.get_cleanup_level_rows()):
+        level_page = en_connection.get_level_page(level_row[4])
+        sectors_to_del, helps_to_del, bonuses_to_del, pen_helps_to_del = parse_level_page(level_row, level_page)
+        for help_to_del in helps_to_del:
+            params = {
+                'gid': gameid,
+                'action': 'PromptDelete',
+                'prid': help_to_del,
+                'level': level_row[4]
+            }
+            en_connection.delete_en_object(params, 'help')
+
+        for bonus_to_del in bonuses_to_del:
+            params = {
+                'gid': gameid,
+                'action': 'delete',
+                'bonus': bonus_to_del,
+                'level': level_row[4]
+            }
+            en_connection.delete_en_object(params, 'bonus')
+
+        for pen_help_to_del in pen_helps_to_del:
+            params = {
+                'gid': gameid,
+                'action': 'PromptDelete',
+                'prid': pen_help_to_del,
+                'level': level_row[4],
+                'penalty': '1'
+            }
+            en_connection.delete_en_object(params, 'pen_help')
 
     for i, help in enumerate(google_doc_connection.get_helps()):
         if i % 30 == 0:
