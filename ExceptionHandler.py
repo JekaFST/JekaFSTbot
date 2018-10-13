@@ -134,9 +134,9 @@ class ExceptionHandler(object):
 
     @staticmethod
     def game_details_builder_exception(function):
-        def wrapped(google_sheets_id, launch_id):
+        def wrapped(google_sheets_id, launch_id, fill):
             try:
-                result = function(google_sheets_id, launch_id)
+                result = function(google_sheets_id, launch_id, fill)
             except Exception:
                 logging.exception("Exception в game_details_builder - проверьте логи")
                 result = 'Неудача. Проверьте движок и сообщите @JekaFST в телеграмме.'

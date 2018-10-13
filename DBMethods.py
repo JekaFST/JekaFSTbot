@@ -16,19 +16,14 @@ class DBSession(object):
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
-    def insert_session(main_chat_id, login=None, password=None, en_domain=None, channel_name=None):
-        use_channel = True if channel_name else False
-        login = "$$" + login + "$$" if login else "''"
-        password = "$$" + password + "$$" if password else "''"
-        en_domain = "$$" + en_domain + "$$" if en_domain else "''"
-        channel_name = "$$" + channel_name + "$$" if channel_name else 'NULL'
+    def insert_session(main_chat_id):
         sql = """INSERT INTO SessionConfig
-                (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, GameURLjs, LoginURL,
+                (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, LoginURL,
                 GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame, CurrLevelId,
                 sectorstoclose, sectorsmessageid, Locations, llmessageids)
-                VALUES (%s, False, %s, %s, %s, '', %s, '', NULL, NULL, NULL, '', %s, True, NULL, 2, True, NULL, NULL,
+                VALUES (%s, False, '', '', '', '', '', '', NULL, NULL, '', False, True, NULL, 2, True, NULL, NULL,
                 '', NULL, '{}', '{}')
-              """ % (main_chat_id, login, password, en_domain, channel_name, use_channel)
+              """ % main_chat_id
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
@@ -709,8 +704,8 @@ class DB(object):
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
-    def insert_building_result_row():
-        sql = "INSERT INTO buildingresults (result) VALUES ('Заполнение движка еще выполняется') RETURNING id;"
+    def insert_building_result_row(text):
+        sql = "INSERT INTO buildingresults (result) VALUES ('%s движка еще выполняется') RETURNING id" % text
         with connection_pool.get_conn() as db_connection:
             _, rows = db_connection.execute_returning_insert_cur(sql)
             return rows[0][0]

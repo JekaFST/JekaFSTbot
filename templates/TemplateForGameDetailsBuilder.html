@@ -26,14 +26,19 @@
             return xmlhttp;
         }
 
-        function run_builder() {
+        function run_builder(fill) {
             var googledoc = document.getElementById("googledoc").value;
             if (googledoc == '') {
                 document.getElementById("builderstatus").innerHTML = 'Введите айди гуглдока';
                 return
             }
             var xmlhttp = getXmlHttp();
-            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/' + googledoc, true);
+            if (fill == 1) {
+                xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/' + googledoc + '?fill=1', true);
+            }
+            else {
+                xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/' + googledoc + '?fill=0', true);
+            }
             xmlhttp.send();
             xmlhttp.onreadystatechange = function() {
                 if (xmlhttp.readyState == 4) {
@@ -41,10 +46,20 @@
                         if (xmlhttp.responseText == 'Previous is in progress') {
                             document.getElementById("builderstatus").innerHTML = 'Выполнение предыдущего запуска еще не закончено. Нельзя запустить повторно.';
                         } else if (xmlhttp.responseText == 'Not started') {
-                            document.getElementById("builderstatus").innerHTML = 'Заполнение движка не запущено. Сообщите @JekaFST в телеграмме.';
+                            if (fill == 1) {
+                                document.getElementById("builderstatus").innerHTML = 'Заполнение движка не запущено. Сообщите @JekaFST в телеграмме.';
+                            }
+                            else {
+                                document.getElementById("builderstatus").innerHTML = 'Чистка движка не запущена. Сообщите @JekaFST в телеграмме.';
+                            }
                             document.getElementById("launchid").innerHTML = '';
                         } else {
-                            document.getElementById("builderstatus").innerHTML = 'Заполнение движка запущено.';
+                            if (fill == 1) {
+                                document.getElementById("builderstatus").innerHTML = 'Заполнение движка запущено.';
+                            }
+                            else {
+                                document.getElementById("builderstatus").innerHTML = 'Чистка движка запущена.';
+                            }
                             document.getElementById("launchid").innerHTML = xmlhttp.responseText;
                         }
                     }
@@ -75,7 +90,8 @@
        Либо всем, либо для пользователя jekafst@gmail.com. Скрипт читает гуглдок от этого пользователя.
        <br><br>
        <input type="text" placeholder="Введите айди гуглдока" name="Google sheet id" id="googledoc">
-       <button id="builder button" onclick="run_builder()">Заполнить движок</button>
+       <button id="builder fill button" onclick="run_builder(1)">Заполнить движок</button>
+       <button id="builder del button" onclick="run_builder(0)">Очистить движок</button>
        <br><br>
        <details>
            <summary>Что такое айди гуглдока</summary>

@@ -5,7 +5,7 @@ import flask
 import re
 import telebot
 import logging
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, request
 from BotServiceMethods import add_level_bonuses, add_level_sectors, run_db_cleanup
 from Const import helptext
 from DBMethods import DB, DBSession
@@ -594,14 +594,16 @@ def run_app(bot, queue):
 
     @app.route('/builder/<google_sheets_id>')
     def run_game_details_builder(google_sheets_id):
+        fill = True if int(request.args.get('fill')) == 1 else False
         name = 'builder_%s' % google_sheets_id[-4:]
         threads = threading.enumerate()
         for thread in threads:
             if thread.getName() == name:
                 return 'Previous is in progress'
         try:
-            launch_id = str(DB.insert_building_result_row())
-            threading.Thread(name=name, target=game_details_builder, args=(google_sheets_id, launch_id)).start()
+            text = 'Заполнение' if fill else 'Чистка'
+            launch_id = str(DB.insert_building_result_row(text))
+            threading.Thread(name=name, target=game_details_builder, args=(google_sheets_id, launch_id, fill)).start()
         except Exception:
             logging.exception('Builder is not started')
             launch_id = 'Not started'

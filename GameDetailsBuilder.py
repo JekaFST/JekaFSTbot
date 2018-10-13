@@ -7,44 +7,22 @@ from time import sleep
 
 
 @ExceptionHandler.game_details_builder_exception
-def game_details_builder(google_sheets_id, launch_id):
+def game_details_builder(google_sheets_id, launch_id, fill):
     google_doc_connection = GoogleDocConnection(google_sheets_id)
     login, password, domain, gameid = google_doc_connection.get_setup()
     if 'demo' not in domain and gameid not in DB.get_gameids_for_builder_list():
         return 'Заполнение данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'
     en_connection = ENConnection(domain, login, password, gameid)
 
-    for i, level_row in enumerate(google_doc_connection.get_cleanup_level_rows()):
-        level_page = en_connection.get_level_page(level_row[4])
-        sectors_to_del, helps_to_del, bonuses_to_del, pen_helps_to_del = parse_level_page(level_row, level_page)
-        for help_to_del in helps_to_del:
-            params = {
-                'gid': gameid,
-                'action': 'PromptDelete',
-                'prid': help_to_del,
-                'level': level_row[4]
-            }
-            en_connection.delete_en_object(params, 'help')
+    if fill:
+        result = fill_engine(google_doc_connection, en_connection, domain, gameid)
+    else:
+        result = clean_engine(google_doc_connection, en_connection, gameid)
 
-        for bonus_to_del in bonuses_to_del:
-            params = {
-                'gid': gameid,
-                'action': 'delete',
-                'bonus': bonus_to_del,
-                'level': level_row[4]
-            }
-            en_connection.delete_en_object(params, 'bonus')
+    return result
 
-        for pen_help_to_del in pen_helps_to_del:
-            params = {
-                'gid': gameid,
-                'action': 'PromptDelete',
-                'prid': pen_help_to_del,
-                'level': level_row[4],
-                'penalty': '1'
-            }
-            en_connection.delete_en_object(params, 'pen_help')
 
+def fill_engine(google_doc_connection, en_connection, domain, gameid):
     for i, help in enumerate(google_doc_connection.get_helps()):
         if i % 30 == 0:
             sleep(5)
@@ -76,3 +54,38 @@ def game_details_builder(google_sheets_id, launch_id):
         en_connection.create_en_object(task_url, task_data, 'task', params)
 
     return 'Успех. Проверьте правильность переноса данных в движок.'
+
+
+def clean_engine(google_doc_connection, en_connection, gameid):
+    for i, level_row in enumerate(google_doc_connection.get_cleanup_level_rows()):
+        level_page = en_connection.get_level_page(level_row[4])
+        sectors_to_del, helps_to_del, bonuses_to_del, pen_helps_to_del = parse_level_page(level_row, level_page)
+        for help_to_del in helps_to_del:
+            params = {
+                'gid': gameid,
+                'action': 'PromptDelete',
+                'prid': help_to_del,
+                'level': level_row[4]
+            }
+            en_connection.delete_en_object(params, 'help')
+
+        for bonus_to_del in bonuses_to_del:
+            params = {
+                'gid': gameid,
+                'action': 'delete',
+                'bonus': bonus_to_del,
+                'level': level_row[4]
+            }
+            en_connection.delete_en_object(params, 'bonus')
+
+        for pen_help_to_del in pen_helps_to_del:
+            params = {
+                'gid': gameid,
+                'action': 'PromptDelete',
+                'prid': pen_help_to_del,
+                'level': level_row[4],
+                'penalty': '1'
+            }
+            en_connection.delete_en_object(params, 'pen_help')
+
+    return 'Успех. Проверьте правильность удаления данных из движка.'
