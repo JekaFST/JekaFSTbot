@@ -469,7 +469,7 @@ class DB(object):
 
     @staticmethod
     def get_allowed_chat_ids():
-        sql_main = "SELECT ChatId FROM AllowedChats"
+        sql_main = "SELECT DISTINCT ChatId FROM AllowedChats"
         sql_add = "SELECT AddChatId FROM AllowedChats WHERE AddChatId IS NOT NULL"
         with connection_pool.get_conn() as db_connection:
             main_rows = db_connection.execute_select_cur(sql_main)

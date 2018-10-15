@@ -98,6 +98,10 @@ def run_app(bot, queue):
             bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
             return
         chat_id = int(re.search(r'[-\d]+', str(message.text.encode('utf-8'))).group(0))
+        main_chat_ids, _ = DB.get_allowed_chat_ids()
+        if chat_id in main_chat_ids:
+            bot.send_message(message.chat.id, 'Данный чат уже разрешен для работы с ботом')
+            return
         if DB.insert_main_chat_id(chat_id):
             bot.send_message(chat_id, 'Этот чат добавлен в список разрешенных для работы с ботом')
         else:
