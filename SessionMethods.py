@@ -93,11 +93,11 @@ def upd_session_cookie(session, bot, chat_id):
         response = requests.post(session['loginurl'], data={'Login': session['login'], 'Password': session['password']},
                                  headers={'Cookie': 'lang=ru'})
     except Exception:
-        reply = '<b>Exception</b>\r\nПроверьте конфигурацию игры и попробуйте еще раз'
+        reply = 'Бот не залогинился - ошибка в конфигурации\r\nПроверьте конфигурацию сессии и попробуйте еще раз'
         bot.send_message(chat_id, reply, parse_mode='HTML')
         return False
     if not response.status_code == 200:
-        reply = 'Бот не залогинился\r\nResponse code is %s\r\nТекст: %s' % (str(response.status_code), response.text)
+        reply = 'Бот не залогинился - движок вернул ошибку\r\nResponse code is %s\r\nТекст: %s' % (str(response.status_code), response.text)
         bot.send_message(chat_id, reply)
         return False
 
@@ -107,10 +107,12 @@ def upd_session_cookie(session, bot, chat_id):
         for div in soup.find_all('div'):
             if div.attrs['class'][0] == 'error':
                 error = div.text.encode('utf-8')
-                reply = 'Бот не залогинился\r\nResponse error: %s' % error
+                reply = 'Бот не залогинился - ошибка\r\nResponse error: %s' % error
                 bot.send_message(chat_id, reply)
                 return
-        reply = 'Бот не залогинился, попробуйте еще раз'
+        reply = 'Бот не смог обновить авторизовацию для взаимодействия с джижком\r\n' \
+                'Если это повторяющееся сообщение - попробуйте выключить слежение, проверьте, что домен доступен, ' \
+                'подождите минуту или несколько минут и снова запустите слежение'
         bot.send_message(chat_id, reply)
         return False
     if DBSession.update_text_field(session['sessionid'], 'cookie', cookie):
@@ -165,11 +167,14 @@ def get_current_game_model(session, bot, chat_id, from_updater, params=None):
                 continue
             if "Your requests have been classified as robot's requests." in response.text:
                 DBSession.update_bool_flag(session['sessionid'], 'stopupdater', 'True')
-                reply = 'Сработала защита движка от повторяющихся запросов. Необходимо перезапустить апдейтер.\r\n/start_updater'
+                reply = 'Сработала защита движка от повторяющихся запросов. Необходимо перезапустить слежение.\r\n/start_updater'
                 bot.send_message(chat_id, reply)
             else:
                 logging.exception('Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
                 bot.send_message(45839899, 'Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
+                reply = 'Updater не смог игру\r\nЕсли это повторяющееся сообщение - попробуйте выключить слежение, ' \
+                        'подождать минуту или несколько минут и снова запустить слежение'
+                bot.send_message(chat_id, reply)
                 try:
                     print response
                     print response.text
@@ -584,12 +589,13 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
                 except Exception as e:
                     response_text = json.loads(e.result.text)['description'].encode('utf-8')
                     if "chat not found" in response_text:
-                        not_in_chat_bots.append(k)
+                        not_in_chat_bots.append(str(k))
                     else:
-                        bot.send_message(chat_id, 'Live location точки %s не отправлена.\r\n%s' % (k, response_text))
+                        bot.send_message(chat_id, 'Live location точки %s не отправлена.\r\n%s' % (str(k), response_text))
             if not_in_chat_bots:
                 bot.send_message(chat_id, 'Live location для следующих точек не отправлен: %s.\r\n'
-                                          'В чате нет соответствующего(-их) бота(-ов)' % str(not_in_chat_bots))
+                                          'В чате нет соответствующего(-их) бота(-ов)\r\n'
+                                          'Найти и добавить ботов можно по следующему шаблону: @JekaLocation1Bot' % str(not_in_chat_bots))
             DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
         else:
             latitude = re.findall(r'\d\d\.\d{4,7}', str(coords))[0]
@@ -617,12 +623,13 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
             except Exception as e:
                 response_text = json.loads(e.result.text)['description'].encode('utf-8')
                 if "chat not found" in response_text:
-                    not_in_chat_bots.append(k)
+                    not_in_chat_bots.append(str(k))
                 else:
                     bot.send_message(chat_id, 'Live location точки %s не отправлена.\r\n%s' % (k, response_text))
         if not_in_chat_bots:
             bot.send_message(chat_id, 'Live location для следующих точек не отправлен: %s.\r\n'
-                                      'В чате нет соответствующего(-их) бота(-ов)' % str(not_in_chat_bots))
+                                      'В чате нет соответствующего(-их) бота(-ов)\r\n'
+                                      'Найти и добавить ботов можно по следующему шаблону: @JekaLocation1Bot' % str(not_in_chat_bots))
         DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
 
 
