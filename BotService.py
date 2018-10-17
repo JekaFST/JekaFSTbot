@@ -183,7 +183,7 @@ def run_app(bot, queue):
             main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             new_login = re.findall(r'/login\s*(.+)', str(message.text.encode('utf-8')))[0] if re.findall(r'/login\s*(.+)', str(message.text.encode('utf-8'))) else None
             if not new_login:
-                bot.send_message(message.chat.id, 'Введите логин после команды /login, через пробел')
+                bot.send_message(message.chat.id, 'Введите логин после команды /login, через пробел', reply_to_message_id=message.message_id)
                 return
             set_login_task = Task(message.chat.id, 'login', session_id=main_chat_id, new_login=new_login)
             queue.put((99, set_login_task))
@@ -196,7 +196,7 @@ def run_app(bot, queue):
             main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
             new_password = re.findall(r'/password\s*(.+)', str(message.text.encode('utf-8')))[0] if re.findall(r'/password\s*(.+)', str(message.text.encode('utf-8'))) else None
             if not new_password:
-                bot.send_message(message.chat.id, 'Введите пароль после команды /password, через пробел')
+                bot.send_message(message.chat.id, 'Введите пароль после команды /password, через пробел', reply_to_message_id=message.message_id)
                 return
             set_password_task = Task(message.chat.id, 'password', session_id=main_chat_id, new_password=new_password)
             queue.put((99, set_password_task))
@@ -209,7 +209,7 @@ def run_app(bot, queue):
 
             new_domain = re.findall(r'/domain\s*(.+)', str(message.text.encode('utf-8')))[0] if re.findall(r'/domain\s*(.+)', str(message.text.encode('utf-8'))) else None
             if not new_domain:
-                bot.send_message(message.chat.id, 'Введите домен после команды /domain, через пробел')
+                bot.send_message(message.chat.id, 'Введите домен после команды /domain, через пробел', reply_to_message_id=message.message_id)
                 return
             set_domain_task = Task(message.chat.id, 'domain', session_id=message.chat.id, new_domain=new_domain)
             queue.put((99, set_domain_task))
@@ -221,7 +221,7 @@ def run_app(bot, queue):
                 and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
             new_game_id = re.findall(r'[\d]+', str(message.text.encode('utf-8')))[0] if re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
             if not new_game_id:
-                bot.send_message(message.chat.id, 'Введите айди игры после команды /gameid, через пробел')
+                bot.send_message(message.chat.id, 'Введите айди игры после команды /gameid, через пробел', reply_to_message_id=message.message_id)
                 return
             set_game_id_task = Task(message.chat.id, 'game_id', session_id=message.chat.id, new_game_id=new_game_id)
             queue.put((99, set_game_id_task))
@@ -358,7 +358,7 @@ def run_app(bot, queue):
 
             new_channel_name = re.findall(r'/set_channel_name\s*(.+)', str(message.text.encode('utf-8')))[0] if re.findall(r'/set_channel_name\s*(.+)', str(message.text.encode('utf-8'))) else None
             if not new_channel_name:
-                bot.send_message(message.chat.id, 'Введите имя канала после команды /set_channel_name, через пробел')
+                bot.send_message(message.chat.id, 'Введите имя канала после команды /set_channel_name, через пробел', reply_to_message_id=message.message_id)
                 return
             set_channel_name_task = Task(message.chat.id, 'channel_name', session_id=message.chat.id, new_channel_name=new_channel_name)
             queue.put((99, set_channel_name_task))
