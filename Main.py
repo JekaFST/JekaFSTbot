@@ -22,7 +22,7 @@ queue = PriorityQueue()
 
 bot = telebot.TeleBot(DB.get_main_bot_token()) if prod else telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
 bot.remove_webhook()
-bot.set_webhook(url='https://powerful-shelf-32284.herokuapp.com/webhook') if prod \
+bot.set_webhook(url='https://jekafstbot.herokuapp.com/webhook') if prod \
     else bot.set_webhook(url='https://0c5dcaba.ngrok.io/webhook')
 
 try:

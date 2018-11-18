@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import os
 
-prod = True
+
+prod = True if 'DYNO' in os.environ.keys() else False
 num_worker_threads = 10
 
 urls = {

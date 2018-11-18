@@ -46,18 +46,18 @@ def start(task, bot):
                                            '- активировать сессию (/start_session)\n'
                                            'Краткое описание доступно по команде /help\n'
                                            'Краткая инструкция к боту доступна по ссылке:\n'
-                                           'https://powerful-shelf-32284.herokuapp.com/instruction',
+                                           'https://jekafstbot.herokuapp.com/instruction',
                              disable_web_page_preview=True, parse_mode='HTML')
         else:
             bot.send_message(task.chat_id, 'Сессия не создана. Ошибка SQL\n'
                                            'Краткая инструкция к боту доступна по ссылке:\n'
-                                           'https://powerful-shelf-32284.herokuapp.com/instruction',
+                                           'https://jekafstbot.herokuapp.com/instruction',
                              disable_web_page_preview=True)
     else:
         bot.send_message(task.chat_id, 'Для данного чата уже создана сессия\n'
                                        'Введите /config для проверки ее состояния\n'
                                        'Краткая инструкция к боту доступна по ссылке:\n'
-                                       'https://powerful-shelf-32284.herokuapp.com/instruction',
+                                       'https://jekafstbot.herokuapp.com/instruction',
                          disable_web_page_preview=True)
     chat = bot.get_chat(chat_id=task.chat_id)
     title = chat.title.encode('utf-8') if chat.title else 'None'
@@ -503,7 +503,7 @@ def clean_live_locations(task, bot):
 
 def get_codes_links(task, bot):
     game_id = DBSession.get_field_value(task.session_id, 'gameid')
-    link_to_all_codes = 'https://powerful-shelf-32284.herokuapp.com/%s/%s' % (task.session_id, game_id)
+    link_to_all_codes = 'https://jekafstbot.herokuapp.com/%s/%s' % (task.session_id, game_id)
     link_to_codes_per_level = link_to_all_codes + '/level_number'
     message = 'Для просмотра кодов по всем уровням игры:\r\n' + link_to_all_codes + '\r\n' \
               'Для просмотра кодов по отдельному уровню игры:\r\n' + link_to_codes_per_level + '\r\n' \

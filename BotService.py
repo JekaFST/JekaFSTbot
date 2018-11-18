@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
 import threading
-import flask
+import flask as f
 import re
 import telebot
 import logging
-from flask import Flask, render_template, send_from_directory, request
 from BotServiceMethods import add_level_bonuses, add_level_sectors, run_db_cleanup
 from Const import helptext
 from DBMethods import DB, DBSession
@@ -15,18 +14,18 @@ from TextConvertingMethods import find_coords
 
 
 def run_app(bot, queue):
-    app = Flask(__name__)
+    app = f.Flask(__name__)
 
     #Process webhook calls
     @app.route('/webhook', methods=['GET', 'POST'])
     def webhook():
-        if flask.request.headers.get('content-type') == 'application/json':
-            json_string = flask.request.get_data().decode('utf-8')
+        if f.request.headers.get('content-type') == 'application/json':
+            json_string = f.request.get_data().decode('utf-8')
             update = telebot.types.Update.de_json(json_string)
             bot.process_new_updates([update])
             return ''
         else:
-            flask.abort(403)
+            f.abort(403)
 
     @bot.message_handler(commands=['ask_for_permission'])
     def ask_for_permission(message):
@@ -517,7 +516,7 @@ def run_app(bot, queue):
 
     @bot.message_handler(commands=['instruction'])
     def send_instruction(message):
-        bot.send_message(message.chat.id, 'https://powerful-shelf-32284.herokuapp.com/instruction')
+        bot.send_message(message.chat.id, 'https://jekafstbot.herokuapp.com/instruction')
 
     @bot.message_handler(regexp='^[!\.]\s*(.+)')
     def main_code_processor(message):
@@ -565,11 +564,11 @@ def run_app(bot, queue):
         # data['chat_title'] = chat.title.encode('utf-8')
         data['updater'] = 'Stopped' if session['stopupdater'] else 'Launched'
         data['updater_task'] = 'TRUE' if session['putupdatertask'] else 'FALSE'
-        return render_template("TemplateForSession.html", title='Session for chat: %s' % session_id, data=data)
+        return f.render_template("TemplateForSession.html", title='Session for chat: %s' % session_id, data=data)
 
     @app.route("/instruction", methods=['GET', 'POST'])
     def send_instruction():
-        return render_template("TemplateForInstruction.html")
+        return f.render_template("TemplateForInstruction.html")
 
     @app.route("/DBcleanup", methods=['GET', 'POST'])
     def db_cleanup():
@@ -589,7 +588,7 @@ def run_app(bot, queue):
         levels_dict = add_level_bonuses(levels_dict, bonus_lines)
 
         levels_list = [level for level in levels_dict.values()]
-        return render_template("TemplateForCodes.html", title='All codes per game', levels_list=levels_list)
+        return f.render_template("TemplateForCodes.html", title='All codes per game', levels_list=levels_list)
 
     @app.route("/<session_id>/<game_id>/<level_number>", methods=['GET', 'POST'])
     def all_codes_per_level(session_id, game_id, level_number):
@@ -600,19 +599,19 @@ def run_app(bot, queue):
         levels_dict = add_level_bonuses(levels_dict, bonus_lines)
 
         levels_list = [level for level in levels_dict.values()]
-        return render_template("TemplateForCodes.html", title='All codes per %s level' % level_number, levels_list=levels_list)
+        return f.render_template("TemplateForCodes.html", title='All codes per %s level' % level_number, levels_list=levels_list)
 
     @app.route('/favicon.ico')
     def favicon():
-        return send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'favicon.ico', mimetype='image/png')
+        return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'favicon.ico', mimetype='image/png')
 
     @app.route('/googledocid')
     def googledocid():
-        return send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'googledocid.png', mimetype='image/png')
+        return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'googledocid.png', mimetype='image/png')
 
     @app.route('/builder/<google_sheets_id>')
     def run_game_details_builder(google_sheets_id):
-        fill = True if int(request.args.get('fill')) == 1 else False
+        fill = True if int(f.request.args.get('fill')) == 1 else False
         name = 'builder_%s' % google_sheets_id[-4:]
         threads = threading.enumerate()
         for thread in threads:
@@ -634,6 +633,6 @@ def run_app(bot, queue):
 
     @app.route('/builder')
     def run_game_details_builder_form():
-        return render_template("TemplateForGameDetailsBuilder.html")
+        return f.render_template("TemplateForGameDetailsBuilder.html")
 
     return app

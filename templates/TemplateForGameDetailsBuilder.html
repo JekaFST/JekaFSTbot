@@ -34,10 +34,10 @@
             }
             var xmlhttp = getXmlHttp();
             if (fill == 1) {
-                xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/' + googledoc + '?fill=1', true);
+                xmlhttp.open('GET', 'https://jekafstbot.herokuapp.com/builder/' + googledoc + '?fill=1', true);
             }
             else {
-                xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/' + googledoc + '?fill=0', true);
+                xmlhttp.open('GET', 'https://jekafstbot.herokuapp.com/builder/' + googledoc + '?fill=0', true);
             }
             xmlhttp.send();
             xmlhttp.onreadystatechange = function() {
@@ -70,7 +70,7 @@
         function get_result() {
             var launch_id = document.getElementById("launchid").innerText;
             var xmlhttp = getXmlHttp();
-            xmlhttp.open('GET', 'https://powerful-shelf-32284.herokuapp.com/builder/result/' + launch_id, true);
+            xmlhttp.open('GET', 'https://jekafstbot.herokuapp.com/builder/result/' + launch_id, true);
             xmlhttp.send(); // Отправляем POST-запрос
             xmlhttp.onreadystatechange = function() {
                 if (xmlhttp.readyState == 4) { // Ответ пришёл
