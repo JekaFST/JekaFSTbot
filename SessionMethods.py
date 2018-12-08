@@ -317,7 +317,9 @@ def send_all_bonuses_to_chat_storm(bot, chat_id, session, storm_level_number):
     storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
     if not storm_level:
         return
-    send_bonuses(session['sessionid'], storm_level, bot, chat_id, storm=True)
+    levelmark = '<b>Уровень %s: %s</b>' % (str(storm_level['Number']), storm_level['Name'].encode('utf-8')) \
+        if storm_level['Name'] else '<b>Уровень %s</b>' % str(storm_level['Number'])
+    send_bonuses(session['sessionid'], storm_level, bot, chat_id, storm=True, levelmark=levelmark)
 
 
 def send_unclosed_bonuses_to_chat(bot, chat_id, session):
@@ -502,7 +504,7 @@ def send_last_help(session_id, level, bot, chat_id, storm=False):
                                                                                    'Еще нет пришедших подсказок')
 
 
-def send_bonuses(session_id, level, bot, chat_id, storm=False):
+def send_bonuses(session_id, level, bot, chat_id, storm=False, levelmark=None):
     bonuses = level['Bonuses']
     if bonuses:
         if not isinstance(bonuses, list):
@@ -510,8 +512,8 @@ def send_bonuses(session_id, level, bot, chat_id, storm=False):
             return
 
         for bonus in bonuses:
-            send_bonus_info(bonus, bot, chat_id, session_id, storm=storm) if not bonus['IsAnswered'] else \
-                send_bonus_award_answer(bonus, bot, chat_id, session_id, storm=storm)
+            send_bonus_info(bonus, bot, chat_id, session_id, storm=storm, levelmark=levelmark) if not bonus['IsAnswered'] else \
+                send_bonus_award_answer(bonus, bot, chat_id, session_id, storm=storm, levelmark=levelmark)
     else:
         bot.send_message(chat_id, 'Бонусов нет')
 
