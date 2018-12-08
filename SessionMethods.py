@@ -172,7 +172,7 @@ def get_current_game_model(session, bot, chat_id, from_updater, params=None):
             else:
                 logging.exception('Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
                 bot.send_message(45839899, 'Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
-                reply = 'Updater не смог игру\r\nЕсли это повторяющееся сообщение - попробуйте выключить слежение, ' \
+                reply = 'Updater не смог загрузить игру\r\nЕсли это повторяющееся сообщение - попробуйте выключить слежение, ' \
                         'подождать минуту или несколько минут и снова запустить слежение'
                 bot.send_message(chat_id, reply)
                 try:

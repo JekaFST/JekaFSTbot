@@ -89,7 +89,7 @@ def storm_updater(bot, chat_id, session):
     for level in levels:
         if level['LevelId'] in dismissed_level_ids or level['LevelId'] in passed_level_ids:
             continue
-        sleep(0.5)
+        sleep(1)
         loaded_level = get_storm_level(level['LevelNumber'], session, bot, chat_id, from_updater=True)
         if not loaded_level:
             continue
