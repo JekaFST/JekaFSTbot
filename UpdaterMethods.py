@@ -3,10 +3,10 @@ import threading
 import json
 import logging
 from time import sleep
-from DBMethods import DBSession, DBLevels, DBHelps, DBBonuses, DBSectors, DBMessages
+from DBMethods import DBSession, DBLevels, DBHelps, DBBonuses, DBSectors, DBMessages, DBPenHelps
 from ExceptionHandler import ExceptionHandler
 from SessionMethods import get_current_level, get_storm_level, get_current_game_model
-from CommonMethods import send_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
+from CommonMethods import send_help, send_pen_help, send_time_to_help, send_task, time_converter, send_bonus_info,\
     send_bonus_award_answer, send_adm_message, close_live_locations, channel_error_handling
 
 
@@ -63,6 +63,10 @@ def linear_updater(bot, chat_id, session):
         bonus_parcer(bot, chat_id, session, loaded_bonuses=loaded_level['Bonuses'], level_id=loaded_level['LevelId'],
                      levelmark=None, storm=False, message='Exception - не удалось выполнить слежение за бонусами')
 
+    if loaded_level['PenaltyHelps']:
+        pen_helps_parcer(bot, chat_id, session, pen_helps=loaded_level['PenaltyHelps'], levelmark=None, storm=False,
+                         message='Exception - не удалось выполнить слежение за бонусами')
+
     channel_sectors_editor(bot, chat_id, session, loaded_level=loaded_level,
                            message='Exception - не удалось обновить не закрытые сектора в канале')
 
@@ -111,6 +115,9 @@ def storm_updater(bot, chat_id, session):
         if loaded_level['Bonuses']:
             bonus_parcer(bot, chat_id, session, loaded_bonuses=loaded_level['Bonuses'], level_id=loaded_level['LevelId'],
                          levelmark=levelmark, storm=True, message='Exception - не удалось выполнить слежение за бонусами')
+        if loaded_level['PenaltyHelps']:
+            pen_helps_parcer(bot, chat_id, session, pen_helps=loaded_level['PenaltyHelps'], levelmark=levelmark, storm=True,
+                             message='Exception - не удалось выполнить слежение за штрафными подсказками')
 
     DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
 
@@ -321,6 +328,24 @@ def levels_parcer(bot, chat_id, session, **kwargs):
 
         if kwargs['storm'] and level['IsPassed'] and level['LevelId'] not in kwargs['passed_level_ids']:
             DBLevels.update_bool_field(session['sessionid'], session['gameid'], level['LevelId'], 'ispassed', 'True')
+
+
+@ExceptionHandler.common_updater_exception
+def pen_helps_parcer(bot, chat_id, session, **kwargs):
+    existing_pen_helps = DBPenHelps.get_pen_help_ids_per_game(session['sessionid'], session['gameid'])
+    for pen_help in kwargs['pen_helps']:
+        if pen_help['HelpId'] not in existing_pen_helps:
+            DBPenHelps.insert_pen_help(session['sessionid'], session['gameid'], pen_help['HelpId'])
+    pen_helps_not_sent = DBPenHelps.get_not_sent_pen_help_ids_per_game(session['sessionid'], session['gameid'])
+    for pen_help in kwargs['pen_helps']:
+        if pen_help['PenaltyHelpState'] == 2 and pen_help['HelpId'] in pen_helps_not_sent and pen_help['HelpText'] is not None:
+            DBPenHelps.update_bool_flag(session['sessionid'], session['gameid'], pen_help['HelpId'], 'notsent', 'False')
+            send_pen_help(pen_help, bot, chat_id, session['sessionid'], from_updater=True, storm=kwargs['storm'],
+                      levelmark=kwargs['levelmark'])
+            if session['channelname'] and session['usechannel']:
+                send_pen_help(pen_help, bot, session['channelname'], session['sessionid'], storm=kwargs['storm'],
+                          levelmark=kwargs['levelmark'])
+            continue
 
 
 @ExceptionHandler.common_updater_exception

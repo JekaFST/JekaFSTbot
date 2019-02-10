@@ -226,19 +226,49 @@ class DBHelps(object):
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
-    def get_field_value(session_id, game_id, help_id, header):
-        sql = "SELECT %s FROM Helps WHERE sessionid = %s AND gameid = '%s' AND hintid = %s" % \
-              (header, session_id, game_id, help_id)
-        with connection_pool.get_conn() as db_connection:
-            rows = db_connection.execute_select_cur(sql)
-            return rows[0][0]
-
-    @staticmethod
     def update_bool_flag(session_id, game_id, help_id, header, value):
         sql = """UPDATE Helps
                     SET %s = %s
                     WHERE sessionid = %s AND gameid = '%s' AND hintid = %s
                     """ % (header, value, session_id, game_id, help_id)
+        with connection_pool.get_conn() as db_connection:
+            db_connection.execute_insert_cur(sql)
+
+
+class DBPenHelps(object):
+    @staticmethod
+    def insert_pen_help(session_id, game_id, pen_help_id):
+        sql = """INSERT INTO penhelps
+                        (SessionId, penhintid, GameId, NotSent)
+                        VALUES (%s, %s, '%s', True)
+                    """ % (session_id, pen_help_id, game_id)
+        with connection_pool.get_conn() as db_connection:
+            return db_connection.execute_insert_cur(sql)
+
+    @staticmethod
+    def get_pen_help_ids_per_game(session_id, game_id):
+        sql = """SELECT penhintid FROM penhelps
+                        WHERE sessionid = %s AND gameid = '%s'
+                        """ % (session_id, game_id)
+        with connection_pool.get_conn() as db_connection:
+            rows = db_connection.execute_select_cur(sql)
+            return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def get_not_sent_pen_help_ids_per_game(session_id, game_id):
+        sql = """SELECT penhintid FROM penhelps
+                            WHERE sessionid = %s AND gameid = '%s' AND notsent = True
+                            """ % (session_id, game_id)
+        with connection_pool.get_conn() as db_connection:
+            rows = db_connection.execute_select_cur(sql)
+            return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def update_bool_flag(session_id, game_id, pen_help_id, header, value):
+        sql = """UPDATE penhelps
+                    SET %s = %s
+                    WHERE sessionid = %s AND gameid = '%s' AND penhintid = %s
+                    """ % (header, value, session_id, game_id, pen_help_id)
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
