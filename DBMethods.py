@@ -565,8 +565,10 @@ class DB(object):
                 DELETE FROM sectors WHERE sessionid = %s AND gameid = '%s';
                 DELETE FROM bonuses WHERE sessionid = %s AND gameid = '%s';
                 DELETE FROM helps WHERE sessionid = %s AND gameid = '%s';
+                DELETE FROM penhelps WHERE sessionid = %s AND gameid = '%s';
                 DELETE FROM messages WHERE sessionid = %s AND gameid = '%s';
-                """ % (session_id, game_id, session_id, game_id, session_id, game_id, session_id, game_id, session_id, game_id)
+                """ % (session_id, game_id, session_id, game_id, session_id, game_id, session_id, game_id,
+                       session_id, game_id, session_id, game_id)
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 

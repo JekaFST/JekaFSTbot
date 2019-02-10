@@ -338,7 +338,7 @@ def pen_helps_parcer(bot, chat_id, session, **kwargs):
             DBPenHelps.insert_pen_help(session['sessionid'], session['gameid'], pen_help['HelpId'])
     pen_helps_not_sent = DBPenHelps.get_not_sent_pen_help_ids_per_game(session['sessionid'], session['gameid'])
     for pen_help in kwargs['pen_helps']:
-        if pen_help['PenaltyHelpState'] == 2 and pen_help['HelpId'] in pen_helps_not_sent and pen_help['HelpText'] is not None:
+        if pen_help['PenaltyHelpState'] == 1 and pen_help['HelpId'] in pen_helps_not_sent and pen_help['HelpText'] is not None:
             DBPenHelps.update_bool_flag(session['sessionid'], session['gameid'], pen_help['HelpId'], 'notsent', 'False')
             send_pen_help(pen_help, bot, chat_id, session['sessionid'], from_updater=True, storm=kwargs['storm'],
                       levelmark=kwargs['levelmark'])

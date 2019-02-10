@@ -23,7 +23,7 @@ queue = PriorityQueue()
 bot = telebot.TeleBot(DB.get_main_bot_token()) if prod else telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
 bot.remove_webhook()
 bot.set_webhook(url='https://jekafstbot.herokuapp.com/webhook') if prod \
-    else bot.set_webhook(url='https://0c5dcaba.ngrok.io/webhook')
+    else bot.set_webhook(url='https://da2400c4.ngrok.io/webhook')
 
 try:
     threading.Thread(name='th_flask', target=run_app(bot, queue).run, args=('0.0.0.0', port)).start()

@@ -31,15 +31,15 @@ def send_help(help, bot, chat_id, session_id, from_updater=False, storm=False, l
 
 def send_pen_help(pen_help, bot, chat_id, session_id, from_updater=False, storm=False, levelmark=None):
     pen_help_number = str(pen_help['Number'])
-    pen_help_comment = pen_help['HelpText'].encode('utf-8')
+    pen_help_comment = pen_help['PenaltyComment'].encode('utf-8')
     pen_help_text = pen_help['HelpText'].encode('utf-8')
-    penalty = time_converter(pen_help['Penalty'])
+    penalty = time_converter(pen_help['Penalty']) if pen_help['Penalty'] else 'нет'
     if not pen_help['PenaltyComment']:
-        pen_help_header = '<b>Штрафная подсказка ' + pen_help_number + '</b>' if not storm else \
-            levelmark + '\r\n<b>Штрафная подсказка ' + pen_help_number + '</b>'
+        pen_help_header = '<b>Штрафная подсказка %s. Штраф - %s</b>' % (pen_help_number, penalty) if not storm else \
+            levelmark + '\r\n<b>Штрафная подсказка %s. Штраф - %s</b>' % (pen_help_number, penalty)
     else:
-        pen_help_header = '<b>Штрафная подсказка %s. Штраф - %s</b>\r\n%s' % (pen_help_number, penalty, pen_help_comment) if not storm else \
-            '%s\r\n<b>Штрафная подсказка %s. Штраф - %s</b>\r\n%s' % (levelmark, pen_help_number, penalty, pen_help_comment)
+        pen_help_header = '<b>Штрафная подсказка %s. Штраф - %s</b>\r\nОписание: %s\r\n' % (pen_help_number, penalty, pen_help_comment) if not storm else \
+            '%s\r\n<b>Штрафная подсказка %s. Штраф - %s</b>\r\nОписание: %s\r\n' % (levelmark, pen_help_number, penalty, pen_help_comment)
     send_object_text(pen_help_text, pen_help_header, bot, chat_id, session_id, from_updater, storm)
 
 
