@@ -125,9 +125,9 @@ def set_domain(task, bot):
 
 def set_game_id(task, bot):
     if not DBSession.get_field_value(task.session_id, 'active'):
-        allowed_game_ids = DB.get_allowed_game_ids(task.chat_id)
+        allowed_game_ids = DB.get_allowed_game_ids(task.session_id)
         if 'all' not in allowed_game_ids and task.new_game_id not in allowed_game_ids:
-            bot.send_message(task.chat_id, 'Данная игра не разрешена из этого чата\r\n'
+            bot.send_message(task.chat_id, 'Данная игра не разрешена\r\n'
                                            'Запросить разрешение: /ask_to_add_gameid 26991')
             return
         if DBSession.update_text_field(task.session_id, 'gameid', task.new_game_id):
