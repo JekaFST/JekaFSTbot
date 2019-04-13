@@ -191,9 +191,10 @@ def bonus_data_from_gdoc(row, level_ids_dict):
     for i, answer in enumerate(answers):
         bonus_data['answer_-%s' % str(i + 1)] = str.strip(answer)
     # level_numbers = re.findall(r'.+', row[4])
-    level_numbers = re.findall(r'[^/]+', row[4])
-    for level_number in level_numbers:
-        bonus_data['level_%s' % str.strip(level_ids_dict[level_number])] = 'on'
+    if bonus_data['rbAllLevels-1'] == 1:
+        level_numbers = re.findall(r'[^/]+', row[4])
+        for level_number in level_numbers:
+            bonus_data['level_%s' % str.strip(level_ids_dict[level_number])] = 'on'
     if row[9] or row[10] or row[11]:
         bonus_data['chkDelay'] = 'on'
         bonus_data['txtDelayHours'] = int(row[9]) if row[9] else 0
@@ -212,51 +213,7 @@ def bonus_data_from_gdoc(row, level_ids_dict):
 
 
 def bonus_data_from_engine(source_bonus_text, level_ids_dict):
-    bonus_data = get_source_bonus_data(source_bonus_text)
-    # bonus_data = {
-    #     "ddlBonusFor": ,
-    #     "txtBonusName": 'transfered bonus',
-    #     "txtTask": '',
-    #     "rbAllLevels-1": 0,
-    #     "txtHours": 0,
-    #     "txtMinutes": 5,
-    #     "txtSeconds": 0,
-    #     "txtHelp": ,
-    #     "answer_-0": "answer",
-    #     "level_2": "on",
-    # }
-    # bonus_data = {
-    #     "ddlBonusFor": 0,
-    #     "txtBonusName": row[0] if row[0] else '',
-    #     "txtTask": row[1] if row[1] else '',
-    #     "rbAllLevels-1": 0 if 'true' in row[3].lower() else 1,
-    #     "txtHours": int(row[5]) if row[5] else 0,
-    #     "txtMinutes": int(row[6]) if row[6] else 0,
-    #     "txtSeconds": int(row[7]) if row[7] else 0,
-    #     "txtHelp": row[8] if row[8] else ''
-    # }
-    # # answers = re.findall(r'.+', row[2])
-    # answers = re.findall(r'[^/]+', row[2])
-    # for i, answer in enumerate(answers):
-    #     bonus_data['answer_-%s' % str(i + 1)] = str.strip(answer)
-    # # level_numbers = re.findall(r'.+', row[4])
-    # level_numbers = re.findall(r'[^/]+', row[4])
-    # for level_number in level_numbers:
-    #     bonus_data['level_%s' % str.strip(level_ids_dict[level_number])] = 'on'
-    # if row[9] or row[10] or row[11]:
-    #     bonus_data['chkDelay'] = 'on'
-    #     bonus_data['txtDelayHours'] = int(row[9]) if row[9] else 0
-    #     bonus_data['txtDelayMinutes'] = int(row[10]) if row[10] else 0
-    #     bonus_data['txtDelaySeconds'] = int(row[11]) if row[11] else 0
-    # if row[12] or row[13] or row[14]:
-    #     bonus_data['chkRelativeLimit'] = 'on'
-    #     bonus_data['txtValidHours'] = int(row[12]) if row[12] else 0
-    #     bonus_data['txtValidMinutes'] = int(row[13]) if row[13] else 0
-    #     bonus_data['txtValidSeconds'] = int(row[14]) if row[14] else 0
-    # if row[15] and row[16]:
-    #     bonus_data['chkAbsoluteLimit'] = 'on'
-    #     bonus_data['txtValidFrom'] = row[15] if row[15] else ''
-    #     bonus_data['txtValidTo'] = row[16] if row[16] else ''
+    bonus_data = get_source_bonus_data(source_bonus_text, level_ids_dict)
     return bonus_data
 
 
@@ -348,17 +305,17 @@ def task_checker(data, text):
     return
 
 
-def parse_level_page(row, level_page, sectors_to_del=list(), helps_to_del=list(), bonuses_to_del=list(), pen_helps_to_del=list()):
+def parse_level_page(row, level_page, sectors=list(), helps=list(), bonuses=list(), pen_helps=list()):
     if row[1]:
         help_ids = re.findall(r'prid=(\d+)\'', level_page)
-        helps_to_del = help_ids if 'all' in row[1] else get_exact_ids(re.findall(r'[^/]+', row[1]), help_ids)
+        helps = help_ids if 'all' in row[1] else get_exact_ids(re.findall(r'[^/]+', row[1]), help_ids)
     if row[2]:
         bonus_ids = re.findall(r'bonus=(\d+)', level_page)
-        bonuses_to_del = bonus_ids if 'all' in row[2] else get_exact_ids(re.findall(r'[^/]+', row[2]), bonus_ids)
+        bonuses = bonus_ids if 'all' in row[2] else get_exact_ids(re.findall(r'[^/]+', row[2]), bonus_ids)
     if row[3]:
         pen_helps_ids = re.findall(r'prid=(\d+)&penalty', level_page)
-        pen_helps_to_del = pen_helps_ids if 'all' in row[3] else get_exact_ids(re.findall(r'[^/]+', row[3]), pen_helps_ids)
-    return sectors_to_del, helps_to_del, bonuses_to_del, pen_helps_to_del
+        pen_helps = pen_helps_ids if 'all' in row[3] else get_exact_ids(re.findall(r'[^/]+', row[3]), pen_helps_ids)
+    return sectors, helps, bonuses, pen_helps
 
 
 type_checker_map = {

@@ -2,22 +2,21 @@
 from ExceptionHandler import ExceptionHandler
 from DBMethods import DB
 from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_help_data_and_url, make_bonus_data_and_url, \
-    make_sector_data_and_url, make_penalty_help_data_and_url, make_task_data_and_url, parse_level_page, \
-    get_bonus_help_text
+    make_sector_data_and_url, make_penalty_help_data_and_url, make_task_data_and_url, parse_level_page
 from time import sleep
 
 
 SOURCE_GAME_DATA = {
     'domain': 'http://demo.en.cx',
-    'login': 'prinncessa',
-    'password': 'h323232z',
-    'gameid': '29413'
+    'login': 'jekafst',
+    'password': 'hjccbz1412',
+    'gameid': '29365'
 }
 TARGET_GAME_DATA={
     'domain': 'http://demo.en.cx',
     'login': 'jekafst',
     'password': 'hjccbz1412',
-    'gameid': '28793'
+    'gameid': '27201'
 }
 
 
@@ -106,7 +105,7 @@ def clean_engine(google_doc_connection, en_connection, gameid):
     return 'Успех. Проверьте правильность удаления данных из движка.'
 
 
-def transfer_game(source_game_data=SOURCE_GAME_DATA, target_game_data=TARGET_GAME_DATA, source_level_number='1', target_level_number='1'):
+def transfer_game(source_level_number, target_level_number, source_game_data=SOURCE_GAME_DATA, target_game_data=TARGET_GAME_DATA):
     source_en_connection = ENConnection(source_game_data['domain'], source_game_data['login'], source_game_data['password'], source_game_data['gameid'])
     target_en_connection = ENConnection(target_game_data['domain'], target_game_data['login'], target_game_data['password'], target_game_data['gameid'])
     level_page = source_en_connection.get_level_page(source_level_number)
@@ -119,9 +118,9 @@ def transfer_game(source_game_data=SOURCE_GAME_DATA, target_game_data=TARGET_GAM
             'action': 'edit'
         }
         response = source_en_connection.read_en_object(read_params, 'bonus')
-        bonus_data, bonus_url, params = make_bonus_data_and_url(None, source_game_data['domain'], source_game_data['gameid'], target_en_connection.get_level_ids(), response.text, target_level_number)
+        bonus_data, bonus_url, params = make_bonus_data_and_url(None, target_game_data['domain'], target_game_data['gameid'], target_en_connection.get_level_ids(), response.text, target_level_number)
         target_en_connection.create_en_object(bonus_url, bonus_data, 'bonus', params)
 
 
 if __name__ == '__main__':
-    transfer_game()
+    transfer_game('2', '2')
