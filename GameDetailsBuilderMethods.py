@@ -7,6 +7,7 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 from Const import obj_type_url_mapping
+from SourceGameDataParcers import get_source_bonus_data
 
 
 class GoogleDocConnection(object):
@@ -144,6 +145,11 @@ class ENConnection(object):
         except Exception:
             logging.exception("Failed to delete %s. Data: %s" % (type, str(params)))
 
+    def read_en_object(self, params, type):
+        url = self.domain + obj_type_url_mapping[type]
+        response = requests.get(url, params=params, headers={'Cookie': self.cookie})
+        return response
+
 
 def make_help_data_and_url(row, domain, gameid):
     help_data = {
@@ -162,7 +168,14 @@ def make_help_data_and_url(row, domain, gameid):
 # txt - award
 # txtDelay - delay
 # txtValid - time to answer
-def make_bonus_data_and_url(row, domain, gameid, level_ids_dict):
+def make_bonus_data_and_url(row, domain, gameid, level_ids_dict, source_bonus_text=None, level_number=None):
+    bonus_data = bonus_data_from_gdoc(row, level_ids_dict) if row else bonus_data_from_engine(source_bonus_text, level_ids_dict)
+    bonus_url = domain + obj_type_url_mapping['bonus']
+    params = {'gid': gameid, 'level': level_number if level_number else str(row[17]), 'bonus': '0', 'action': 'save'}
+    return bonus_data, bonus_url, params
+
+
+def bonus_data_from_gdoc(row, level_ids_dict):
     bonus_data = {
         "ddlBonusFor": 0,
         "txtBonusName": row[0] if row[0] else '',
@@ -176,7 +189,7 @@ def make_bonus_data_and_url(row, domain, gameid, level_ids_dict):
     # answers = re.findall(r'.+', row[2])
     answers = re.findall(r'[^/]+', row[2])
     for i, answer in enumerate(answers):
-        bonus_data['answer_-%s' % str(i+1)] = str.strip(answer)
+        bonus_data['answer_-%s' % str(i + 1)] = str.strip(answer)
     # level_numbers = re.findall(r'.+', row[4])
     level_numbers = re.findall(r'[^/]+', row[4])
     for level_number in level_numbers:
@@ -195,9 +208,56 @@ def make_bonus_data_and_url(row, domain, gameid, level_ids_dict):
         bonus_data['chkAbsoluteLimit'] = 'on'
         bonus_data['txtValidFrom'] = row[15] if row[15] else ''
         bonus_data['txtValidTo'] = row[16] if row[16] else ''
-    bonus_url = domain + obj_type_url_mapping['bonus']
-    params = {'gid': gameid, 'level': str(row[17]), 'bonus': '0', 'action': 'save'}
-    return bonus_data, bonus_url, params
+    return bonus_data
+
+
+def bonus_data_from_engine(source_bonus_text, level_ids_dict):
+    bonus_data = get_source_bonus_data(source_bonus_text)
+    # bonus_data = {
+    #     "ddlBonusFor": ,
+    #     "txtBonusName": 'transfered bonus',
+    #     "txtTask": '',
+    #     "rbAllLevels-1": 0,
+    #     "txtHours": 0,
+    #     "txtMinutes": 5,
+    #     "txtSeconds": 0,
+    #     "txtHelp": ,
+    #     "answer_-0": "answer",
+    #     "level_2": "on",
+    # }
+    # bonus_data = {
+    #     "ddlBonusFor": 0,
+    #     "txtBonusName": row[0] if row[0] else '',
+    #     "txtTask": row[1] if row[1] else '',
+    #     "rbAllLevels-1": 0 if 'true' in row[3].lower() else 1,
+    #     "txtHours": int(row[5]) if row[5] else 0,
+    #     "txtMinutes": int(row[6]) if row[6] else 0,
+    #     "txtSeconds": int(row[7]) if row[7] else 0,
+    #     "txtHelp": row[8] if row[8] else ''
+    # }
+    # # answers = re.findall(r'.+', row[2])
+    # answers = re.findall(r'[^/]+', row[2])
+    # for i, answer in enumerate(answers):
+    #     bonus_data['answer_-%s' % str(i + 1)] = str.strip(answer)
+    # # level_numbers = re.findall(r'.+', row[4])
+    # level_numbers = re.findall(r'[^/]+', row[4])
+    # for level_number in level_numbers:
+    #     bonus_data['level_%s' % str.strip(level_ids_dict[level_number])] = 'on'
+    # if row[9] or row[10] or row[11]:
+    #     bonus_data['chkDelay'] = 'on'
+    #     bonus_data['txtDelayHours'] = int(row[9]) if row[9] else 0
+    #     bonus_data['txtDelayMinutes'] = int(row[10]) if row[10] else 0
+    #     bonus_data['txtDelaySeconds'] = int(row[11]) if row[11] else 0
+    # if row[12] or row[13] or row[14]:
+    #     bonus_data['chkRelativeLimit'] = 'on'
+    #     bonus_data['txtValidHours'] = int(row[12]) if row[12] else 0
+    #     bonus_data['txtValidMinutes'] = int(row[13]) if row[13] else 0
+    #     bonus_data['txtValidSeconds'] = int(row[14]) if row[14] else 0
+    # if row[15] and row[16]:
+    #     bonus_data['chkAbsoluteLimit'] = 'on'
+    #     bonus_data['txtValidFrom'] = row[15] if row[15] else ''
+    #     bonus_data['txtValidTo'] = row[16] if row[16] else ''
+    return bonus_data
 
 
 def make_sector_data_and_url(row, domain, gameid):

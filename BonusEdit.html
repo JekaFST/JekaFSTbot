@@ -1,0 +1,578 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <link href="http://demo.en.cx/css/release/mainstyles.css?ver=1.88.0.49" type="text/css" rel="stylesheet" media="screen,projection" />
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
+<script src="http://demo.en.cx/js/release/consCommon.js?ver=1.88.0.49" type="text/javascript"></script>
+
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<title>Encounter - международная сеть активных городских игр</title>
+
+
+<style type="text/css"> html{ display : none; } </style>
+<script type="text/javascript">
+	if (self == top) {
+		document.documentElement.style.display = 'block';
+	} else {
+		top.location = self.location;
+	}
+</script>
+
+
+
+
+
+
+
+
+
+
+<link rel="shortcut icon" href="http://d2.endata.cx/images/favicon.ico"></link>
+
+
+<script type="text/javascript">
+window.AjaxHelper = new AjaxHelperClass('Загрузка...');
+window.DataDomain = 'http://d2.endata.cx';
+window.locale = 'ru';
+</script>
+
+    <script language="javascript" type="text/javascript">
+    	$(document).ready(function() {
+    		var title = $('head > title');
+    		var titleText = title.text();
+    		if (titleText.indexOf(document.domain) < 0) {
+    			try { title.text(document.domain + ' // ' + titleText); }
+    			catch (err) { }
+    		}
+    	});
+    </script>
+</head>
+
+<body class="bg_space" topmargin="1" leftmargin="1">
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="padding:14px;">
+	<tr>
+		<td><img src="http://d2.endata.cx/images/line2_h_l.gif" width="126" height="1" /></td>
+		<td align="right"><img src="http://d2.endata.cx/images/line2_h_r.gif" width="126" height="1" /></td>
+	</tr>
+	<tr style="height: 100%;">
+		<td width="100%" valign="top" colspan="2">
+			<table cellpadding="0" cellspacing="0" border="0" width="100%">
+				<tr><td valign="top"><img src="http://d2.endata.cx/images/line2_v_u.gif" width="1" height="126" /></td>
+					 <td width="100%" valign="top" rowspan="2">
+					 <div class="border_rad2 space_content">
+
+<script type="text/javascript">
+//<![CDATA[
+
+$(function(){
+	$('#levels_container input').click(function(){
+		if ($('#rbCustomLevels:checked').length <=0)
+			$('#rbCustomLevels').attr('checked',true)
+	});
+
+	$('#rbAllLevels').click(function(){
+		$('#levels_container input').attr('checked',false);
+	});
+});
+
+function ConfirmDelete()
+{
+	return confirm("Вы действительно хотите удалить бонус?");
+}
+
+function SetDisabledAbsoluteLimit()
+{
+	var chkAbsoluteLimit = $("#chkAbsoluteLimit");
+	if (chkAbsoluteLimit.attr("checked"))
+	{
+		$("#txtValidFrom").attr("disabled", false);
+		$("#txtValidTo").attr("disabled", false);
+
+		return;
+	}
+	$("#txtValidFrom").attr("disabled", true);
+	$("#txtValidTo").attr("disabled", true);
+}
+
+function SetDisabledRelativeLimit()
+{
+	var chkRelativeLimit = $("#chkRelativeLimit");
+	if (chkRelativeLimit.attr("checked"))
+	{
+		$("#txtValidHours").attr("disabled", false);
+		$("#txtValidMinutes").attr("disabled", false);
+		$("#txtValidSeconds").attr("disabled", false);
+
+		return;
+	}
+	$("#txtValidHours").attr("disabled", true);
+	$("#txtValidMinutes").attr("disabled", true);
+	$("#txtValidSeconds").attr("disabled", true);
+}
+
+function SetDisabledDelay()
+{
+    var chkDelay = $("#chkDelay");
+	if (chkDelay.attr("checked"))
+	{
+		$("#txtDelayHours").attr("disabled", false);
+		$("#txtDelayMinutes").attr("disabled", false);
+		$("#txtDelaySeconds").attr("disabled", false);
+
+		return;
+	}
+	$("#txtDelayHours").attr("disabled", true);
+	$("#txtDelayMinutes").attr("disabled", true);
+	$("#txtDelaySeconds").attr("disabled", true);
+}
+
+
+
+
+
+
+
+$(function() {
+	$(".addanswersctrl a").each(function(ind, domEl) {
+
+
+        $(this).click(function(){
+            editor.addBlankAnswers($(this).text());
+        });
+	});
+});
+
+var BonusEditor = function() {};
+BonusEditor.prototype = {
+	addBlankAnswers: function(count) {
+		var $container = $('.answersContainer');
+		var $tpl = $($container.find('tr')[0]);
+		var newInputsCount = 0;
+
+		$container.find('input').each(function() {
+			var num = parseInt($(this).attr('name').replace('answer_', ''));
+			if (newInputsCount > num)
+				newInputsCount = num;
+		});
+
+		for (var i = 0; i < count; i++) {
+			var $clone = $tpl.clone(false);
+			var $input = $($clone.find('input')[0]);
+
+			$input.attr('name', 'answer_' + (--newInputsCount));
+			$input.val('');
+			$container.append($clone);
+		}
+	}
+};
+
+editor = new BonusEditor();
+
+//]]>
+
+
+</script>
+<style type="text/css">
+.levelWrapper
+{
+	float:left;
+	text-align:center;
+	padding:2px;
+}
+</style>
+
+
+<form method="post" id="BonusForm" action="/Administration/Games/BonusEdit.aspx?gid=28566&level=1&bonus=174607&action=update">
+
+
+
+<table cellpadding="0" cellspacing="0" border="0" width="100%">
+<tr>
+	<td><div style="visibility:hidden;width:8px;height:1px;" /></td>
+	<td>
+		<table cellpadding="0" cellspacing="5" border="0" width="100%">
+		<tr>
+			<td align="center" style="padding-top:8px"><span id="lblPageName" class="white19">Редактирование бонуса</span></td>
+		</tr>
+		<tr>
+			<td align="center"><div style="height:1px;width:1px;" /></td>
+		</tr>
+
+
+		<tr>
+			<td align="center">
+				<table cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<td>бонус для:&nbsp;</td>
+					<td>
+						<div class="enPnl1 border_rad3" style="width:153px;"><select autocomplete="off" class="input" size="0" style="margin:1px;width:151px;" name="ddlBonusFor" id="ddlBonusFor"><option value="0" selected="selected">всех</option></select></div>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+
+		<tr>
+			<td>Название:</td>
+		</tr>
+
+		<tr>
+			<td>
+				<input  name="txtBonusName" type="text" value="Т" class="textbox" maxlength="255" style="width:100%;"/>
+			</td>
+		</tr>
+
+
+		<tr>
+			<td>Бонусное задание:</td>
+		</tr>
+
+		<tr>
+			<td>
+				<div class="enPnl1 border_rad3" style="width:100%;"><textarea name="txtTask" class="textarea_blank" style="width:100%;height:98px;"></textarea></div>
+			</td>
+		</tr>
+
+
+		<tr>
+			<td>
+
+				<table cellpadding="0" cellspacing="0" border="0" width="100%">
+				<tr>
+					<td valign="top" width="10%">
+						<table cellpadding="0" cellspacing="0" border="0" width="100%">
+							<tr>
+								<td nowrap="nowrap">Ответы на бонусное задание:</td>
+							</tr>
+							<tbody class="answersContainer">
+
+							<tr>
+								<td align="left" style="padding-top:5px">
+
+									<input  name="answer_-1" type="text" class="textbox" maxlength="500" style="width:208px;"/>
+								</td>
+							<tr>
+
+							<tr>
+								<td align="left" style="padding-top:5px">
+
+									<input  name="answer_-2" type="text" class="textbox" maxlength="500" style="width:208px;"/>
+								</td>
+							<tr>
+
+							<tr>
+								<td align="left" style="padding-top:5px">
+
+									<input  name="answer_-3" type="text" class="textbox" maxlength="500" style="width:208px;"/>
+								</td>
+							<tr>
+
+							<tr>
+								<td align="left" style="padding-top:5px">
+
+									<input  name="answer_-4" type="text" class="textbox" maxlength="500" style="width:208px;"/>
+								</td>
+							<tr>
+
+							<tr>
+								<td align="left" style="padding-top:5px">
+
+									<input  name="answer_-5" type="text" class="textbox" maxlength="500" style="width:208px;"/>
+								</td>
+							<tr>
+
+							<tr>
+								<td align="left" style="padding-top:5px">
+
+									<input  name="answer_-6" type="text" class="textbox" maxlength="500" style="width:208px;"/>
+								</td>
+							<tr>
+
+							<tr>
+								<td align="left" style="padding-top:5px">
+
+									<input  name="answer_-7" type="text" class="textbox" maxlength="500" style="width:208px;"/>
+								</td>
+							<tr>
+
+							<tr>
+								<td align="left" style="padding-top:5px">
+
+									<input  name="answer_-8" type="text" class="textbox" maxlength="500" style="width:208px;"/>
+								</td>
+							<tr>
+
+							<tr>
+								<td align="left" style="padding-top:5px">
+
+									<input  name="answer_-9" type="text" class="textbox" maxlength="500" style="width:208px;"/>
+								</td>
+							<tr>
+
+							<tr>
+								<td align="left" style="padding-top:5px">
+
+									<input  name="answer_-10" type="text" class="textbox" maxlength="500" style="width:208px;"/>
+								</td>
+							<tr>
+
+							</tbody>
+
+							<tr>
+								<td class="Text4 addanswersctrl" style="padding-top:3px">еще: <a href="javascript:void(0)" class="dashed Text4">10</a> / <a href="javascript:void(0)" class="dashed Text4">20</a>  / <a href="javascript:void(0)" class="dashed Text4"">30</a></td>
+							</tr>
+
+						</table>
+					</td>
+					<td valign="top" width="90%" style="padding-left:13px">
+					<div style="width:100%;"><div class="enPnl1 border_rad3" style="padding:10px;">
+
+						<table cellpadding="0" cellspacing="0" border="0" width="100%">
+							<tr>
+								<td>Бонус доступен:<br/>
+									<table cellpadding="0" cellspacing="3" border="0" width="100%">
+									<tr>
+										<td><input type="radio" id="rbAllLevels" name="rbAllLevels" value="0"/></td>
+										<td width="100%" nowrap="nowrap"><label for="rbAllLevels">на всех уровнях</label></td>
+									</tr>
+									<tr>
+										<td><input type="radio" id="rbCustomLevels" name="rbAllLevels" value="1" checked="checked"/></td>
+										<td nowrap="nowrap"><label for="rbCustomLevels">на указанных</label>:</td>
+									</tr>
+									<tr>
+										<td>&nbsp;</td>
+										<td id="levels_container">
+											<div style="width:100%;"><div class="enPnl1 border_rad3" style="padding:2px;">
+
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_280343" checked="checked" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl00_lblLevelNum">1</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_280344" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl01_lblLevelNum">2</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_280345" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl02_lblLevelNum">3</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_280346" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl03_lblLevelNum">4</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_280347" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl04_lblLevelNum">5</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_280348" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl05_lblLevelNum">6</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_280349" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl06_lblLevelNum">7</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_280350" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl07_lblLevelNum">8</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_280351" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl08_lblLevelNum">9</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_281141" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl09_lblLevelNum">10</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_281142" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl10_lblLevelNum">11</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_281143" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl11_lblLevelNum">12</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_281144" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl12_lblLevelNum">13</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_281145" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl13_lblLevelNum">14</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_281146" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl14_lblLevelNum">15</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_281147" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl15_lblLevelNum">16</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_281148" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl16_lblLevelNum">17</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_281149" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl17_lblLevelNum">18</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_281150" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl18_lblLevelNum">19</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_281151" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl19_lblLevelNum">20</span></div>
+														</div>
+
+														<div class="levelWrapper">
+															<div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  name="level_281987" class='enCheckBox input'/></div>
+															<div style="padding-top:3px;"><span id="ctl07_ctl05_LevelCheckBoxesRepeater_ctl20_lblLevelNum">21</span></div>
+														</div>
+
+											</div></div>
+										</td>
+									</tr>
+									</table>
+								</td>
+							</tr>
+							</table>
+
+
+							<div class="padB5 padT10" style="min-width:">Ограничить время доступности (абсолютное время):</div>
+							<div class="fl"><div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  id="chkAbsoluteLimit" name="chkAbsoluteLimit" onclick="SetDisabledAbsoluteLimit();" class='enCheckBox input'/></div></div><div class="fl padL5 padR5">c</div><div class="fl"><input  id="txtValidFrom" name="txtValidFrom" type="text" value="02.08.2018 20:00:00" class="textbox" maxlength="255" disabled="disabled" style="width:128px;"/></div><div class="fl padL5 padR5">по</div><div class="fl"><input  id="txtValidTo" name="txtValidTo" type="text" value="03.10.2018 20:00:00" class="textbox" maxlength="255" disabled="disabled" style="width:128px;"/></div>
+
+							<div class="padB5 padT10 cb">Задержать время появления:</div>
+							<div class="fl"><div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  id="chkDelay" name="chkDelay" onclick="SetDisabledDelay();" class='enCheckBox input'/></div></div>
+							<div class="fl padL5"><input  id="txtDelayHours" name="txtDelayHours" type="text" value="0" class="textbox" maxlength="3" disabled="disabled" style="text-align:right;width:28px;"/></div>
+							<div class="fl padL5 padR5">ч</div>
+							<div class="fl"><input  id="txtDelayMinutes" name="txtDelayMinutes" type="text" value="0" class="textbox" maxlength="2" disabled="disabled" style="text-align:right;width:28px;"/></div>
+							<div class="fl padL5 padR5">м</div>
+							<div class="fl"><input  id="txtDelaySeconds" name="txtDelaySeconds" type="text" value="0" class="textbox" maxlength="2" disabled="disabled" style="text-align:right;width:28px;"/></div>
+							<div class="fl padL5 padR5">с</div>
+
+							<div class="padB5 padT10 cb">Ограничить время выполнения:</div>
+							<div class="fl"><div class="enPnl1 border_rad3" style="width:17px;height:17px;"><input type="checkbox"  id="chkRelativeLimit" name="chkRelativeLimit" onclick="SetDisabledRelativeLimit();" class='enCheckBox input'/></div></div>
+							<div class="fl padL5"></div>
+							<div class="fl padL5"><input  id="txtValidHours" name="txtValidHours" type="text" value="0" class="textbox" maxlength="3" disabled="disabled" style="text-align:right;width:28px;"/></div>
+							<div class="fl padL5 padR5">ч</div>
+							<div class="fl"><input  id="txtValidMinutes" name="txtValidMinutes" type="text" value="0" class="textbox" maxlength="2" disabled="disabled" style="text-align:right;width:28px;"/></div>
+							<div class="fl padL5 padR5">м</div>
+							<div class="fl"><input  id="txtValidSeconds" name="txtValidSeconds" type="text" value="0" class="textbox" maxlength="2" disabled="disabled" style="text-align:right;width:28px;"/></div>
+							<div class="fl padL5 padR5">с</div>
+
+						</div></div>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr>
+
+			<td>
+
+
+
+
+
+			</td>
+		</tr>
+
+		<tr>
+			<td>
+				<table cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<td nowrap="nowrap">Бонусное время:&nbsp;</td>
+
+					<td><input  name="txtHours" type="text" value="0" class="textbox" maxlength="3" style="text-align:right;width:28px;"/></td>
+					<td>&nbsp;ч&nbsp;</td>
+					<td><input  name="txtMinutes" type="text" value="0" class="textbox" maxlength="2" style="text-align:right;width:28px;"/></td>
+					<td>&nbsp;м&nbsp;</td>
+					<td><input  name="txtSeconds" type="text" value="0" class="textbox" maxlength="2" style="text-align:right;width:28px;"/></td>
+					<td>&nbsp;с&nbsp;</td>
+
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+
+
+
+
+		<tr>
+			<td>Подсказка (по факту выполнения бонуса):</td>
+		</tr>
+
+		<tr>
+			<td>
+				<div class="enPnl1 border_rad3" style="width:100%;"><textarea name="txtHelp" class="textarea_blank" style="width:100%;height:97px;">&lt;script type=&quot;text/javascript&quot;&gt;if (deskCounter == 10) {document.getElementById(&quot;b1&quot;).style.color = &quot;lime&quot;;} else {document.getElementById(&quot;b1&quot;).style.color = &quot;LightSalmon&quot;;};if (armCounter == 7) {document.getElementById(&quot;b4&quot;).style.color = &quot;lime&quot;;} else {document.getElementById(&quot;b4&quot;).style.color = &quot;LightSalmon&quot;;}; if (batCounter == 2) {document.getElementById(&quot;b3&quot;).style.color = &quot;lime&quot;;} else {document.getElementById(&quot;b3&quot;).style.color = &quot;LightSalmon&quot;;};if (gvoCounter == 20) {document.getElementById(&quot;b2&quot;).style.color = &quot;lime&quot;;} else {document.getElementById(&quot;b2&quot;).style.color = &quot;LightSalmon&quot;;};if (patronCounter == 20) {document.getElementById(&quot;b46&quot;).style.color = &quot;lime&quot;;} else {document.getElementById(&quot;b46&quot;).style.color = &quot;LightSalmon&quot;;};&lt;/script&gt;</textarea></div>
+			</td>
+		</tr>
+
+		</table>
+	</td>
+	<td><div style="visibility:hidden;width:8px;height:1px;" /></td>
+</tr>
+</table>
+<table cellpadding="0" cellspacing="0" border="0" width="100%">
+<tr>
+	<td><div style="visibility:hidden; height: 10px; width: 1px" /></td>
+</tr>
+<tr>
+	<td colspan="3" class="tdSeparator" width="100%"/>
+</tr>
+<tr>
+	<td colspan="3" class="buttons_panel">
+
+		<input type="image" src="http://d2.endata.cx/data/buttons/update_ru.gif" onclick="if (typeof(disableDblClick) != 'undefined') disableDblClick(this.name, 2000);" alt="Обновить" height="20" title="Обновить" border="0" name="btnUpdate" />
+
+
+		<a title="Отмена" href="/Administration/Games/BonusEdit.aspx?action=view&gid=28566&level=1&bonus=174607"><img src="http://d2.endata.cx/data/buttons/cancel_ru.gif" alt="Отмена" height="20" title="Отмена" border="0" name="btnCancel" /></a>
+		<a title="Закрыть окно" href="javascript:window.close();"><img src="http://d2.endata.cx/data/buttons/close_window_ru.gif" alt="Закрыть окно" height="20" title="Закрыть окно" border="0" name="btnClose" /></a>
+
+	</td>
+</tr>
+</table>
+</form>
+						</div>
+					</td>
+					<td valign="top"><img src="http://d2.endata.cx/images/line2_v_u.gif" width="1" height="118" /></td>
+				</tr>
+				<tr>
+					<td valign="bottom"><img src="http://d2.endata.cx/images/line2_v_d.gif" width="1" height="126" /></td>
+					<td valign="bottom"><wc:EnImage unat="server" src="line2_v_d.gif" width="1" height="118" /></td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td><img src="http://d2.endata.cx/images/line2_h_l.gif" width="126" height="1" /></td>
+		<td align="right"><img src="http://d2.endata.cx/images/line2_h_r.gif" width="126" height="1" /></td>
+	</tr>
+</table>
+</body>
+</html>
