@@ -7,7 +7,7 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 from Const import obj_type_url_mapping
-from SourceGameDataParcers import get_source_bonus_data
+from SourceGameDataParcers import get_bonus_data_from_engine
 
 
 class GoogleDocConnection(object):
@@ -125,7 +125,7 @@ class ENConnection(object):
                     self.cookie = self.update_cookies()
                     continue
                 response_checker(data, type, response_2.text)
-                break
+                return True
         except Exception:
             logging.exception("Failed to create %s. Data: %s" % (type, str(data)))
 
@@ -145,9 +145,21 @@ class ENConnection(object):
         except Exception:
             logging.exception("Failed to delete %s. Data: %s" % (type, str(params)))
 
-    def read_en_object(self, params, type):
+    def read_en_object(self, params, type, response=None):
         url = self.domain + obj_type_url_mapping[type]
-        response = requests.get(url, params=params, headers={'Cookie': self.cookie})
+        try:
+            for i in xrange(2):
+                response = requests.get(url, params=params, headers={'Cookie': self.cookie})
+                if not response.status_code == 200:
+                    logging.warning("Failed to read %s. Data: %s" % (type, str(params)))
+                    break
+                if "your requests have been classified as robot's requests." in response.text.lower():
+                    sleep(5)
+                    self.cookie = self.update_cookies()
+                    continue
+                break
+        except Exception:
+            logging.exception("Failed to read %s. Data: %s" % (type, str(params)))
         return response
 
 
@@ -169,7 +181,7 @@ def make_help_data_and_url(row, domain, gameid):
 # txtDelay - delay
 # txtValid - time to answer
 def make_bonus_data_and_url(row, domain, gameid, level_ids_dict, source_bonus_text=None, level_number=None):
-    bonus_data = bonus_data_from_gdoc(row, level_ids_dict) if row else bonus_data_from_engine(source_bonus_text, level_ids_dict)
+    bonus_data = bonus_data_from_gdoc(row, level_ids_dict) if row else get_bonus_data_from_engine(source_bonus_text, level_ids_dict)
     bonus_url = domain + obj_type_url_mapping['bonus']
     params = {'gid': gameid, 'level': level_number if level_number else str(row[17]), 'bonus': '0', 'action': 'save'}
     return bonus_data, bonus_url, params
@@ -209,11 +221,6 @@ def bonus_data_from_gdoc(row, level_ids_dict):
         bonus_data['chkAbsoluteLimit'] = 'on'
         bonus_data['txtValidFrom'] = row[15] if row[15] else ''
         bonus_data['txtValidTo'] = row[16] if row[16] else ''
-    return bonus_data
-
-
-def bonus_data_from_engine(source_bonus_text, level_ids_dict):
-    bonus_data = get_source_bonus_data(source_bonus_text, level_ids_dict)
     return bonus_data
 
 

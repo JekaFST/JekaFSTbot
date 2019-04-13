@@ -754,3 +754,23 @@ class DB(object):
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return rows[0][0]
+
+    @staticmethod
+    def insert_game_transfer_row(gameid):
+        sql = """INSERT INTO gametransferids (gameid, taskids, bonusids, helpids, penhelpids)
+                VALUES (%s, '', '', '', '')""" % gameid
+        with connection_pool.get_conn() as db_connection:
+            db_connection.execute_insert_cur(sql)
+
+    @staticmethod
+    def update_game_transfer(gameid, header, data):
+        sql = "UPDATE gametransferids SET %s = '%s' WHERE gameid = %s" % (header, data, gameid)
+        with connection_pool.get_conn() as db_connection:
+            db_connection.execute_insert_cur(sql)
+
+    @staticmethod
+    def get_game_transfer_row(gameid, header):
+        sql = "SELECT %s FROM gametransferids WHERE gameid = %s" % (header, gameid)
+        with connection_pool.get_conn() as db_connection:
+            rows = db_connection.execute_select_cur(sql)
+            return rows[0][0] if rows else None
