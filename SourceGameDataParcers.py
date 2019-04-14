@@ -52,3 +52,35 @@ def get_task_data_from_engine(text):
     if 'checked' in soup.find(attrs={"name": "chkReplaceNlToBr"}).attrs:
         task_data['chkReplaceNlToBr'] = 'on'
     return task_data
+
+
+def get_help_data_from_engine(text):
+    soup = BeautifulSoup(text, 'html.parser')
+    help_data = {
+        'ForMemberID': int([option.attrs['value'] for option in soup.find(id='ForMemberID').contents if 'selected' in option.attrs][0]),
+        'NewPromptTimeoutDays': int(soup.find(attrs={"name": "NewPromptTimeoutDays"}).attrs['value']),
+        'NewPromptTimeoutHours': int(soup.find(attrs={"name": "NewPromptTimeoutHours"}).attrs['value']),
+        'NewPromptTimeoutMinutes': int(soup.find(attrs={"name": "NewPromptTimeoutMinutes"}).attrs['value']),
+        'NewPromptTimeoutSeconds': int(soup.find(attrs={"name": "NewPromptTimeoutSeconds"}).attrs['value']),
+        'NewPrompt': soup.find(attrs={"name": "NewPrompt"}).text
+    }
+    return help_data
+
+
+def get_penalty_help_data_from_engine(text):
+    soup = BeautifulSoup(text, 'html.parser')
+    pen_help_data = {
+        'ForMemberID': int([option.attrs['value'] for option in soup.find(id='ForMemberID').contents if 'selected' in option.attrs][0]),
+        'txtPenaltyComment': soup.find(attrs={"name": "txtPenaltyComment"}).text,
+        'NewPrompt': soup.find(attrs={"name": "NewPrompt"}).text,
+        'NewPromptTimeoutDays': int(soup.find(attrs={"name": "NewPromptTimeoutDays"}).attrs['value']),
+        'NewPromptTimeoutHours': int(soup.find(attrs={"name": "NewPromptTimeoutHours"}).attrs['value']),
+        'NewPromptTimeoutMinutes': int(soup.find(attrs={"name": "NewPromptTimeoutMinutes"}).attrs['value']),
+        'NewPromptTimeoutSeconds': int(soup.find(attrs={"name": "NewPromptTimeoutSeconds"}).attrs['value']),
+        'PenaltyPromptHours': int(soup.find(attrs={"name": "PenaltyPromptHours"}).attrs['value']),
+        'PenaltyPromptMinutes': int(soup.find(attrs={"name": "PenaltyPromptMinutes"}).attrs['value']),
+        'PenaltyPromptSeconds': int(soup.find(attrs={"name": "PenaltyPromptSeconds"}).attrs['value']),
+    }
+    if 'checked' in soup.find(id='chkRequestPenaltyConfirm').attrs:
+        pen_help_data['chkRequestPenaltyConfirm'] = 'on'
+    return pen_help_data

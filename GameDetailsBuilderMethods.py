@@ -7,7 +7,8 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 from Const import obj_type_url_mapping
-from SourceGameDataParcers import get_bonus_data_from_engine, get_task_data_from_engine
+from SourceGameDataParcers import get_bonus_data_from_engine, get_task_data_from_engine, get_help_data_from_engine, \
+    get_penalty_help_data_from_engine
 
 
 class GoogleDocConnection(object):
@@ -163,7 +164,14 @@ class ENConnection(object):
         return response
 
 
-def make_help_data_and_url(row, domain, gameid):
+def make_help_data_and_url(row, domain, gameid, source_task_text=None, target_level_number=None):
+    help_data = help_data_from_gdoc(row) if row else get_help_data_from_engine(source_task_text)
+    help_url = domain + obj_type_url_mapping['help']
+    params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[5])}
+    return help_data, help_url, params
+
+
+def help_data_from_gdoc(row):
     help_data = {
         'ForMemberID': 0,
         'NewPromptTimeoutDays': int(row[1]) if row[1] else 0,
@@ -172,9 +180,7 @@ def make_help_data_and_url(row, domain, gameid):
         'NewPromptTimeoutSeconds': int(row[4]) if row[4] else 0,
         'NewPrompt': row[0] if row[0] else ''
     }
-    help_url = domain + obj_type_url_mapping['help']
-    params = {'gid': gameid, 'level': str(row[5])}
-    return help_data, help_url, params
+    return help_data
 
 
 # txt - award
@@ -243,7 +249,14 @@ def make_sector_data_and_url(row, domain, gameid):
 # NewPrompt - penalty help text
 # PromptTimeout - delay
 # PenaltyPrompt - penalty time
-def make_penalty_help_data_and_url(row, domain, gameid):
+def make_penalty_help_data_and_url(row, domain, gameid, source_task_text=None, target_level_number=None):
+    pen_help_data = pen_help_data_from_gdoc(row) if row else get_penalty_help_data_from_engine(source_task_text)
+    pen_help_url = domain + obj_type_url_mapping['pen_help']
+    params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[10]), 'penalty': '1'}
+    return pen_help_data, pen_help_url, params
+
+
+def pen_help_data_from_gdoc(row):
     pen_help_data = {
         'ForMemberID': 0,
         'txtPenaltyComment': row[0] if row[0] else '',
@@ -259,9 +272,7 @@ def make_penalty_help_data_and_url(row, domain, gameid):
     }
     if 'false' not in row[6].lower():
         pen_help_data['chkRequestPenaltyConfirm'] = 'on'
-    pen_help_url = domain + obj_type_url_mapping['pen_help']
-    params = {'gid': gameid, 'level': str(row[10]), 'penalty': '1'}
-    return pen_help_data, pen_help_url, params
+    return pen_help_data
 
 
 def make_task_data_and_url(row, domain, gameid, source_task_text=None, target_level_number=None):
