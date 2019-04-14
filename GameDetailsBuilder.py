@@ -2,15 +2,14 @@
 from ExceptionHandler import ExceptionHandler
 from DBMethods import DB
 from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_help_data_and_url, make_bonus_data_and_url, \
-    make_sector_data_and_url, make_penalty_help_data_and_url, make_task_data_and_url, parse_level_page, \
-    check_task_exists, get_task_id
+    make_sector_data_and_url, make_penalty_help_data_and_url, make_task_data_and_url, parse_level_page
 from time import sleep
 
 SOURCE_GAME_DATA = {
     'domain': 'http://demo.en.cx',
     'login': 'jekafst',
     'password': 'hjccbz1412',
-    'gameid': '27201'
+    'gameid': '29365'
 }
 TARGET_GAME_DATA={
     'domain': 'http://demo.en.cx',
@@ -73,7 +72,7 @@ def fill_engine(google_doc_connection, en_connection, domain, gameid):
 def clean_engine(google_doc_connection, en_connection, gameid):
     for i, level_row in enumerate(google_doc_connection.get_cleanup_level_rows()):
         level_page = en_connection.get_level_page(level_row[4])
-        _, helps_to_del, bonuses_to_del, pen_helps_to_del = parse_level_page(level_row, level_page)
+        _, helps_to_del, bonuses_to_del, pen_helps_to_del, _ = parse_level_page(level_row, level_page)
         for help_to_del in helps_to_del:
             params = {
                 'gid': gameid,
@@ -111,21 +110,25 @@ def transfer_game(source_level_number, target_level_number, source_game_data=SOU
     level_page = source_en_connection.get_level_page(source_level_number)
     if not DB.get_game_transfer_row(source_game_data['gameid'], 'gameid'):
         DB.insert_game_transfer_row(source_game_data['gameid'])
-    _, help_ids, bonus_ids, pen_help_ids = parse_level_page(['', 'all', 'all', 'all'], level_page)
+    _, help_ids, bonus_ids, pen_help_ids, task_ids = parse_level_page(['', 'all', 'all', 'all'], level_page, transfer=True)
 
-    if check_task_exists(level_page):
-        read_params = {
-            'gid': source_game_data['gameid'],
-            'level': source_level_number,
-            'tid': get_task_id(level_page, source_game_data['gameid'], source_level_number),
-            'action': 'TaskEdit'
-        }
-        response = source_en_connection.read_en_object(read_params, 'task')
-        if response:
-            task_data, task_url, params = make_task_data_and_url(None, target_game_data['domain'], target_game_data['gameid'], response.text, target_level_number)
-            if target_en_connection.create_en_object(task_url, task_data, 'task', params):
-                transfered_bonus_ids += bonus_id if not transfered_bonus_ids else ', ' + bonus_id
-                DB.update_game_transfer(source_game_data['gameid'], 'bonusids', transfered_bonus_ids)
+    for i, task_id in enumerate(task_ids):
+        if i % 30 == 0:
+            sleep(5)
+        transfered_task_ids = DB.get_game_transfer_row(source_game_data['gameid'], 'taskids')
+        if task_id not in transfered_task_ids:
+            read_params = {
+                'gid': source_game_data['gameid'],
+                'level': source_level_number,
+                'tid': task_id,
+                'action': 'TaskEdit'
+            }
+            response = source_en_connection.read_en_object(read_params, 'task')
+            if response:
+                task_data, task_url, params = make_task_data_and_url(None, target_game_data['domain'], target_game_data['gameid'], response.text, target_level_number)
+                if target_en_connection.create_en_object(task_url, task_data, 'task', params):
+                    transfered_task_ids += task_id if not transfered_task_ids else ', ' + task_id
+                    DB.update_game_transfer(source_game_data['gameid'], 'taskids', transfered_task_ids)
 
     # for i, bonus_id in enumerate(bonus_ids):
     #     if i % 30 == 0:

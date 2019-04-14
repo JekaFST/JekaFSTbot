@@ -317,7 +317,7 @@ def task_checker(data, text):
     return
 
 
-def parse_level_page(row, level_page, sectors=list(), helps=list(), bonuses=list(), pen_helps=list()):
+def parse_level_page(row, level_page, sectors=list(), helps=list(), bonuses=list(), pen_helps=list(), transfer=False):
     if row[1]:
         help_ids = re.findall(r'prid=(\d+)\'', level_page)
         helps = help_ids if 'all' in row[1] else get_exact_ids(re.findall(r'[^/]+', row[1]), help_ids)
@@ -327,7 +327,8 @@ def parse_level_page(row, level_page, sectors=list(), helps=list(), bonuses=list
     if row[3]:
         pen_helps_ids = re.findall(r'prid=(\d+)&penalty', level_page)
         pen_helps = pen_helps_ids if 'all' in row[3] else get_exact_ids(re.findall(r'[^/]+', row[3]), pen_helps_ids)
-    return sectors, helps, bonuses, pen_helps
+    task_ids = re.findall(r'tid=(\d+)', level_page) if transfer else None
+    return sectors, helps, bonuses, pen_helps, task_ids
 
 
 type_checker_map = {
@@ -344,14 +345,3 @@ def get_exact_ids(exact_ids, all_ids):
     for id in exact_ids:
         ids.append(all_ids[int(str.strip(str(id)))-1])
     return ids
-
-
-def check_task_exists(level_page):
-    soup = BeautifulSoup(level_page)
-    return True if len(list(soup.find(href='/HowTo.aspx?about=TaskAdding').find_parents('table')[2].tr.td.div.div.contents[5].tr.td.table.children)) > 1 else False
-
-
-def get_task_id(level_page, game_id, source_level_number):
-    soup = BeautifulSoup(level_page)
-    href = soup.find(href=re.compile('gid=%s&level=%s&tid=' % (game_id, source_level_number))).attrs['href']
-    return re.findall(r'tid=(\d+)', href)[0]
