@@ -3,7 +3,7 @@ import re
 from bs4 import BeautifulSoup
 
 
-def get_bonus_data_from_engine(text, level_ids_dict):
+def get_bonus_data_from_engine(text, level_ids_dict, target_level_number):
     soup = BeautifulSoup(text, 'html.parser')
     bonus_data = {
         "ddlBonusFor": int([option.attrs['value'] for option in soup.find(id='ddlBonusFor').contents if 'selected' in option.attrs][0]),
@@ -20,9 +20,12 @@ def get_bonus_data_from_engine(text, level_ids_dict):
         bonus_data['answer_-%s' % str(i + 1)] = answer
     if bonus_data['rbAllLevels-1'] == 1:
         levels = [level for level in soup.find_all(attrs={'name': re.compile("level_"), 'checked': 'checked'})]
-        for level in levels:
-            level_number = level.parent.parent.contents[3].text
-            bonus_data['level_%s' % level_ids_dict[level_number]] = 'on'
+        if len(levels) == 1:
+            bonus_data['level_%s' % level_ids_dict[target_level_number]] = 'on'
+        else:
+            for level in levels:
+                level_number = level.parent.parent.contents[3].text
+                bonus_data['level_%s' % level_ids_dict[level_number]] = 'on'
     if 'checked' in soup.find(id='chkDelay').attrs:
         bonus_data['chkDelay'] = 'on'
         bonus_data['txtDelayHours'] = int(soup.find(attrs={"name": "txtDelayHours"}).attrs['value'])

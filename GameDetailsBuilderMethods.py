@@ -180,10 +180,10 @@ def make_help_data_and_url(row, domain, gameid):
 # txt - award
 # txtDelay - delay
 # txtValid - time to answer
-def make_bonus_data_and_url(row, domain, gameid, level_ids_dict, source_bonus_text=None, level_number=None):
-    bonus_data = bonus_data_from_gdoc(row, level_ids_dict) if row else get_bonus_data_from_engine(source_bonus_text, level_ids_dict)
+def make_bonus_data_and_url(row, domain, gameid, level_ids_dict, source_bonus_text=None, target_level_number=None):
+    bonus_data = bonus_data_from_gdoc(row, level_ids_dict) if row else get_bonus_data_from_engine(source_bonus_text, level_ids_dict, target_level_number)
     bonus_url = domain + obj_type_url_mapping['bonus']
-    params = {'gid': gameid, 'level': level_number if level_number else str(row[17]), 'bonus': '0', 'action': 'save'}
+    params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[17]), 'bonus': '0', 'action': 'save'}
     return bonus_data, bonus_url, params
 
 
