@@ -41,3 +41,14 @@ def get_bonus_data_from_engine(text, level_ids_dict, target_level_number):
         bonus_data['txtValidFrom'] = soup.find(attrs={"name": "txtValidFrom"}).attrs['value']
         bonus_data['txtValidTo'] = soup.find(attrs={"name": "txtValidTo"}).attrs['value']
     return bonus_data
+
+
+def get_task_data_from_engine(text):
+    soup = BeautifulSoup(text, 'html.parser')
+    task_data = {
+        'forMemberID': int([option.attrs['value'] for option in soup.find(id='forMemberID').contents if 'selected' in option.attrs][0]),
+        'inputTask': soup.find(attrs={"name": "inputTask"}).text
+    }
+    if 'checked' in soup.find(attrs={"name": "chkReplaceNlToBr"}).attrs:
+        task_data['chkReplaceNlToBr'] = 'on'
+    return task_data

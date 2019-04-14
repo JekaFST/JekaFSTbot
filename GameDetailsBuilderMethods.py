@@ -7,7 +7,7 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 from Const import obj_type_url_mapping
-from SourceGameDataParcers import get_bonus_data_from_engine
+from SourceGameDataParcers import get_bonus_data_from_engine, get_task_data_from_engine
 
 
 class GoogleDocConnection(object):
@@ -264,16 +264,21 @@ def make_penalty_help_data_and_url(row, domain, gameid):
     return pen_help_data, pen_help_url, params
 
 
-def make_task_data_and_url(row, domain, gameid):
+def make_task_data_and_url(row, domain, gameid, source_task_text=None, target_level_number=None):
+    task_data = task_data_from_gdoc(row) if row else get_task_data_from_engine(source_task_text)
+    task_url = domain + obj_type_url_mapping['task']
+    params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[2])}
+    return task_data, task_url, params
+
+
+def task_data_from_gdoc(row):
     task_data = {
         'forMemberID': 0,
         'inputTask': row[0] if row[0] else ''
     }
     if 'false' not in row[1].lower():
         task_data['chkReplaceNlToBr'] = 'on'
-    task_url = domain + obj_type_url_mapping['task']
-    params = {'gid': gameid, 'level': str(row[2])}
-    return task_data, task_url, params
+    return task_data
 
 
 def response_checker(data, type, text):
@@ -339,3 +344,14 @@ def get_exact_ids(exact_ids, all_ids):
     for id in exact_ids:
         ids.append(all_ids[int(str.strip(str(id)))-1])
     return ids
+
+
+def check_task_exists(level_page):
+    soup = BeautifulSoup(level_page)
+    return True if len(list(soup.find(href='/HowTo.aspx?about=TaskAdding').find_parents('table')[2].tr.td.div.div.contents[5].tr.td.table.children)) > 1 else False
+
+
+def get_task_id(level_page, game_id, source_level_number):
+    soup = BeautifulSoup(level_page)
+    href = soup.find(href=re.compile('gid=%s&level=%s&tid=' % (game_id, source_level_number))).attrs['href']
+    return re.findall(r'tid=(\d+)', href)[0]
