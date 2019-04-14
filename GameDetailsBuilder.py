@@ -130,23 +130,23 @@ def transfer_game(source_level_number, target_level_number, source_game_data=SOU
                     transfered_task_ids += task_id if not transfered_task_ids else ', ' + task_id
                     DB.update_game_transfer(source_game_data['gameid'], 'taskids', transfered_task_ids)
 
-    # for i, bonus_id in enumerate(bonus_ids):
-    #     if i % 30 == 0:
-    #         sleep(5)
-    #     transfered_bonus_ids = DB.get_game_transfer_row(source_game_data['gameid'], 'bonusids')
-    #     if bonus_id not in transfered_bonus_ids:
-    #         read_params = {
-    #             'gid': source_game_data['gameid'],
-    #             'level': source_level_number,
-    #             'bonus': bonus_id,
-    #             'action': 'edit'
-    #         }
-    #         response = source_en_connection.read_en_object(read_params, 'bonus')
-    #         if response:
-    #             bonus_data, bonus_url, params = make_bonus_data_and_url(None, target_game_data['domain'], target_game_data['gameid'], target_en_connection.get_level_ids(), response.text, target_level_number)
-    #             if target_en_connection.create_en_object(bonus_url, bonus_data, 'bonus', params):
-    #                 transfered_bonus_ids += bonus_id if not transfered_bonus_ids else ', ' + bonus_id
-    #                 DB.update_game_transfer(source_game_data['gameid'], 'bonusids', transfered_bonus_ids)
+    for i, bonus_id in enumerate(bonus_ids):
+        if i % 30 == 0:
+            sleep(5)
+        transfered_bonus_ids = DB.get_game_transfer_row(source_game_data['gameid'], 'bonusids')
+        if bonus_id not in transfered_bonus_ids:
+            read_params = {
+                'gid': source_game_data['gameid'],
+                'level': source_level_number,
+                'bonus': bonus_id,
+                'action': 'edit'
+            }
+            response = source_en_connection.read_en_object(read_params, 'bonus')
+            if response:
+                bonus_data, bonus_url, params = make_bonus_data_and_url(None, target_game_data['domain'], target_game_data['gameid'], target_en_connection.get_level_ids(), response.text, target_level_number)
+                if target_en_connection.create_en_object(bonus_url, bonus_data, 'bonus', params):
+                    transfered_bonus_ids += bonus_id if not transfered_bonus_ids else ', ' + bonus_id
+                    DB.update_game_transfer(source_game_data['gameid'], 'bonusids', transfered_bonus_ids)
 
 
 if __name__ == '__main__':
