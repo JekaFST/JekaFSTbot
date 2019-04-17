@@ -207,12 +207,12 @@ def bonus_data_from_gdoc(row, level_ids_dict):
     # answers = re.findall(r'.+', row[2])
     answers = re.findall(r'[^/]+', row[2])
     for i, answer in enumerate(answers):
-        bonus_data['answer_-%s' % str(i + 1)] = str.strip(answer)
+        bonus_data['answer_-%s' % str(i+1)] = str.strip(str(answer))
     # level_numbers = re.findall(r'.+', row[4])
     if bonus_data['rbAllLevels-1'] == 1:
         level_numbers = re.findall(r'[^/]+', row[4])
         for level_number in level_numbers:
-            bonus_data['level_%s' % str.strip(level_ids_dict[level_number])] = 'on'
+            bonus_data['level_%s' % str.strip(str(level_ids_dict[level_number]))] = 'on'
     if row[9] or row[10] or row[11]:
         bonus_data['chkDelay'] = 'on'
         bonus_data['txtDelayHours'] = int(row[9]) if row[9] else 0
@@ -237,7 +237,7 @@ def make_sector_data_and_url(row, domain, gameid):
     # answers = re.findall(r'.+', row[1])
     answers = re.findall(r'[^/]+', row[1])
     for i, answer in enumerate(answers):
-        sector_data['txtAnswer_%s' % str(i)] = str.strip(answer)
+        sector_data['txtAnswer_%s' % str(i)] = str.strip(str(answer))
         sector_data['ddlAnswerFor_%s' % str(i)] = 0
     sector_data['savesector'] = ''
     sector_url = domain + obj_type_url_mapping['sector']
