@@ -176,7 +176,7 @@ def make_bonus_data_and_url(row, domain, gameid, level_ids_dict):
     # answers = re.findall(r'.+', row[2])
     answers = re.findall(r'[^/]+', row[2])
     for i, answer in enumerate(answers):
-        bonus_data['answer_-%s' % str(i+1)] = str.strip(str(answer))
+        bonus_data['answer_-%s' % str(i+1)] = answer
     # level_numbers = re.findall(r'.+', row[4])
     level_numbers = re.findall(r'[^/]+', row[4])
     for level_number in level_numbers:
