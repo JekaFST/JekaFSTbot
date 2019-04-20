@@ -187,4 +187,5 @@ def transfer_game(source_level_number, target_level_number, source_game_data=SOU
 
 
 if __name__ == '__main__':
-    transfer_game('2', '2')
+    # game_details_builder('1FntYHbVJ7TySi5O-dqtwZVg05bJq5DvbjjmLQ3PgppM', None, False)
+    # transfer_game('2', '2')
