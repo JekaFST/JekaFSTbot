@@ -6,8 +6,6 @@ from ExceptionHandler import ExceptionHandler
 from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_help_data_and_url, make_bonus_data_and_url, \
     make_sector_data_and_url, make_penalty_help_data_and_url, make_task_data_and_url, parse_level_page
 
-logging.basicConfig(level=logging.INFO)
-
 
 @ExceptionHandler.game_details_builder_exception
 def game_details_builder(google_sheets_id, launch_id, type_id):
