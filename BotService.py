@@ -8,7 +8,7 @@ import logging
 from BotServiceMethods import add_level_bonuses, add_level_sectors, run_db_cleanup
 from Const import helptext
 from DBMethods import DB, DBSession
-from GameDetailsBuilder import game_details_builder
+from GameDetailsBuilder import game_details_builder, BUILDER_TYPE_MAPPING
 from MainClasses import Task, Validations
 from TextConvertingMethods import find_coords
 
@@ -612,16 +612,16 @@ def run_app(bot, queue):
 
     @app.route('/builder/<google_sheets_id>')
     def run_game_details_builder(google_sheets_id):
-        fill = True if int(f.request.args.get('fill')) == 1 else False
+        type_id = int(f.request.args.get('type_id'))
         name = 'builder_%s' % google_sheets_id[-4:]
         threads = threading.enumerate()
         for thread in threads:
             if thread.getName() == name:
                 return 'Previous is in progress'
         try:
-            text = 'Заполнение' if fill else 'Чистка'
-            launch_id = str(DB.insert_building_result_row(text))
-            threading.Thread(name=name, target=game_details_builder, args=(google_sheets_id, launch_id, fill)).start()
+            type = BUILDER_TYPE_MAPPING[type_id]['type']
+            launch_id = str(DB.insert_building_result_row(type))
+            threading.Thread(name=name, target=game_details_builder, args=(google_sheets_id, launch_id, type_id)).start()
         except Exception:
             logging.exception('Builder is not started')
             launch_id = 'Not started'

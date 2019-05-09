@@ -1,75 +1,63 @@
 # -*- coding: utf-8 -*-
-from ExceptionHandler import ExceptionHandler
+import logging
+from time import sleep
 from DBMethods import DB
+from ExceptionHandler import ExceptionHandler
 from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_help_data_and_url, make_bonus_data_and_url, \
     make_sector_data_and_url, make_penalty_help_data_and_url, make_task_data_and_url, parse_level_page
-from time import sleep
-
-SOURCE_GAME_DATA = {
-    'domain': 'http://demo.en.cx',
-    'login': 'jekafst',
-    'password': 'hjccbz1412',
-    'gameid': '27201'
-}
-TARGET_GAME_DATA={
-    'domain': 'http://demo.en.cx',
-    'login': 'jekafst',
-    'password': 'hjccbz1412',
-    'gameid': '27201'
-}
 
 
 @ExceptionHandler.game_details_builder_exception
-def game_details_builder(google_sheets_id, launch_id, fill):
+def game_details_builder(google_sheets_id, launch_id, type_id):
     google_doc_connection = GoogleDocConnection(google_sheets_id)
-    login, password, domain, gameid = google_doc_connection.get_setup()
-    if 'demo' not in domain and gameid not in DB.get_gameids_for_builder_list():
-        return 'Заполнение данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'
-    en_connection = ENConnection(domain, login, password, gameid)
-
-    if fill:
-        result = fill_engine(google_doc_connection, en_connection, domain, gameid)
-    else:
-        result = clean_engine(google_doc_connection, en_connection, gameid)
+    result = BUILDER_TYPE_MAPPING[type_id]['function'](google_doc_connection)
 
     return result
 
 
-def fill_engine(google_doc_connection, en_connection, domain, gameid):
+def fill_engine(google_doc_connection):
+    login, password, domain, gameid = google_doc_connection.get_setup()
+    if 'demo' not in domain and gameid not in DB.get_gameids_for_builder_list():
+        return 'Заполнение данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'
+    en_connection = ENConnection(domain, login, password, gameid)
     for i, help in enumerate(google_doc_connection.get_helps()):
         if i % 30 == 0:
             sleep(5)
-        help_data, help_url, params = make_help_data_and_url(help, domain, gameid)
+        help_data, help_url, params = make_help_data_and_url(help, en_connection.domain, gameid)
         en_connection.create_en_object(help_url, help_data, 'help', params)
 
     for i, bonus in enumerate(google_doc_connection.get_bonuses()):
         if i % 30 == 0:
             sleep(5)
-        bonus_data, bonus_url, params = make_bonus_data_and_url(bonus, domain, gameid, en_connection.level_ids_dict)
+        bonus_data, bonus_url, params = make_bonus_data_and_url(bonus, en_connection.domain, gameid, en_connection.level_ids_dict)
         en_connection.create_en_object(bonus_url, bonus_data, 'bonus', params)
 
     for i, sector in enumerate(google_doc_connection.get_sectors()):
         if i % 30 == 0:
             sleep(5)
-        sector_data, sector_url, params = make_sector_data_and_url(sector, domain, gameid)
+        sector_data, sector_url, params = make_sector_data_and_url(sector, en_connection.domain, gameid)
         en_connection.create_en_object(sector_url, sector_data, 'sector', params)
 
     for i, penalty_help in enumerate(google_doc_connection.get_penalty_helps()):
         if i % 30 == 0:
             sleep(5)
-        pen_help_data, pen_help_url, params = make_penalty_help_data_and_url(penalty_help, domain, gameid)
+        pen_help_data, pen_help_url, params = make_penalty_help_data_and_url(penalty_help, en_connection.domain, gameid)
         en_connection.create_en_object(pen_help_url, pen_help_data, 'PenaltyHelp', params)
 
     for i, task in enumerate(google_doc_connection.get_tasks()):
         if i % 30 == 0:
             sleep(5)
-        task_data, task_url, params = make_task_data_and_url(task, domain, gameid)
+        task_data, task_url, params = make_task_data_and_url(task, en_connection.domain, gameid)
         en_connection.create_en_object(task_url, task_data, 'task', params)
 
     return 'Успех. Проверьте правильность переноса данных в движок.'
 
 
-def clean_engine(google_doc_connection, en_connection, gameid):
+def clean_engine(google_doc_connection):
+    login, password, domain, gameid = google_doc_connection.get_setup()
+    if 'demo' not in domain and gameid not in DB.get_gameids_for_builder_list():
+        return 'Заполнение данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'
+    en_connection = ENConnection(domain, login, password, gameid)
     for i, level_row in enumerate(google_doc_connection.get_cleanup_level_rows()):
         level_page = en_connection.get_level_page(level_row[4])
         _, helps_to_del, bonuses_to_del, pen_helps_to_del, _ = parse_level_page(level_row, level_page)
@@ -104,12 +92,30 @@ def clean_engine(google_doc_connection, en_connection, gameid):
     return 'Успех. Проверьте правильность удаления данных из движка.'
 
 
-def transfer_game(source_level_number, target_level_number, source_game_data=SOURCE_GAME_DATA, target_game_data=TARGET_GAME_DATA):
+def transfer_game(google_doc_connection):
+    source_game_data, target_game_data, move_all = google_doc_connection.get_move_setup()
+
+    if 'demo' not in target_game_data['domain'] and target_game_data['gameid'] not in DB.get_gameids_for_builder_list():
+        return 'Заполнение данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'
     source_en_connection = ENConnection(source_game_data['domain'], source_game_data['login'], source_game_data['password'], source_game_data['gameid'])
     target_en_connection = ENConnection(target_game_data['domain'], target_game_data['login'], target_game_data['password'], target_game_data['gameid'])
+    if move_all:
+        for source_level_number in source_en_connection.level_ids_dict.keys():
+            logging.log(logging.INFO, "Moving of source level %s to target level %s is started" % (source_level_number, source_level_number))
+            transfer_level(source_en_connection, source_level_number, source_game_data, target_en_connection, source_level_number, target_game_data)
+            logging.log(logging.INFO, "Moving of source level %s to target level %s is finished successfully" % (source_level_number, source_level_number))
+    else:
+        move_levels_mapping = google_doc_connection.get_move_levels_mapping()
+        for source_level_number, target_level_number in move_levels_mapping.items():
+            logging.log(logging.INFO, "Moving of source level %s to target level %s is started" % (source_level_number, target_level_number))
+            transfer_level(source_en_connection, source_level_number, source_game_data, target_en_connection, target_level_number, target_game_data)
+            logging.log(logging.INFO, "Moving of source level %s to target level %s is finished successfully" % (source_level_number, target_level_number))
+
+    return 'Успех. Проверьте правильность переноса данных.'
+
+
+def transfer_level(source_en_connection, source_level_number, source_game_data, target_en_connection, target_level_number, target_game_data):
     level_page = source_en_connection.get_level_page(source_level_number)
-    # if not DB.get_game_transfer_row(source_game_data['gameid'], 'gameid'):
-    #     DB.insert_game_transfer_row(source_game_data['gameid'])
     _, help_ids, bonus_ids, pen_help_ids, task_ids = parse_level_page(['', 'all', 'all', 'all'], level_page, transfer=True)
 
     for i, task_id in enumerate(task_ids):
@@ -178,9 +184,8 @@ def transfer_game(source_level_number, target_level_number, source_game_data=SOU
                 if target_en_connection.create_en_object(pen_help_url, pen_help_data, 'PenaltyHelp', params):
                     DB.insert_game_transfer_row(source_game_data['gameid'], 'penhelpid', pen_help_id)
 
-
-if __name__ == '__main__':
-    # game_details_builder('1FntYHbVJ7TySi5O-dqtwZVg05bJq5DvbjjmLQ3PgppM', None, False)
-    # for i in xrange(15):
-    transfer_game('2', '2')
-        # print str(i+2)
+BUILDER_TYPE_MAPPING = {
+    1: {'type': 'Заполнение', 'function': fill_engine},
+    2: {'type': 'Чистка', 'function': clean_engine},
+    3: {'type': 'Перенос', 'function': transfer_game},
+}

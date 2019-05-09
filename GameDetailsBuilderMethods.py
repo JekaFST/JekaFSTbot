@@ -40,6 +40,33 @@ class GoogleDocConnection(object):
 
         return login, password, domain, gameid
 
+    def get_move_setup(self, RANGE_NAME='Move_setup', move_all=False):
+        source_game_data = dict()
+        target_game_data = dict()
+        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        values = result.get('values', [])
+        for row in values:
+            if 'source_login' in row:
+                source_game_data['login'] = row[1]
+            if 'source_password' in row:
+                source_game_data['password'] = row[1]
+            if 'source_domain' in row:
+                source_game_data['domain'] = row[1]
+            if 'source_gameid' in row:
+                source_game_data['gameid'] = row[1]
+            if 'target_login' in row:
+                target_game_data['login'] = row[1]
+            if 'target_password' in row:
+                target_game_data['password'] = row[1]
+            if 'target_domain' in row:
+                target_game_data['domain'] = row[1]
+            if 'target_gameid' in row:
+                target_game_data['gameid'] = row[1]
+            if 'move_all_levels' in row:
+                move_all = True if row['1'].lower() in ['yes', 'true'] else False
+
+        return source_game_data, target_game_data, move_all
+
     def get_helps(self):
         RANGE_NAME = 'Helps'
         result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
@@ -75,6 +102,15 @@ class GoogleDocConnection(object):
         result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
         values = result.get('values', [])[1:]
         return values
+
+    def get_move_levels_mapping(self):
+        RANGE_NAME = 'Move_exact_levels'
+        move_levels_mapping = dict()
+        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        values = result.get('values', [])[1:]
+        for row in values:
+            move_levels_mapping[row[0]] = row[1]
+        return move_levels_mapping
 
 
 class ENConnection(object):
