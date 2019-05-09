@@ -63,7 +63,7 @@ class GoogleDocConnection(object):
             if 'target_gameid' in row:
                 target_game_data['gameid'] = row[1]
             if 'move_all_levels' in row:
-                move_all = True if row['1'].lower() in ['yes', 'true'] else False
+                move_all = True if row[1].lower() in ['yes', 'y'] else False
 
         return source_game_data, target_game_data, move_all
 

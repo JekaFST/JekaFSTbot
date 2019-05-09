@@ -6,6 +6,8 @@ from ExceptionHandler import ExceptionHandler
 from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_help_data_and_url, make_bonus_data_and_url, \
     make_sector_data_and_url, make_penalty_help_data_and_url, make_task_data_and_url, parse_level_page
 
+logging.basicConfig(level=logging.INFO)
+
 
 @ExceptionHandler.game_details_builder_exception
 def game_details_builder(google_sheets_id, launch_id, type_id):
@@ -100,7 +102,9 @@ def transfer_game(google_doc_connection):
     source_en_connection = ENConnection(source_game_data['domain'], source_game_data['login'], source_game_data['password'], source_game_data['gameid'])
     target_en_connection = ENConnection(target_game_data['domain'], target_game_data['login'], target_game_data['password'], target_game_data['gameid'])
     if move_all:
-        for source_level_number in source_en_connection.level_ids_dict.keys():
+        sorted_level_ids = sorted(source_en_connection.level_ids_dict.items(), key=lambda item: item[1])
+        for sorted_level_id in sorted_level_ids:
+            source_level_number = sorted_level_id[0]
             logging.log(logging.INFO, "Moving of source level %s to target level %s is started" % (source_level_number, source_level_number))
             transfer_level(source_en_connection, source_level_number, source_game_data, target_en_connection, source_level_number, target_game_data)
             logging.log(logging.INFO, "Moving of source level %s to target level %s is finished successfully" % (source_level_number, source_level_number))
