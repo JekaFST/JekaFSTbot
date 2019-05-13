@@ -17,6 +17,8 @@ obj_type_url_mapping = {
     'sector': '/Administration/Games/LevelEditor.aspx',
     'level': '/Administration/Games/LevelEditor.aspx',
     'task': '/Administration/Games/TaskEdit.aspx',
+    'level_name': '/Administration/Games/NameCommentEdit.aspx',
+    'level_timeout': '/ALoader/LevelInfo.aspx',
 }
 
 game_wrong_statuses = {

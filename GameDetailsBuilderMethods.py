@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 from Const import obj_type_url_mapping
 from SourceGameDataParcers import get_bonus_data_from_engine, get_task_data_from_engine, get_help_data_from_engine, \
-    get_penalty_help_data_from_engine
+    get_penalty_help_data_from_engine, get_lvl_name_comment_data_from_engine, get_lvl_timeout_data_from_engine
 
 
 class GoogleDocConnection(object):
@@ -41,6 +41,7 @@ class GoogleDocConnection(object):
         return login, password, domain, gameid
 
     def get_move_setup(self, RANGE_NAME='Move_setup', move_all=False):
+        transfer_settings = dict()
         source_game_data = dict()
         target_game_data = dict()
         result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
@@ -63,9 +64,19 @@ class GoogleDocConnection(object):
             if 'target_gameid' in row:
                 target_game_data['gameid'] = row[1]
             if 'move_all_levels' in row:
-                move_all = True if row[1].lower() in ['yes', 'y'] else False
+                move_all = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
+            if 'level' in row:
+                transfer_settings['level'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
+            if 'task' in row:
+                transfer_settings['task'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
+            if 'helps' in row:
+                transfer_settings['helps'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
+            if 'bonuses' in row:
+                transfer_settings['bonuses'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
+            if 'pen_helps' in row:
+                transfer_settings['pen_helps'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
 
-        return source_game_data, target_game_data, move_all
+        return source_game_data, target_game_data, move_all, transfer_settings
 
     def get_helps(self):
         RANGE_NAME = 'Helps'
@@ -105,12 +116,17 @@ class GoogleDocConnection(object):
 
     def get_move_levels_mapping(self):
         RANGE_NAME = 'Move_exact_levels'
-        move_levels_mapping = dict()
         result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
         values = result.get('values', [])[1:]
-        for row in values:
-            move_levels_mapping[row[0]] = row[1]
-        return move_levels_mapping
+        move_levels_mappings = [{'source_ln': row[5],
+                                 'target_ln': row[6],
+                                 'level': True if row[0] and row[0].lower() in ['yes', 'y', 'true'] else False,
+                                 'task': True if row[1] and row[1].lower() in ['yes', 'y', 'true'] else False,
+                                 'helps': True if row[2] and row[2].lower() in ['yes', 'y', 'true'] else False,
+                                 'bonuses': True if row[3] and row[3].lower() in ['yes', 'y', 'true'] else False,
+                                 'pen_helps': True if row[4] and row[4].lower() in ['yes', 'y', 'true'] else False,
+                                 } for row in values]
+        return move_levels_mappings
 
 
 class ENConnection(object):
@@ -318,6 +334,20 @@ def make_task_data_and_url(row, domain, gameid, source_task_text=None, target_le
     return task_data, task_url, params
 
 
+def make_lvl_name_comment_data_and_url(domain, gameid, source_level_name_comment, target_level_number):
+    lvl_name_comment_data = get_lvl_name_comment_data_from_engine(source_level_name_comment)
+    level_url = domain + obj_type_url_mapping['level_name']
+    params = {'gid': gameid, 'level': target_level_number}
+    return lvl_name_comment_data, level_url, params
+
+
+def make_lvl_timeout_data_and_url(domain, gameid, source_level_timeout, target_level_number):
+    lvl_timeout_data = get_lvl_timeout_data_from_engine(source_level_timeout)
+    level_url = domain + obj_type_url_mapping['level']
+    params = {'gid': gameid, 'level': target_level_number}
+    return lvl_timeout_data, level_url, params
+
+
 def task_data_from_gdoc(row):
     task_data = {
         'forMemberID': 0,
@@ -353,6 +383,14 @@ def sector_checker(data, text):
     return
 
 
+def lvl_name_comment_checker(data, text):
+    return
+
+
+def lvl_timeout_checker(data, text):
+    return
+
+
 def penalty_help_checker(data, text):
     soup = BeautifulSoup(text, 'html.parser')
     pen_help_text = soup.find(id='divPromptComment')
@@ -383,7 +421,9 @@ type_checker_map = {
     'bonus': bonus_checker,
     'sector': sector_checker,
     'PenaltyHelp': penalty_help_checker,
-    'task': task_checker
+    'task': task_checker,
+    'level_name': lvl_name_comment_checker,
+    'level_timeout': lvl_timeout_checker,
 }
 
 

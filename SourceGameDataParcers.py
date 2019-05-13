@@ -84,3 +84,29 @@ def get_penalty_help_data_from_engine(text):
     if 'checked' in soup.find(id='chkRequestPenaltyConfirm').attrs:
         pen_help_data['chkRequestPenaltyConfirm'] = 'on'
     return pen_help_data
+
+
+def get_lvl_name_comment_data_from_engine(text):
+    soup = BeautifulSoup(text, 'html.parser')
+    level_name_comment_data = {
+        'txtLevelName': soup.find(attrs={"name": "txtLevelName"}).attrs['value'] if 'value' in soup.find(attrs={"name": "txtLevelName"}).attrs else '',
+        'txtLevelComment': soup.find(attrs={"name": "txtLevelComment"}).text,
+    }
+    return level_name_comment_data
+
+
+def get_lvl_timeout_data_from_engine(text):
+    soup = BeautifulSoup(text, 'html.parser')
+    level_timeout_data = {
+        'txtApHours': int(soup.find(attrs={"name": "txtApHours"}).attrs['value']),
+        'txtApMinutes': int(soup.find(attrs={"name": "txtApMinutes"}).attrs['value']),
+        'txtApSeconds': int(soup.find(attrs={"name": "txtApSeconds"}).attrs['value']),
+        'updateautopass': '',
+    }
+    if 'checked' in soup.find(id='chkTimeoutPenalty').attrs:
+        level_timeout_data['chkTimeoutPenalty'] = 'on'
+        level_timeout_data['txtApPenaltyHours'] = int(soup.find(attrs={"name": "txtApPenaltyHours"}).attrs['value'])
+        level_timeout_data['txtApPenaltyMinutes'] = int(soup.find(attrs={"name": "txtApPenaltyMinutes"}).attrs['value'])
+        level_timeout_data['txtApPenaltySeconds'] = int(soup.find(attrs={"name": "txtApPenaltySeconds"}).attrs['value'])
+
+    return level_timeout_data
