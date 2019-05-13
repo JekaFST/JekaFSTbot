@@ -149,7 +149,7 @@ def transfer_level(source_en_connection, source_level_number, source_game_data, 
             }
             response = source_en_connection.read_en_object(read_params, 'bonus')
             if response:
-                bonus_data, bonus_url, params = make_bonus_data_and_url(None, target_game_data['domain'], target_game_data['gameid'], target_en_connection.get_level_ids(), response.text, target_level_number)
+                bonus_data, bonus_url, params = make_bonus_data_and_url(None, target_game_data['domain'], target_game_data['gameid'], target_en_connection.level_ids_dict, response.text, target_level_number)
                 if target_en_connection.create_en_object(bonus_url, bonus_data, 'bonus', params):
                     DB.insert_game_transfer_row(source_game_data['gameid'], 'bonusid', bonus_id)
 
