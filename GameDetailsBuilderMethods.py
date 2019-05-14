@@ -391,6 +391,10 @@ def lvl_timeout_checker(data, text):
     return
 
 
+def lvl_checker(data, text):
+    return
+
+
 def penalty_help_checker(data, text):
     soup = BeautifulSoup(text, 'html.parser')
     pen_help_text = soup.find(id='divPromptComment')
@@ -424,6 +428,7 @@ type_checker_map = {
     'task': task_checker,
     'level_name': lvl_name_comment_checker,
     'level_timeout': lvl_timeout_checker,
+    'level': lvl_checker,
 }
 
 
