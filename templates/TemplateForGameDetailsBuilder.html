@@ -76,6 +76,21 @@
                 }
             };
         }
+
+        function clean_game_transfer_ids() {
+            var clean_game_id = document.getElementById("clean_game_id").value;
+            var xmlhttp = getXmlHttp();
+            xmlhttp.open('GET', 'https://jekafstbot.herokuapp.com/builder/clean_game_transfer_ids/' + clean_game_id, true);
+            xmlhttp.send();
+            xmlhttp.onreadystatechange = function() {
+                if (xmlhttp.readyState == 4) { // Ответ пришёл
+                    if(xmlhttp.status == 200) { // Сервер вернул код 200 (что хорошо)
+                        var clean_game_result = xmlhttp.responseText;
+                        document.getElementById("clean_game_id_launch").innerHTML = clean_game_result;
+                    }
+                }
+            };
+        }
     </script>
 </head>
 <body>
@@ -89,6 +104,9 @@
        <button id="builder del button" onclick="run_builder(2)">Очистить движок</button>
        <button id="builder move button" onclick="run_builder(3)">Перенести игру</button>
        <br><br>
+       <input type="text" placeholder="Введите айди игры" name="Game id to clean" id="clean_game_id">
+       <button id="clean_game_id button" onclick="clean_game_transfer_ids()">Очистить айдишники перенесенной игры</button>
+       <br><br>
        <details>
            <summary>Что такое айди гуглдока</summary>
            <img src="googledocid">
@@ -101,6 +119,7 @@
        <p>Статус запуска: <span id="builderstatus"></span></p>
        <p>ID запуска: <span id="launchid"></span></p>
        <p>Результат: <span id="answer"></span></p>
+       <p>Очистка айдишников перенесенной игры: <span id="clean_game_id_launch"></span></p>
    </div>
 </body>
 </html>

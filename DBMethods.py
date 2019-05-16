@@ -768,3 +768,9 @@ class DB(object):
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
+    def clean_game_transfer_ids(gameid):
+        sql = "DELETE FROM gametransferids WHERE gameid = %s" % gameid
+        with connection_pool.get_conn() as db_connection:
+            return db_connection.execute_insert_cur(sql)
