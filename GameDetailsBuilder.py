@@ -50,16 +50,19 @@ def fill_engine(google_doc_connection):
     logging.log(logging.INFO, "Filling of bonuses is finished")
 
     logging.log(logging.INFO, "Filling of sectors is started")
-    for i, sector in enumerate(google_doc_connection.get_sectors()):
-        if i % 30 == 0:
-            sleep(5)
+    for level, sectors in google_doc_connection.get_sectors().items():
         try:
-            logging.log(logging.INFO, "Filling of sector %s is started" % str(i + 1))
-            sector_data, sector_url, params = make_sector_data_and_url(sector, en_connection.domain, gameid)
-            en_connection.create_en_object(sector_url, sector_data, 'sector', params)
-            logging.log(logging.INFO, "Filling of sector %s is finished" % str(i + 1))
+            logging.log(logging.INFO, "Filling of sectors for level %s is started" % level)
+            if len(sectors) == 1:
+                answer_data, answer_url, params = make_sector_data_and_url(sectors[0], en_connection.domain, gameid, is_answer=True)
+                en_connection.create_en_object(answer_url, answer_data, 'sector', params)
+            else:
+                for sector in sectors:
+                    sector_data, sector_url, params = make_sector_data_and_url(sector, en_connection.domain, gameid)
+                    en_connection.create_en_object(sector_url, sector_data, 'sector', params)
+            logging.log(logging.INFO, "Filling of sectors for level %s is finished" % level)
         except Exception:
-            logging.exception("Exception on sector %s filling" % str(i + 1))
+            logging.exception("Exception on sectors filling for level %s" % level)
     logging.log(logging.INFO, "Filling of sectors is finished")
 
     logging.log(logging.INFO, "Filling of penalty helps is started")

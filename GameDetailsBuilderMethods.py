@@ -95,10 +95,15 @@ class GoogleDocConnection(object):
         return values
 
     def get_sectors(self):
+        level_sectors_dict = dict()
         RANGE_NAME = 'Sectors'
         result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
         values = result.get('values', [])[1:]
-        return values
+        for row in values:
+            if row[2] not in level_sectors_dict.keys():
+                level_sectors_dict[row[2]] = list()
+            level_sectors_dict[row[2]].append(row)
+        return level_sectors_dict
 
     def get_penalty_helps(self):
         RANGE_NAME = 'PenaltyHelps'
@@ -287,23 +292,25 @@ def bonus_data_from_gdoc(row, level_ids_dict):
     return bonus_data
 
 
-def make_sector_data_and_url(row, domain, gameid, source_sector_text=None, target_level_number=None, sector_id=None):
-    sector_data = sector_data_from_gdoc(row) if row else get_sector_data_from_engine(source_sector_text, sector_id)
+def make_sector_data_and_url(row, domain, gameid, source_sector_text=None, target_level_number=None, sector_id=None, is_answer=False):
+    sector_data = sector_data_from_gdoc(row, is_answer) if row else get_sector_data_from_engine(source_sector_text, sector_id)
     sector_url = domain + obj_type_url_mapping['sector']
     params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[2])}
     return sector_data, sector_url, params
 
 
-def sector_data_from_gdoc(row):
-    sector_data = {
-        'txtSectorName': row[0] if row[0] else ''
-    }
+def sector_data_from_gdoc(row, is_answer):
+    sector_data = dict()
     # answers = re.findall(r'.+', row[1])
     answers = re.findall(r'[^/]+', row[1])
     for i, answer in enumerate(answers):
         sector_data['txtAnswer_%s' % str(i)] = answer.strip()
         sector_data['ddlAnswerFor_%s' % str(i)] = 0
-    sector_data['savesector'] = ''
+    if is_answer and not row[0]:
+        sector_data['saveanswers'] = 1
+    else:
+        sector_data['txtSectorName'] = row[0] if row[0] else ''
+        sector_data['savesector'] = ''
     return sector_data
 
 
