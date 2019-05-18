@@ -169,11 +169,25 @@ class ENConnection(object):
             level_ids_dict[option_tag.text] = option_tag.attrs['value']
         return level_ids_dict
 
-    def get_level_page(self, level_number):
+    def get_level_page(self, level_number, result=''):
         url = self.domain + obj_type_url_mapping['level']
         params = {'gid': self.gameid, 'level': level_number, 'swanswers': '1'}
-        response = requests.get(url, params=params, headers={'Cookie': self.cookie})
-        return response.text
+        try:
+            for i in xrange(2):
+                response = requests.get(url, params=params, headers={'Cookie': self.cookie})
+                if not response.status_code == 200:
+                    logging.warning("Failed to get level page %s" % level_number)
+                    result = ''
+                    break
+                if "your requests have been classified as robot's requests." in response.text.lower():
+                    sleep(5)
+                    self.cookie = self.update_cookies()
+                    continue
+                result = response.text
+                break
+        except Exception:
+            logging.exception("Failed to get level page %s" % level_number)
+        return result
 
     def create_en_object(self, url, data, type, params):
         try:

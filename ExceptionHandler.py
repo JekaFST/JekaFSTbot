@@ -3,7 +3,7 @@ import logging
 from DBMethods import DBSession, DB
 from MainClasses import Task
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 
 
 class ExceptionHandler(object):

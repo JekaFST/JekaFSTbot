@@ -117,7 +117,7 @@ def get_sector_data_from_engine(text, sector_id):
     soup = BeautifulSoup(text, 'html.parser')
     sector_name = soup.find(id='divSectorManage_%s' % sector_id).contents[1].text if soup.find(id='divSectorManage_%s' % sector_id) else None
     if sector_name:
-        sector_data['txtSectorName'] = '' if sector_name.encode('utf-8') == 'Сектор 1' else sector_name
+        sector_data['txtSectorName'] = sector_name
         sector_data['savesector'] = ''
     else:
         sector_data['saveanswers'] = 1

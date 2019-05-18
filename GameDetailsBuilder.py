@@ -297,7 +297,18 @@ def transfer_level(source_en_conn, target_en_conn, source_ln=None, target_ln=Non
                     if response:
                         sector_data, sector_url, params = make_sector_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln, sector_id)
                         target_en_conn.create_en_object(sector_url, sector_data, 'sector', params)
-                            # DB.insert_game_transfer_row(source_en_conn.gameid, 'sectorid', sector_id)
+                        DB.insert_game_transfer_row(source_en_conn.gameid, 'sectorid', sector_id)
+
+            level_page = target_en_conn.get_level_page(target_ln)
+            sector_id_to_clean = check_empty_first_sector(level_page)
+            if sector_id_to_clean:
+                params = {
+                    'gid': target_en_conn.gameid,
+                    'level': target_ln,
+                    'delsector': sector_id_to_clean,
+                    'swanswers': 1
+                }
+                target_en_conn.delete_en_object(params, 'sector')
         else:
             # soup = BeautifulSoup(level_page)
             # answers = soup.find(id=re.compile('divAnswersView_(\d+)'))
@@ -314,6 +325,7 @@ def transfer_level(source_en_conn, target_en_conn, source_ln=None, target_ln=Non
                 if response:
                     sector_data, sector_url, params = make_sector_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln, answers[0])
                     target_en_conn.create_en_object(sector_url, sector_data, 'sector', params)
+                    DB.insert_game_transfer_row(source_en_conn.gameid, 'answersid', answers[0])
 
 BUILDER_TYPE_MAPPING = {
     1: {'type': 'Заполнение', 'function': fill_engine},
