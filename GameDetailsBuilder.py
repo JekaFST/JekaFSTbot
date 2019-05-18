@@ -7,6 +7,7 @@ from ExceptionHandler import ExceptionHandler
 from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_help_data_and_url, make_bonus_data_and_url, \
     make_sector_data_and_url, make_penalty_help_data_and_url, make_task_data_and_url, parse_level_page, \
     make_lvl_name_comment_data_and_url, make_lvl_timeout_data_and_url
+from SourceGameDataParcers import check_empty_first_sector
 
 
 @ExceptionHandler.game_details_builder_exception
@@ -61,6 +62,16 @@ def fill_engine(google_doc_connection):
                     sector_data, sector_url, params = make_sector_data_and_url(sector, en_connection.domain, gameid)
                     en_connection.create_en_object(sector_url, sector_data, 'sector', params)
             logging.log(logging.INFO, "Filling of sectors for level %s is finished" % level)
+            level_page = en_connection.get_level_page(level)
+            sector_id_to_clean = check_empty_first_sector(level_page)
+            if sector_id_to_clean:
+                params = {
+                    'gid': en_connection.gameid,
+                    'level': level,
+                    'delsector': sector_id_to_clean,
+                    'swanswers': 1
+                }
+                en_connection.delete_en_object(params, 'sector')
         except Exception:
             logging.exception("Exception on sectors filling for level %s" % level)
     logging.log(logging.INFO, "Filling of sectors is finished")

@@ -128,3 +128,17 @@ def get_sector_data_from_engine(text, sector_id):
         sector_data['ddlAnswerFor_%s' % str(i)] = 0
 
     return sector_data
+
+
+def check_empty_first_sector(level_page, sector_id_to_clean=None):
+    level_soup = BeautifulSoup(level_page, 'html.parser')
+    sectors = level_soup.find_all(id=re.compile('divSectorManage_\d+'))
+    for sector in sectors:
+        sector_soup = BeautifulSoup(str(sector), 'html.parser')
+        sector_id = re.findall(r'divSectorManage_(\d+)', str(sector))[0]
+        sector_name = sector_soup.find(id='divSectorManage_%s' % sector_id).contents[1].text
+        answers = level_soup.find(id='divAnswersView_%s' % sector_id)
+        if not answers and sector_name.encode('utf-8') == 'Сектор 1':
+            sector_id_to_clean = sector_id
+            break
+    return sector_id_to_clean
