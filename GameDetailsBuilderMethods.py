@@ -255,7 +255,7 @@ def bonus_data_from_gdoc(row, level_ids_dict):
         "ddlBonusFor": 0,
         "txtBonusName": row[0] if row[0] else '',
         "txtTask": row[1] if row[1] else '',
-        "rbAllLevels-1": 0 if 'true' in row[3].lower() else 1,
+        "rbAllLevels-1": 0 if row[3] and row[3].lower() in ['true', 'y', 'yes'] else 1,
         "txtHours": int(row[5]) if row[5] else 0,
         "txtMinutes": int(row[6]) if row[6] else 0,
         "txtSeconds": int(row[7]) if row[7] else 0,
