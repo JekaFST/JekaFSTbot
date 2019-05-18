@@ -413,9 +413,9 @@ def lvl_ans_block_data_from_gdoc(row):
         'action': 'upansblock',
         }
     if row[9]:
-        if row[9] == 'игрок':
+        if row[9] == 'player':
             level_ans_block_data['rbApplyForPlayer'] = 1
-        if row[9] == 'команда':
+        if row[9] == 'team':
             level_ans_block_data['rbApplyForPlayer'] = 2
     return level_ans_block_data
 

@@ -45,7 +45,7 @@ def fill_engine(google_doc_connection):
 
                 if level_details[13]:
                     lvl_sectors_required_data, level_sectors_required_url, params = make_lvl_sectors_required_data_and_url(level_details, en_connection.domain, en_connection.gameid)
-                    en_connection.create_en_object(level_sectors_required_url, lvl_sectors_required_data, 'level_name', params)
+                    en_connection.create_en_object(level_sectors_required_url, lvl_sectors_required_data, 'level', params)
                 logging.log(logging.INFO, "Updating of level %s details is finished" % level_details[14])
             except Exception:
                 logging.exception("Exception on level %s details updating" % level_details[14])
