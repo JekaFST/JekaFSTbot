@@ -4,11 +4,11 @@ import re
 from time import sleep
 from DBMethods import DB
 from ExceptionHandler import ExceptionHandler
+from SourceGameDataParcers import get_answers_data, check_ans_block_enabled, check_all_sectors_required
 from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_help_data_and_url, make_bonus_data_and_url, \
     make_sector_data_and_url, make_penalty_help_data_and_url, make_task_data_and_url, parse_level_page, \
     make_lvl_name_comment_data_and_url, make_lvl_timeout_data_and_url, clean_empty_first_sector, \
-    make_del_answer_data_and_url
-from SourceGameDataParcers import get_answers_data
+    make_del_answer_data_and_url, make_lvl_ans_block_data_and_url, make_lvl_sectors_required_data_and_url
 
 
 @ExceptionHandler.game_details_builder_exception
@@ -32,15 +32,23 @@ def fill_engine(google_doc_connection):
             if i % 15 == 0:
                 sleep(5)
             try:
-                logging.log(logging.INFO, "Updating of level %s details is started" % level_details[8])
+                logging.log(logging.INFO, "Updating of level %s details is started" % level_details[14])
                 lvl_name_comment_data, level_url, params = make_lvl_name_comment_data_and_url(level_details, en_connection.domain, en_connection.gameid)
                 en_connection.create_en_object(level_url, lvl_name_comment_data, 'level_name', params)
 
                 lvl_timeout_data, level_url, params = make_lvl_timeout_data_and_url(level_details, en_connection.domain, en_connection.gameid)
                 en_connection.create_en_object(level_url, lvl_timeout_data, 'level', params)
-                logging.log(logging.INFO, "Updating of level %s details is finished" % level_details[8])
+
+                if level_details[8]:
+                    lvl_ans_block_data, level_url, params = make_lvl_ans_block_data_and_url(level_details, en_connection.domain, en_connection.gameid)
+                    en_connection.create_en_object(level_url, lvl_ans_block_data, 'level', params)
+
+                if level_details[13]:
+                    lvl_sectors_required_data, level_sectors_required_url, params = make_lvl_sectors_required_data_and_url(level_details, en_connection.domain, en_connection.gameid)
+                    en_connection.create_en_object(level_sectors_required_url, lvl_sectors_required_data, 'level_name', params)
+                logging.log(logging.INFO, "Updating of level %s details is finished" % level_details[14])
             except Exception:
-                logging.exception("Exception on level %s details updating" % level_details[8])
+                logging.exception("Exception on level %s details updating" % level_details[14])
         logging.log(logging.INFO, "Updating of level details is finished")
 
     helps = google_doc_connection.get_helps()
@@ -239,22 +247,28 @@ def transfer_level(source_en_conn, target_en_conn, source_ln=None, target_ln=Non
     sector_ids, help_ids, bonus_ids, pen_help_ids, task_ids = parse_level_page(['y', 'all', 'all', 'all'], level_page, transfer=True)
 
     if level:
-        # read_params = {
-        #     'gid': source_en_conn.gameid,
-        #     'level': source_ln,
-        #     'sw': 'answblock',
-        # }
-        # response = source_en_conn.read_en_object(read_params, 'level')
-        # if response:
-        #     pass
-        # read_params = {
-        #     'gid': source_en_conn.gameid,
-        #     'level': source_ln,
-        #     # 'sw': 'edlvlsectsett',
-        # }
-        # response = source_en_conn.read_en_object(read_params, 'level')
-        # if response:
-        #     pass
+        if check_ans_block_enabled(level_page):
+            read_params = {
+                'gid': source_en_conn.gameid,
+                'level': source_ln,
+                'sw': 'answblock',
+            }
+            response = source_en_conn.read_en_object(read_params, 'level')
+            if response:
+                lvl_ans_block_data, level_url, params = make_lvl_ans_block_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln)
+                target_en_conn.create_en_object(level_url, lvl_ans_block_data, 'level_name', params)
+
+        if not check_all_sectors_required(level_page):
+            read_params = {
+                'gid': source_en_conn.gameid,
+                'level': source_ln,
+                'sw': 'edlvlsectsett',
+            }
+            response = source_en_conn.read_en_object(read_params, 'level')
+            if response:
+                lvl_sectors_required_data, level_sectors_required_url, params = make_lvl_sectors_required_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln)
+                target_en_conn.create_en_object(level_sectors_required_url, lvl_sectors_required_data, 'level_name', params)
+
         read_params = {
             'gid': source_en_conn.gameid,
             'level': source_ln,

@@ -86,6 +86,24 @@ def get_penalty_help_data_from_engine(text):
     return pen_help_data
 
 
+def get_lvl_ans_block_data_from_engine(text):
+    soup = BeautifulSoup(text, 'html.parser')
+    level_ans_block_data = {
+        'txtAttemptsNumber': soup.find(attrs={"name": "txtAttemptsNumber"}).attrs['value'],
+        'txtAttemptsPeriodHours': soup.find(attrs={"name": "txtAttemptsPeriodHours"}).attrs['value'],
+        'txtAttemptsPeriodMinutes': soup.find(attrs={"name": "txtAttemptsPeriodMinutes"}).attrs['value'],
+        'txtAttemptsPeriodSeconds': soup.find(attrs={"name": "txtAttemptsPeriodSeconds"}).attrs['value'],
+        'action': 'upansblock',
+        }
+    apply_for_user_tag = soup.find(id='rbApplyForUser')
+    if apply_for_user_tag:
+        if 'checked' in apply_for_user_tag.attrs:
+            level_ans_block_data['rbApplyForPlayer'] = 1
+        if 'checked' in soup.find(id='rbApplyForTeam').attrs:
+            level_ans_block_data['rbApplyForPlayer'] = 2
+    return level_ans_block_data
+
+
 def get_lvl_name_comment_data_from_engine(text):
     soup = BeautifulSoup(text, 'html.parser')
     level_name_comment_data = {
@@ -110,6 +128,16 @@ def get_lvl_timeout_data_from_engine(text):
         level_timeout_data['txtApPenaltySeconds'] = int(soup.find(attrs={"name": "txtApPenaltySeconds"}).attrs['value'])
 
     return level_timeout_data
+
+
+def get_lvl_sectors_required_data_from_engine(text):
+    soup = BeautifulSoup(text, 'html.parser')
+    lvl_sectors_required_data = {
+        'rbSectorCompleteType': 2,
+        'txtRequiredSectorsCount': int(soup.find(id='txtRequiredSectorsCount').attrs['value']),
+        'action': 'upsecsett',
+    }
+    return lvl_sectors_required_data
 
 
 def get_sector_data_from_engine(text, sector_id):
@@ -152,3 +180,17 @@ def check_empty_first_sector(level_page, sector_id_to_clean=None):
             sector_id_to_clean = sector_id
             break
     return sector_id_to_clean
+
+
+def check_ans_block_enabled(level_page, is_ans_block_enabled=False):
+    level_soup = BeautifulSoup(level_page, 'html.parser')
+    if BeautifulSoup(level_soup.find(id='lnkAnswerBlockingStatus'), 'html.parser').text != 'отключена':
+        is_ans_block_enabled = True
+    return is_ans_block_enabled
+
+
+def check_all_sectors_required(level_page, all_sectors_required=True):
+    level_soup = BeautifulSoup(level_page, 'html.parser')
+    if BeautifulSoup(level_soup.find(id='lnkSectorsSettings'), 'html.parser').text != 'выполнить все секторы':
+        all_sectors_required = False
+    return all_sectors_required

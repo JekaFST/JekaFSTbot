@@ -10,7 +10,8 @@ from bs4 import BeautifulSoup
 from Const import obj_type_url_mapping
 from SourceGameDataParcers import get_bonus_data_from_engine, get_task_data_from_engine, get_help_data_from_engine, \
     get_penalty_help_data_from_engine, get_lvl_name_comment_data_from_engine, get_lvl_timeout_data_from_engine, \
-    get_sector_data_from_engine, check_empty_first_sector
+    get_sector_data_from_engine, check_empty_first_sector, get_lvl_ans_block_data_from_engine, \
+    get_lvl_sectors_required_data_from_engine
 
 
 class GoogleDocConnection(object):
@@ -396,10 +397,33 @@ def task_data_from_gdoc(row):
     return task_data
 
 
+def make_lvl_ans_block_data_and_url(row, domain, gameid, source_ans_block=None, target_level_number=None):
+    lvl_ans_block_data = lvl_ans_block_data_from_gdoc(row) if row else get_lvl_ans_block_data_from_engine(source_ans_block)
+    level_url = domain + obj_type_url_mapping['level_name']
+    params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[14])}
+    return lvl_ans_block_data, level_url, params
+
+
+def lvl_ans_block_data_from_gdoc(row):
+    level_ans_block_data = {
+        'txtAttemptsNumber': int(row[8]),
+        'txtAttemptsPeriodHours': int(row[10]) if row[10] else 0,
+        'txtAttemptsPeriodMinutes': int(row[11]) if row[11] else 0,
+        'txtAttemptsPeriodSeconds': int(row[12]) if row[12] else 0,
+        'action': 'upansblock',
+        }
+    if row[9]:
+        if row[9] == 'игрок':
+            level_ans_block_data['rbApplyForPlayer'] = 1
+        if row[9] == 'команда':
+            level_ans_block_data['rbApplyForPlayer'] = 2
+    return level_ans_block_data
+
+
 def make_lvl_name_comment_data_and_url(row, domain, gameid, source_level_name_comment=None, target_level_number=None):
     lvl_name_comment_data = lvl_name_comment_data_from_gdoc(row) if row else get_lvl_name_comment_data_from_engine(source_level_name_comment)
     level_url = domain + obj_type_url_mapping['level_name']
-    params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[8])}
+    params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[14])}
     return lvl_name_comment_data, level_url, params
 
 
@@ -414,7 +438,7 @@ def lvl_name_comment_data_from_gdoc(row):
 def make_lvl_timeout_data_and_url(row, domain, gameid, source_level_timeout=None, target_level_number=None):
     lvl_timeout_data = lvl_timeout_data_from_gdoc(row) if row else get_lvl_timeout_data_from_engine(source_level_timeout)
     level_url = domain + obj_type_url_mapping['level']
-    params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[8])}
+    params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[14])}
     return lvl_timeout_data, level_url, params
 
 
@@ -432,6 +456,22 @@ def lvl_timeout_data_from_gdoc(row):
         level_timeout_data['txtApPenaltySeconds'] = int(row[7]) if row[7] else 0
 
     return level_timeout_data
+
+
+def make_lvl_sectors_required_data_and_url(row, domain, gameid, source_level_sectors_required=None, target_level_number=None):
+    lvl_sectors_required_data = lvl_sectors_required_data_from_gdoc(row) if row else get_lvl_sectors_required_data_from_engine(source_level_sectors_required)
+    level_sectors_required_url = domain + obj_type_url_mapping['level']
+    params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[14]), 'sw': 'edlvlsectsett'}
+    return lvl_sectors_required_data, level_sectors_required_url, params
+
+
+def lvl_sectors_required_data_from_gdoc(row):
+    lvl_sectors_required_data = {
+        'rbSectorCompleteType': 2,
+        'txtRequiredSectorsCount': int(row[13]),
+        'action': 'upsecsett',
+    }
+    return lvl_sectors_required_data
 
 
 def response_checker(data, type, text):
