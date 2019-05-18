@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from Const import obj_type_url_mapping
 from SourceGameDataParcers import get_bonus_data_from_engine, get_task_data_from_engine, get_help_data_from_engine, \
     get_penalty_help_data_from_engine, get_lvl_name_comment_data_from_engine, get_lvl_timeout_data_from_engine, \
-    get_sector_data_from_engine
+    get_sector_data_from_engine, check_empty_first_sector
 
 
 class GoogleDocConnection(object):
@@ -81,6 +81,12 @@ class GoogleDocConnection(object):
                 transfer_settings['pen_helps'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
 
         return source_game_data, target_game_data, move_all, transfer_settings
+
+    def get_levels_details(self):
+        RANGE_NAME = 'LevelDetails'
+        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        values = result.get('values', [])[1:]
+        return values
 
     def get_helps(self):
         RANGE_NAME = 'Helps'
@@ -375,18 +381,42 @@ def task_data_from_gdoc(row):
     return task_data
 
 
-def make_lvl_name_comment_data_and_url(domain, gameid, source_level_name_comment, target_level_number):
-    lvl_name_comment_data = get_lvl_name_comment_data_from_engine(source_level_name_comment)
+def make_lvl_name_comment_data_and_url(row, domain, gameid, source_level_name_comment=None, target_level_number=None):
+    lvl_name_comment_data = lvl_name_comment_data_from_gdoc(row) if row else get_lvl_name_comment_data_from_engine(source_level_name_comment)
     level_url = domain + obj_type_url_mapping['level_name']
-    params = {'gid': gameid, 'level': target_level_number}
+    params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[8])}
     return lvl_name_comment_data, level_url, params
 
 
-def make_lvl_timeout_data_and_url(domain, gameid, source_level_timeout, target_level_number):
-    lvl_timeout_data = get_lvl_timeout_data_from_engine(source_level_timeout)
+def lvl_name_comment_data_from_gdoc(row):
+    level_name_comment_data = {
+        'txtLevelName': row[0] if row[0] else '',
+        'txtLevelComment': row[1] if row[1] else '',
+    }
+    return level_name_comment_data
+
+
+def make_lvl_timeout_data_and_url(row, domain, gameid, source_level_timeout=None, target_level_number=None):
+    lvl_timeout_data = lvl_timeout_data_from_gdoc(row) if row else get_lvl_timeout_data_from_engine(source_level_timeout)
     level_url = domain + obj_type_url_mapping['level']
-    params = {'gid': gameid, 'level': target_level_number}
+    params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[8])}
     return lvl_timeout_data, level_url, params
+
+
+def lvl_timeout_data_from_gdoc(row):
+    level_timeout_data = {
+        'txtApHours': int(row[2]) if row[2] else 0,
+        'txtApMinutes': int(row[3]) if row[3] else 0,
+        'txtApSeconds': int(row[4]) if row[4] else 0,
+        'updateautopass': '',
+    }
+    if row[5] or row[6] or row[7]:
+        level_timeout_data['chkTimeoutPenalty'] = 'on'
+        level_timeout_data['txtApPenaltyHours'] = int(row[5]) if row[5] else 0
+        level_timeout_data['txtApPenaltyMinutes'] = int(row[6]) if row[6] else 0
+        level_timeout_data['txtApPenaltySeconds'] = int(row[7]) if row[7] else 0
+
+    return level_timeout_data
 
 
 def response_checker(data, type, text):
@@ -452,6 +482,19 @@ def parse_level_page(row, level_page, sectors=list(), helps=list(), bonuses=list
         pen_helps = pen_helps_ids if 'all' in row[3] else get_exact_ids(re.findall(r'[^/]+', row[3]), pen_helps_ids)
     task_ids = re.findall(r'tid=(\d+)', level_page) if transfer else None
     return sectors, helps, bonuses, pen_helps, task_ids
+
+
+def clean_empty_first_sector(en_connection, level):
+    level_page = en_connection.get_level_page(level)
+    sector_id_to_clean = check_empty_first_sector(level_page)
+    if sector_id_to_clean:
+        params = {
+            'gid': en_connection.gameid,
+            'level': level,
+            'delsector': sector_id_to_clean,
+            'swanswers': 1
+        }
+        en_connection.delete_en_object(params, 'sector')
 
 
 type_checker_map = {
