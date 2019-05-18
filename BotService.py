@@ -632,6 +632,12 @@ def run_app(bot, queue):
         launch_result = DB.get_building_result(launch_id)
         return launch_result
 
+    @app.route('/builder/clean_game_transfer_ids/<game_id>')
+    def clean_transfer_ids_for_game(game_id):
+        result = 'Очистка айдишников перенесенной игры %s выполнена' % game_id if DB.clean_game_transfer_ids(game_id) \
+            else 'Что-то пошло не так. Свяжитесь с @JekaFST в телеграм'
+        return result
+
     @app.route('/builder')
     def run_game_details_builder_form():
         return f.render_template("TemplateForGameDetailsBuilder.html")
