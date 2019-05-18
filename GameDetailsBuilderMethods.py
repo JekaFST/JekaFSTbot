@@ -399,7 +399,7 @@ def task_data_from_gdoc(row):
 
 def make_lvl_ans_block_data_and_url(row, domain, gameid, source_ans_block=None, target_level_number=None):
     lvl_ans_block_data = lvl_ans_block_data_from_gdoc(row) if row else get_lvl_ans_block_data_from_engine(source_ans_block)
-    level_url = domain + obj_type_url_mapping['level_name']
+    level_url = domain + obj_type_url_mapping['level']
     params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[14])}
     return lvl_ans_block_data, level_url, params
 
