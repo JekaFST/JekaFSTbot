@@ -22,36 +22,73 @@ def fill_engine(google_doc_connection):
     if 'demo' not in domain and gameid not in DB.get_gameids_for_builder_list():
         return 'Заполнение данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'
     en_connection = ENConnection(domain, login, password, gameid)
+
+    logging.log(logging.INFO, "Filling of helps is started")
     for i, help in enumerate(google_doc_connection.get_helps()):
         if i % 30 == 0:
             sleep(5)
-        help_data, help_url, params = make_help_data_and_url(help, en_connection.domain, gameid)
-        en_connection.create_en_object(help_url, help_data, 'help', params)
+        try:
+            logging.log(logging.INFO, "Filling of help %s is started" % str(i+1))
+            help_data, help_url, params = make_help_data_and_url(help, en_connection.domain, gameid)
+            en_connection.create_en_object(help_url, help_data, 'help', params)
+            logging.log(logging.INFO, "Filling of help %s is finished" % str(i + 1))
+        except Exception:
+            logging.exception("Exception on help %s filling" % str(i + 1))
+    logging.log(logging.INFO, "Filling of helps is finished")
 
+    logging.log(logging.INFO, "Filling of bonuses is started")
     for i, bonus in enumerate(google_doc_connection.get_bonuses()):
         if i % 30 == 0:
             sleep(5)
-        bonus_data, bonus_url, params = make_bonus_data_and_url(bonus, en_connection.domain, gameid, en_connection.level_ids_dict)
-        en_connection.create_en_object(bonus_url, bonus_data, 'bonus', params)
+        try:
+            logging.log(logging.INFO, "Filling of bonus %s is started" % str(i + 1))
+            bonus_data, bonus_url, params = make_bonus_data_and_url(bonus, en_connection.domain, gameid, en_connection.level_ids_dict)
+            en_connection.create_en_object(bonus_url, bonus_data, 'bonus', params)
+            logging.log(logging.INFO, "Filling of bonus %s is finished" % str(i + 1))
+        except Exception:
+            logging.exception("Exception on bonus %s filling" % str(i + 1))
+    logging.log(logging.INFO, "Filling of bonuses is finished")
 
+    logging.log(logging.INFO, "Filling of sectors is started")
     for i, sector in enumerate(google_doc_connection.get_sectors()):
         if i % 30 == 0:
             sleep(5)
-        sector_data, sector_url, params = make_sector_data_and_url(sector, en_connection.domain, gameid)
-        en_connection.create_en_object(sector_url, sector_data, 'sector', params)
+        try:
+            logging.log(logging.INFO, "Filling of sector %s is started" % str(i + 1))
+            sector_data, sector_url, params = make_sector_data_and_url(sector, en_connection.domain, gameid)
+            en_connection.create_en_object(sector_url, sector_data, 'sector', params)
+            logging.log(logging.INFO, "Filling of sector %s is finished" % str(i + 1))
+        except Exception:
+            logging.exception("Exception on sector %s filling" % str(i + 1))
+    logging.log(logging.INFO, "Filling of sectors is finished")
 
+    logging.log(logging.INFO, "Filling of penalty helps is started")
     for i, penalty_help in enumerate(google_doc_connection.get_penalty_helps()):
         if i % 30 == 0:
             sleep(5)
-        pen_help_data, pen_help_url, params = make_penalty_help_data_and_url(penalty_help, en_connection.domain, gameid)
-        en_connection.create_en_object(pen_help_url, pen_help_data, 'PenaltyHelp', params)
+        try:
+            logging.log(logging.INFO, "Filling of penalty help %s is started" % str(i + 1))
+            pen_help_data, pen_help_url, params = make_penalty_help_data_and_url(penalty_help, en_connection.domain, gameid)
+            en_connection.create_en_object(pen_help_url, pen_help_data, 'PenaltyHelp', params)
+            logging.log(logging.INFO, "Filling of penalty help %s is finished" % str(i + 1))
+        except Exception:
+            logging.exception("Exception on penalty help %s filling" % str(i + 1))
+    logging.log(logging.INFO, "Filling of penalty helps is finished")
 
+    logging.log(logging.INFO, "Filling of tasks is started")
     for i, task in enumerate(google_doc_connection.get_tasks()):
         if i % 30 == 0:
             sleep(5)
-        task_data, task_url, params = make_task_data_and_url(task, en_connection.domain, gameid)
-        en_connection.create_en_object(task_url, task_data, 'task', params)
+        try:
+            logging.log(logging.INFO, "Filling of task %s is started" % str(i + 1))
+            task_data, task_url, params = make_task_data_and_url(task, en_connection.domain, gameid)
+            en_connection.create_en_object(task_url, task_data, 'task', params)
+            logging.log(logging.INFO, "Filling of task %s is finished" % str(i + 1))
+        except Exception:
+            logging.exception("Exception on task %s filling" % str(i + 1))
+    logging.log(logging.INFO, "Filling of tasks is finished")
 
+    logging.log(logging.INFO, "Filling of game is finished successfully")
     return 'Успех. Проверьте правильность переноса данных в движок.'
 
 
