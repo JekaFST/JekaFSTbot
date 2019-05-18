@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import re
 from time import sleep
 from DBMethods import DB
 from ExceptionHandler import ExceptionHandler
@@ -119,11 +120,27 @@ def transfer_game(google_doc_connection):
     return 'Успех. Проверьте правильность переноса данных.'
 
 
-def transfer_level(source_en_conn, target_en_conn, source_ln=None, target_ln=None, level=None, task=None, helps=None, bonuses=None, pen_helps=None):
+def transfer_level(source_en_conn, target_en_conn, source_ln=None, target_ln=None, level=None, task=None, helps=None, bonuses=None, pen_helps=None, sectors=None):
     level_page = source_en_conn.get_level_page(source_ln)
-    _, help_ids, bonus_ids, pen_help_ids, task_ids = parse_level_page(['', 'all', 'all', 'all'], level_page, transfer=True)
+    sector_ids, help_ids, bonus_ids, pen_help_ids, task_ids = parse_level_page(['all', 'all', 'all', 'all'], level_page, transfer=True)
 
     if level:
+        # read_params = {
+        #     'gid': source_en_conn.gameid,
+        #     'level': source_ln,
+        #     'sw': 'answblock',
+        # }
+        # response = source_en_conn.read_en_object(read_params, 'level')
+        # if response:
+        #     pass
+        # read_params = {
+        #     'gid': source_en_conn.gameid,
+        #     'level': source_ln,
+        #     # 'sw': 'edlvlsectsett',
+        # }
+        # response = source_en_conn.read_en_object(read_params, 'level')
+        # if response:
+        #     pass
         read_params = {
             'gid': source_en_conn.gameid,
             'level': source_ln,
@@ -212,6 +229,40 @@ def transfer_level(source_en_conn, target_en_conn, source_ln=None, target_ln=Non
                     pen_help_data, pen_help_url, params = make_penalty_help_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln)
                     if target_en_conn.create_en_object(pen_help_url, pen_help_data, 'PenaltyHelp', params):
                         DB.insert_game_transfer_row(source_en_conn.gameid, 'penhelpid', pen_help_id)
+
+    if sectors:
+        if sector_ids:
+            for i, sector_id in enumerate(sector_ids):
+                if i % 30 == 0:
+                    sleep(5)
+                if sector_id not in DB.get_game_transfer_ids(source_en_conn.gameid, 'sectorid'):
+                    read_params = {
+                        'gid': source_en_conn.gameid,
+                        'level': source_ln,
+                        'editanswers': sector_id,
+                        'swanswers': '1'
+                    }
+                    response = source_en_conn.read_en_object(read_params, 'sector')
+                    if response:
+                        sector_data, sector_url, params = make_sector_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln, sector_id)
+                        target_en_conn.create_en_object(sector_url, sector_data, 'sector', params)
+                            # DB.insert_game_transfer_row(source_en_conn.gameid, 'sectorid', sector_id)
+        else:
+            # soup = BeautifulSoup(level_page)
+            # answers = soup.find(id=re.compile('divAnswersView_(\d+)'))
+            answers = re.findall('divAnswersView_(\d+)', level_page)
+            if answers:
+                # answers_id = re.findall('divAnswersView_(\d+)', str(answers))[0]
+                read_params = {
+                    'gid': source_en_conn.gameid,
+                    'level': source_ln,
+                    'editanswers': answers[0],
+                    'swanswers': '1'
+                }
+                response = source_en_conn.read_en_object(read_params, 'sector')
+                if response:
+                    sector_data, sector_url, params = make_sector_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln, answers[0])
+                    target_en_conn.create_en_object(sector_url, sector_data, 'sector', params)
 
 BUILDER_TYPE_MAPPING = {
     1: {'type': 'Заполнение', 'function': fill_engine},

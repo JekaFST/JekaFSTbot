@@ -110,3 +110,21 @@ def get_lvl_timeout_data_from_engine(text):
         level_timeout_data['txtApPenaltySeconds'] = int(soup.find(attrs={"name": "txtApPenaltySeconds"}).attrs['value'])
 
     return level_timeout_data
+
+
+def get_sector_data_from_engine(text, sector_id):
+    sector_data = dict()
+    soup = BeautifulSoup(text, 'html.parser')
+    sector_name = soup.find(id='divSectorManage_%s' % sector_id).contents[1].text if soup.find(id='divSectorManage_%s' % sector_id) else None
+    if sector_name:
+        sector_data['txtSectorName'] = '' if sector_name.encode('utf-8') == 'Сектор 1' else sector_name
+        sector_data['savesector'] = ''
+    else:
+        sector_data['saveanswers'] = 1
+    answers_soup = BeautifulSoup(str(soup.find(id='divAnswersEdit_%s' % sector_id)), 'html.parser')
+    answers = answers_soup.find_all(attrs={'name': re.compile('txtAnswer_\d+')})
+    for i, answer in enumerate(answers):
+        sector_data['txtAnswer_%s' % str(i)] = answer.attrs['value']
+        sector_data['ddlAnswerFor_%s' % str(i)] = 0
+
+    return sector_data

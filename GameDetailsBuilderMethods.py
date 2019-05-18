@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from apiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
@@ -8,7 +9,8 @@ import requests
 from bs4 import BeautifulSoup
 from Const import obj_type_url_mapping
 from SourceGameDataParcers import get_bonus_data_from_engine, get_task_data_from_engine, get_help_data_from_engine, \
-    get_penalty_help_data_from_engine, get_lvl_name_comment_data_from_engine, get_lvl_timeout_data_from_engine
+    get_penalty_help_data_from_engine, get_lvl_name_comment_data_from_engine, get_lvl_timeout_data_from_engine, \
+    get_sector_data_from_engine
 
 
 class GoogleDocConnection(object):
@@ -73,6 +75,8 @@ class GoogleDocConnection(object):
                 transfer_settings['helps'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
             if 'bonuses' in row:
                 transfer_settings['bonuses'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
+            if 'bonuses' in row:
+                transfer_settings['sectors'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
             if 'pen_helps' in row:
                 transfer_settings['pen_helps'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
 
@@ -118,13 +122,14 @@ class GoogleDocConnection(object):
         RANGE_NAME = 'Move_exact_levels'
         result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
         values = result.get('values', [])[1:]
-        move_levels_mappings = [{'source_ln': row[5],
-                                 'target_ln': row[6],
+        move_levels_mappings = [{'source_ln': row[6],
+                                 'target_ln': row[7],
                                  'level': True if row[0] and row[0].lower() in ['yes', 'y', 'true'] else False,
                                  'task': True if row[1] and row[1].lower() in ['yes', 'y', 'true'] else False,
                                  'helps': True if row[2] and row[2].lower() in ['yes', 'y', 'true'] else False,
                                  'bonuses': True if row[3] and row[3].lower() in ['yes', 'y', 'true'] else False,
-                                 'pen_helps': True if row[4] and row[4].lower() in ['yes', 'y', 'true'] else False,
+                                 'sectors': True if row[4] and row[4].lower() in ['yes', 'y', 'true'] else False,
+                                 'pen_helps': True if row[5] and row[5].lower() in ['yes', 'y', 'true'] else False,
                                  } for row in values]
         return move_levels_mappings
 
@@ -161,7 +166,7 @@ class ENConnection(object):
 
     def get_level_page(self, level_number):
         url = self.domain + obj_type_url_mapping['level']
-        params = {'gid': self.gameid, 'level': level_number}
+        params = {'gid': self.gameid, 'level': level_number, 'swanswers': '1'}
         response = requests.get(url, params=params, headers={'Cookie': self.cookie})
         return response.text
 
@@ -282,7 +287,14 @@ def bonus_data_from_gdoc(row, level_ids_dict):
     return bonus_data
 
 
-def make_sector_data_and_url(row, domain, gameid):
+def make_sector_data_and_url(row, domain, gameid, source_sector_text=None, target_level_number=None, sector_id=None):
+    sector_data = sector_data_from_gdoc(row) if row else get_sector_data_from_engine(source_sector_text, sector_id)
+    sector_url = domain + obj_type_url_mapping['sector']
+    params = {'gid': gameid, 'level': target_level_number if target_level_number else str(row[2])}
+    return sector_data, sector_url, params
+
+
+def sector_data_from_gdoc(row):
     sector_data = {
         'txtSectorName': row[0] if row[0] else ''
     }
@@ -292,9 +304,7 @@ def make_sector_data_and_url(row, domain, gameid):
         sector_data['txtAnswer_%s' % str(i)] = answer.strip()
         sector_data['ddlAnswerFor_%s' % str(i)] = 0
     sector_data['savesector'] = ''
-    sector_url = domain + obj_type_url_mapping['sector']
-    params = {'gid': gameid, 'level': str(row[2])}
-    return sector_data, sector_url, params
+    return sector_data
 
 
 # PenaltyComment - help description
@@ -334,6 +344,16 @@ def make_task_data_and_url(row, domain, gameid, source_task_text=None, target_le
     return task_data, task_url, params
 
 
+def task_data_from_gdoc(row):
+    task_data = {
+        'forMemberID': 0,
+        'inputTask': row[0] if row[0] else ''
+    }
+    if 'false' not in row[1].lower():
+        task_data['chkReplaceNlToBr'] = 'on'
+    return task_data
+
+
 def make_lvl_name_comment_data_and_url(domain, gameid, source_level_name_comment, target_level_number):
     lvl_name_comment_data = get_lvl_name_comment_data_from_engine(source_level_name_comment)
     level_url = domain + obj_type_url_mapping['level_name']
@@ -346,16 +366,6 @@ def make_lvl_timeout_data_and_url(domain, gameid, source_level_timeout, target_l
     level_url = domain + obj_type_url_mapping['level']
     params = {'gid': gameid, 'level': target_level_number}
     return lvl_timeout_data, level_url, params
-
-
-def task_data_from_gdoc(row):
-    task_data = {
-        'forMemberID': 0,
-        'inputTask': row[0] if row[0] else ''
-    }
-    if 'false' not in row[1].lower():
-        task_data['chkReplaceNlToBr'] = 'on'
-    return task_data
 
 
 def response_checker(data, type, text):
@@ -407,6 +417,9 @@ def task_checker(data, text):
 
 
 def parse_level_page(row, level_page, sectors=list(), helps=list(), bonuses=list(), pen_helps=list(), transfer=False):
+    if row[0]:
+        sector_ids = re.findall(r'divSectorManage_(\d+)\'', level_page)
+        sectors = sector_ids if 'all' in row[0] else get_exact_ids(re.findall(r'[^/]+', row[0]), sector_ids)
     if row[1]:
         help_ids = re.findall(r'prid=(\d+)\'', level_page)
         helps = help_ids if 'all' in row[1] else get_exact_ids(re.findall(r'[^/]+', row[1]), help_ids)
