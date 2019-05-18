@@ -334,6 +334,21 @@ def sector_data_from_gdoc(row, is_answer):
     return sector_data
 
 
+def make_del_answer_data_and_url(domain, gameid, answers_data, target_level_number, answers_block_id):
+    del_answer_data = {
+        'updateanswers': int(answers_block_id),
+        'btnDelete.x': 96,
+        'btnDelete.y': 8,
+    }
+    for answer_data in answers_data:
+        del_answer_data['chkDeleteAnswer_%s' % answer_data['answer_id']] = int(answer_data['answer_id'])
+        del_answer_data['txtAnswer_%s' % answer_data['answer_id']] = answer_data['answer_code']
+        del_answer_data['ddlAnswerFor_%s' % answer_data['answer_id']] = 0
+    del_answer_url = domain + obj_type_url_mapping['sector']
+    params = {'gid': gameid, 'level': target_level_number}
+    return del_answer_data, del_answer_url, params
+
+
 # PenaltyComment - help description
 # NewPrompt - penalty help text
 # PromptTimeout - delay
@@ -468,9 +483,8 @@ def task_checker(data, text):
 
 
 def parse_level_page(row, level_page, sectors=list(), helps=list(), bonuses=list(), pen_helps=list(), transfer=False):
-    if row[0]:
-        sector_ids = re.findall(r'divSectorManage_(\d+)\'', level_page)
-        sectors = sector_ids if 'all' in row[0] else get_exact_ids(re.findall(r'[^/]+', row[0]), sector_ids)
+    if row[0].lower() in ['y', 'yes', 'true']:
+        sectors = re.findall(r'divSectorManage_(\d+)\'', level_page)
     if row[1]:
         help_ids = re.findall(r'prid=(\d+)\'', level_page)
         helps = help_ids if 'all' in row[1] else get_exact_ids(re.findall(r'[^/]+', row[1]), help_ids)

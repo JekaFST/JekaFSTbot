@@ -130,6 +130,16 @@ def get_sector_data_from_engine(text, sector_id):
     return sector_data
 
 
+def get_answers_data(text, sector_id, answers_data=None):
+    soup = BeautifulSoup(text, 'html.parser')
+    sector_name = soup.find(id='divSectorManage_%s' % sector_id).contents[1].text if soup.find(id='divSectorManage_%s' % sector_id) else None
+    if not sector_name:
+        answers_soup = BeautifulSoup(str(soup.find(id='divAnswersEdit_%s' % sector_id)), 'html.parser')
+        answers = answers_soup.find_all(attrs={'name': re.compile('txtAnswer_\d+')})
+        answers_data = [{'answer_id': re.findall(r'txtAnswer_(\d+)', str(answer))[0], 'answer_code': answer.attrs['value']} for answer in answers]
+    return answers_data
+
+
 def check_empty_first_sector(level_page, sector_id_to_clean=None):
     level_soup = BeautifulSoup(level_page, 'html.parser')
     sectors = level_soup.find_all(id=re.compile('divSectorManage_\d+'))
