@@ -184,13 +184,15 @@ def check_empty_first_sector(level_page, sector_id_to_clean=None):
 
 def check_ans_block_enabled(level_page, is_ans_block_enabled=False):
     level_soup = BeautifulSoup(level_page, 'html.parser')
-    if level_soup.find(id='lnkAnswerBlockingStatus').text.encode('utf-8') != 'отключена':
+    answer_blocking_status = level_soup.find(id='lnkAnswerBlockingStatus')
+    if answer_blocking_status and answer_blocking_status.text.encode('utf-8') != 'отключена':
         is_ans_block_enabled = True
     return is_ans_block_enabled
 
 
 def check_all_sectors_required(level_page, all_sectors_required=True):
     level_soup = BeautifulSoup(level_page, 'html.parser')
-    if level_soup.find(id='lnkSectorsSettings').text.encode('utf-8') != 'выполнить все секторы':
+    sector_settings = level_soup.find(id='lnkSectorsSettings')
+    if sector_settings and sector_settings.text.encode('utf-8') != 'выполнить все секторы':
         all_sectors_required = False
     return all_sectors_required
