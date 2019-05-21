@@ -634,8 +634,8 @@ def run_app(bot, queue):
 
     @app.route('/builder/clean_game_transfer_ids/<game_id>')
     def clean_transfer_ids_for_game(game_id):
-        result = 'Очистка айдишников перенесенной игры %s выполнена' % game_id if DB.clean_game_transfer_ids(game_id) \
-            else 'Что-то пошло не так. Свяжитесь с @JekaFST в телеграм'
+        result = 'IDs cleanup is done successfully for game %s' % game_id if DB.clean_game_transfer_ids(game_id) \
+            else 'Something went wrong. Write @JekaFST in telegram'
         return result
 
     @app.route('/builder')
