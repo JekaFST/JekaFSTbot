@@ -484,14 +484,14 @@ def response_checker(data, type, text):
 def help_checker(data, text):
     soup = BeautifulSoup(text, 'html.parser')
     help_text = soup.find(id='PromptText')
-    if data['NewPrompt'] != help_text.text:
+    if help_text and data['NewPrompt'] != help_text.text:
         logging.warning("Help text mismatch. Data: %s" % str(data))
 
 
 def bonus_checker(data, text):
     soup = BeautifulSoup(text, 'html.parser')
     bonus_name = soup.find(id='panelBonusName')
-    if data['txtBonusName'] and data['txtBonusName'] != bonus_name.text:
+    if bonus_name and data['txtBonusName'] and data['txtBonusName'] != bonus_name.text:
         logging.warning("There is a mismatch in a bonus name. Data: %s" % str(data))
 
 
@@ -514,7 +514,7 @@ def lvl_checker(data, text):
 def penalty_help_checker(data, text):
     soup = BeautifulSoup(text, 'html.parser')
     pen_help_text = soup.find(id='divPromptComment')
-    if data['txtPenaltyComment'] != pen_help_text.text:
+    if pen_help_text and data['txtPenaltyComment'] != pen_help_text.text:
         logging.warning("Penalty help text mismatch. Data: %s" % str(data))
 
 
