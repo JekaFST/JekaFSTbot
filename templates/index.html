@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Author EN engine helper</title>
+        <script src="https://unpkg.com/vue"></script>
+        <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+        <style>
+            .details summary { /* строки-заголовок для клика */
+                position: relative;
+                background: #4e6473;
+                padding: 2px 10px;
+                border-radius: 2px;
+                color: #fff;
+                cursor: pointer;
+            }
+            .details summary::-webkit-details-marker { /* треугольник */
+                position: absolute;
+                right: 10px;
+                top: 30%;
+            }
+            .details[open] summary { /* цвет строки-заголовка в открытом виде */
+                background: #c0c0c0;
+            }
+        </style>
+</head>
+<body>
+    <div class="container">
+        <div id="all_en_helpers">
+            <div class="row">
+                <div class="col-sm-3 col-md-3 sidebar">
+                    <ul class="nav nav-sidebar">
+                        <li v-for="app in apps">
+                              <button type="button" class="btn btn-sm btn-info col-sm-10"
+                                v-bind:key="app.name"
+                                v-bind:class="{ selected: app.name === selected_app.name }"
+                                v-on:click="selected_app = app"
+                              >
+                                {{ app.name }}
+                              </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-sm-9 main">
+                    <div v-if="selected_app">
+                        <h3>{{ selected_app.name }}</h3>
+                        <div v-html="selected_app.content"></div>
+                        <component
+                          class="tab"
+                          v-bind:is="selected_app_component"
+                          v-bind:app="selected_app"
+                          v-bind:data="selected_app_data"
+                        ></component>
+                    </div>
+                    <strong v-else>
+                    <h3>Выберите действие из меню слева</h3>
+                    </strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- hidden for Vue components -->
+    <div id="component-заполнить_движок" hidden="true">
+        <div>
+            <small-modal v-if="show_error" @close="show_error = false; error_text = ''">
+                <h3 class="text-center" slot="header">Error</h3>
+                <div slot="body">
+                    <div v-if="error_text"> {{ error_text }} </div>
+                </div>
+            </small-modal>
+            <form id="fill_engine" role="form">
+                <div>
+                    <h4>Конфигурация:</h4>
+                    <table>
+                        <tr>
+                            <td>
+                                <input type="text" name="login" placeholder="Логин" class="form-control" v-model="login">
+                            </td>
+                            <td>
+                                <input type="text" name="password" placeholder="Пароль" class="form-control" v-model="password">
+                            </td>
+                            <td>
+                                <input type="text" name="domain" placeholder="Домен" class="form-control" v-model="domain">
+                            </td>
+                            <td>
+                                <input type="text" style="width: 90px" name="game_id" placeholder="ID игры" class="form-control" v-model="game_id">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div><br>
+                    <label>Введите ID гуглдока для заполнения:
+                        <input type="text" style="width: 400px" name="gdoc_id" class="form-control text-left" v-model="gdoc_id">
+                    </label>
+                </div>
+                <button @click.prevent="fill_engine(login, password, domain, game_id, gdoc_id)">Запустить заполнение игры</button>
+                <logger-component v-bind:data="data"></logger-component>
+            </form>
+        </div>
+    </div>
+
+    <div id="component-очистить_движок" hidden="true">
+        <div>
+            <small-modal v-if="show_error" @close="show_error = false; error_text = ''">
+                <h3 class="text-center" slot="header">Error</h3>
+                <div slot="body">
+                    <div v-if="error_text"> {{ error_text }} </div>
+                </div>
+            </small-modal>
+            <form id="clean_engine" role="form">
+                <div>
+                    <h4>Конфигурация:</h4>
+                    <table>
+                        <tr>
+                            <td>
+                                <input type="text" name="login" placeholder="Логин" class="form-control" v-model="login">
+                            </td>
+                            <td>
+                                <input type="text" name="password" placeholder="Пароль" class="form-control" v-model="password">
+                            </td>
+                            <td>
+                                <input type="text" name="domain" placeholder="Домен" class="form-control" v-model="domain">
+                            </td>
+                            <td>
+                                <input type="text" style="width: 90px" name="game_id" placeholder="ID игры" class="form-control" v-model="game_id">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div><br>
+                    <label>Введите ID гуглдока для очистки:
+                        <input type="text" style="width: 400px" name="gdoc_id" class="form-control text-left" v-model="gdoc_id">
+                    </label>
+                </div>
+                <button @click.prevent="clean_engine(login, password, domain, game_id, gdoc_id)">Запустить очистку игры</button>
+                <logger-component v-bind:data="data"></logger-component>
+            </form>
+        </div>
+    </div>
+
+    <div id="component-перенести_движок" hidden="true">
+        <div>
+            <small-modal v-if="show_error" @close="show_error = false; error_text = ''">
+                <h3 class="text-center" slot="header">Error</h3>
+                <div slot="body">
+                    <div v-if="error_text"> {{ error_text }} </div>
+                </div>
+            </small-modal>
+            <form id="transfer_engine" role="form">
+                <div>
+                    <h4>Конфигурация:</h4>
+                    <table>
+                        <tr>
+                            <td>Конфигурация переносимой игры</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="text" name="login" placeholder="Логин" class="form-control" v-model="s_login">
+                            </td>
+                            <td>
+                                <input type="text" name="password" placeholder="Пароль" class="form-control" v-model="s_password">
+                            </td>
+                            <td>
+                                <input type="text" name="domain" placeholder="Домен" class="form-control" v-model="s_domain">
+                            </td>
+                            <td>
+                                <input type="text" style="width: 90px" name="game_id" placeholder="ID игры" class="form-control" v-model="s_game_id">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Конфигурация целевой игры</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="text" name="login" placeholder="Логин" class="form-control" v-model="tg_login">
+                            </td>
+                            <td>
+                                <input type="text" name="password" placeholder="Пароль" class="form-control" v-model="tg_password">
+                            </td>
+                            <td>
+                                <input type="text" name="domain" placeholder="Домен" class="form-control" v-model="tg_domain">
+                            </td>
+                            <td>
+                                <input type="text" style="width: 90px" name="game_id" placeholder="ID игры" class="form-control" v-model="tg_game_id">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div><br>
+                    <label>Введите ID гуглдока для переноса:
+                        <input type="text" style="width: 400px" name="gdoc_id" class="form-control text-left" v-model="gdoc_id">
+                    </label>
+                </div>
+                <button @click.prevent="transfer_engine(s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, gdoc_id)">Запустить перенос игры</button>
+                <logger-component v-bind:data="data"></logger-component>
+            </form>
+        </div>
+    </div>
+
+    <div id="logger-component" hidden="true">
+        <div>
+            <div v-if="data.status">Статус: {{ data.status }} </div>
+            <details v-if="data.debug_info && data.debug_info.length">
+            <summary>Debug message</summary>
+            <pre><div v-for="debug_row in data.debug_info">{{debug_row}}</div></pre>
+            </details>
+            <div v-if="data.messages && data.messages.length">Лог:
+                <pre><div v-for="message in data.messages">{{message}}</div></pre>
+            </div>
+        </div>
+    </div>
+
+    <div id="bootstrap-small-modal-template" hidden="true">
+        <transition name="small-modal">
+            <div id="my_small_modal" class="modal fade in" role="dialog" style="display: block;">
+                <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" @click.prevent="$emit('close')">&times;</button>
+                            <slot name="header">
+                            </slot>
+                        </div>
+                        <div class="modal-body">
+                            <slot name="body">
+                            </slot>
+                        </div>
+                        <div class="modal-footer">
+                            <form class="form-inline" role="form">
+                                <slot name="footer">
+                                </slot>
+                                <button type="button" class="btn btn-default center-block" @click.prevent="$emit('close')">Close</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+    </div>
+
+    <script>
+        const base_url = "http://localhost:443"
+        <!--const base_url = "https://jekafstbot.herokuapp.com"-->
+
+        Vue.component('small-modal', {
+          template: '#bootstrap-small-modal-template'
+        })
+
+        Vue.component('logger-component',{
+          props: ['data'],
+          template: "#logger-component",
+        })
+
+        Vue.component('component-заполнить_движок', {
+          template: "#component-заполнить_движок",
+          props: ['app', 'data'],
+          data: function () {
+            return {
+                login: '',
+                password: '',
+                domain: '',
+                game_id: '',
+                gdoc_id: '',
+                show_error: false,
+                error_text: '',
+            }
+          },
+          created: function () {
+            this.app.get()
+          },
+          methods: {
+            fill_engine: function (login, password, domain, game_id, gdoc_id) {
+              if (!login){
+                this.show_error = true;
+                this.error_text = 'Логин не заполнен'
+              }
+              else if (!password){
+                this.show_error = true;
+                this.error_text = 'Пароль не заполнен'
+              }
+              else if (!domain){
+                this.show_error = true;
+                this.error_text = 'Домен не заполнен'
+              }
+              else if (!game_id){
+                this.show_error = true;
+                this.error_text = 'ID игры не заполнен'
+              }
+              else if (!gdoc_id){
+                this.show_error = true;
+                this.error_text = 'ID гуглдока не заполнен'
+              }
+              else {
+                this.app.post({
+                  login: login,
+                  password: password,
+                  domain: domain,
+                  game_id: game_id,
+                  gdoc_id: gdoc_id,
+                })
+              }
+            }
+          },
+        })
+
+        Vue.component('component-очистить_движок', {
+          template: "#component-очистить_движок",
+          props: ['app', 'data'],
+          data: function () {
+            return {
+                login: '',
+                password: '',
+                domain: '',
+                game_id: '',
+                gdoc_id: '',
+                show_error: false,
+                error_text: '',
+            }
+          },
+          created: function () {
+            this.app.get()
+          },
+          methods: {
+            clean_engine: function (login, password, domain, game_id, gdoc_id) {
+              if (!login){
+                this.show_error = true;
+                this.error_text = 'Логин не заполнен'
+              }
+              else if (!password){
+                this.show_error = true;
+                this.error_text = 'Пароль не заполнен'
+              }
+              else if (!domain){
+                this.show_error = true;
+                this.error_text = 'Домен не заполнен'
+              }
+              else if (!game_id){
+                this.show_error = true;
+                this.error_text = 'ID игры не заполнен'
+              }
+              else if (!gdoc_id){
+                this.show_error = true;
+                this.error_text = 'ID гуглдока не заполнен'
+              }
+              else {
+                this.app.post({
+                  login: login,
+                  password: password,
+                  domain: domain,
+                  game_id: game_id,
+                  gdoc_id: gdoc_id,
+                })
+              }
+            }
+          },
+        })
+
+        Vue.component('component-перенести_движок', {
+          template: "#component-перенести_движок",
+          props: ['app', 'data'],
+          data: function () {
+            return {
+                s_login: '',
+                s_password: '',
+                s_domain: '',
+                s_game_id: '',
+                tg_login: '',
+                tg_password: '',
+                tg_domain: '',
+                tg_game_id: '',
+                gdoc_id: '',
+                show_error: false,
+                error_text: '',
+            }
+          },
+          created: function () {
+            this.app.get()
+          },
+          methods: {
+            transfer_engine: function (s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, gdoc_id) {
+              if (!s_login){
+                this.show_error = true;
+                this.error_text = 'Логин исходной игры не заполнен'
+              }
+              else if (!s_password){
+                this.show_error = true;
+                this.error_text = 'Пароль исходной игры не заполнен'
+              }
+              else if (!s_domain){
+                this.show_error = true;
+                this.error_text = 'Домен исходной игры не заполнен'
+              }
+              else if (!s_game_id){
+                this.show_error = true;
+                this.error_text = 'ID игры исходной игры не заполнен'
+              }
+              else if (!tg_login){
+                this.show_error = true;
+                this.error_text = 'Логин целевой игры не заполнен'
+              }
+              else if (!tg_password){
+                this.show_error = true;
+                this.error_text = 'Пароль целевой игры не заполнен'
+              }
+              else if (!tg_domain){
+                this.show_error = true;
+                this.error_text = 'Домен целевой игры не заполнен'
+              }
+              else if (!tg_game_id){
+                this.show_error = true;
+                this.error_text = 'ID игры целевой игры не заполнен'
+              }
+              else if (!gdoc_id){
+                this.show_error = true;
+                this.error_text = 'ID гуглдока не заполнен'
+              }
+              else {
+                this.app.post({
+                  s_login: s_login,
+                  s_password: s_password,
+                  s_domain: s_domain,
+                  s_game_id: s_game_id,
+                  tg_login: tg_login,
+                  tg_password: tg_password,
+                  tg_domain: tg_domain,
+                  tg_game_id: tg_game_id,
+                  gdoc_id: gdoc_id,
+                })
+              }
+            }
+          },
+        })
+
+        var app = new Vue({
+          el: '#all_en_helpers',
+
+          data: {
+            apps: {},
+            selected_app_data: {},
+            selected_app: false,
+            form_data: {},
+            shedulers: [],
+            need_update: false
+          },
+
+          watch: {
+            need_update: 'set_update_timeout',
+            'selected_app_data.status': 'set_update_timeout',
+            'selected_app': 'clear_intervals'
+          },
+
+          computed: {
+            selected_app_component: function () {
+              return 'component-' + this.selected_app.name.toLowerCase().replace(/[ :]/g,'_')
+            }
+          },
+
+          created: function () {
+            this.fetch_all_apps()
+          },
+
+          beforeDestroy: function () {
+            this.shedulers.map(function (interval) {
+              clearInterval(interval)
+            })
+          },
+
+          methods: {
+            clear_intervals: function() {
+            this.shedulers.map(function (interval) {
+              clearInterval(interval)
+            })
+            },
+            set_update_timeout: function(val, oldVal) {
+              while(interval_id=this.shedulers.pop()){
+                  clearInterval(interval_id)
+              }
+              var timeout = 0
+              if (val == 'Done' && this.need_update == false) {
+                timeout = 120000
+              } else {
+                timeout = 30000
+                this.need_update = false
+              }
+              this.shedulers.push(setInterval(this.selected_app.get, timeout))
+            },
+            fetch_data: function(url, data) {
+              var self = this
+              fetch(url, data).then(function(response){
+                self._request = false
+                if (response.status == 200) {
+                  response.json().then(function (data) {
+                    self.selected_app_data = data
+                  })
+                } else {
+                  response.text().then(function (data) {
+                    alert("Code from server: " + response.status + " text: " + data)
+                  })
+                }
+              }).catch(function(ex) {
+                console.log('Request failed failed:', ex);
+              });
+            },
+
+            get_app_data: function(app_name) {
+              this.fetch_data(base_url + "/builder/" + app_name, {
+                method: 'get',
+                headers: {
+                  'Content-Type': 'application/json; charset=utf-8'
+                },
+              });
+            },
+
+            post_app_data: function(app_name, app_data) {
+              this.need_update = true
+              setTimeout(this.get_app_data, 50, app_name)
+              this.fetch_data(base_url + "/builder/" + app_name, {
+                method: 'post',
+                headers: {
+                  'Content-Type': 'application/json; charset=utf-8'
+                },
+                body: JSON.stringify(app_data)
+              });
+            },
+
+            fetch_all_apps: function () {
+              var self = this
+              fetch(base_url + "/apps").then(function (resp) {
+                return resp.json()
+              }).then(function (apps) {
+                self.apps = {}
+                Object.keys(apps).map(function(objectKey, index) {
+                  var app = apps[objectKey];
+                  app['get'] = function () {self.get_app_data(app['name'])}
+                  app['post'] = function (data) {self.post_app_data(app['name'], data)}
+                  self.apps[objectKey] = app
+                })
+              }).catch(function(ex) {
+                console.log('Parsing failed:', ex);
+              });
+            },
+          }
+        })
+    </script>
+</body>
+</html>

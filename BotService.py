@@ -1,22 +1,122 @@
 # -*- coding: utf-8 -*-
+import re
 import os
+import uuid
+import string
+import random
+import logging
+import telebot
 import threading
 import flask as f
-import re
-import telebot
-import logging
-from BotServiceMethods import add_level_bonuses, add_level_sectors, run_db_cleanup
 from Const import helptext
+from collections import namedtuple
 from DBMethods import DB, DBSession
-from GameDetailsBuilder import game_details_builder, BUILDER_TYPE_MAPPING
+from builder import GameDetailsBuilder
 from MainClasses import Task, Validations
 from TextConvertingMethods import find_coords
+from BotServiceMethods import add_level_bonuses, add_level_sectors, run_db_cleanup, capture_stdout
+
+
+StatusHolderCls = namedtuple("StatusHolder", ["message", "debug_info", "status", "get", "clear", "set_request", "get_request"])
+
+
+class Status:
+    EMPTY = "_"
+    IN_PROGRESS = "Выполняется"
+    FAILED = "Ошибка"
+    DONE = "Выполнено"
+
+
+class StatusHolder(object):
+    def __init__(self):
+        self.statuses = {}
+
+    def get_status(self, key):
+        if key not in self.statuses:
+            self.statuses[key] = {
+                "messages": [],
+                "debug_info": [],
+                "status": Status.EMPTY,
+                "actual_request": 0
+            }
+        return self.statuses[key]
+
+    def get_holder_for_app(self, app_name, ip_address):
+        key = '%s_%s' % (app_name, ip_address)
+        return StatusHolderCls(
+            lambda message: self.add_message(key, message),
+            lambda debug_info: self.add_debug_info(key, debug_info),
+            lambda status: self.set_status(key, status),
+            lambda: self.get_status(key),
+            lambda: self.clear_status(key),
+            lambda: self.set_number_request(key),
+            lambda: self.get_number_request(key)
+        )
+
+    def clear_status(self, app_name):
+        if app_name in self.statuses:
+            del self.statuses[app_name]
+
+    def add_message(self, app_name, message):
+        status = self.get_status(app_name)
+        status["messages"].append(message)
+
+    def add_debug_info(self, app_name, message):
+        status = self.get_status(app_name)
+        status["debug_info"].extend(message)
+
+    def set_status(self, app_name, status_string):
+        status = self.get_status(app_name)
+        status["status"] = status_string
+
+    def get_number_request(self, app_name):
+        status = self.get_status(app_name)
+        return status["actual_request"]
+
+    def set_number_request(self, app_name):
+        status = self.get_status(app_name)
+        request_number = str(uuid.uuid4())
+        status["actual_request"] = request_number
+        return request_number
+
+
+def _get_all_apps(modules):
+    apps = []
+    for module in modules:
+        apps.extend(module.get_applications())
+    return apps
+
+
+def find_app(app_name, all_apps):
+    for app in all_apps:
+        if app['name'] == app_name:
+            return app
+    raise AssertionError("Unknown application '{}'".format(app_name))
+
+
+def get_index(root_path):
+    with open(os.path.join(root_path, 'templates', 'index.html')) as fp:
+        response = f.make_response(fp.read())
+        # response = f.make_response(f.render_template("index.html", apps=apps, base_url='https://jekafstbot.herokuapp.com' if prod else 'http://localhost:443'))
+        if not f.request.cookies.get('builder_client_id'):
+            chars = string.ascii_uppercase + string.digits
+            client_id = ''.join(random.choice(chars) for _ in range(10))
+            response.set_cookie('builder_client_id', client_id)
+        return response
 
 
 def run_app(bot, queue):
     app = f.Flask(__name__)
 
-    #Process webhook calls
+    fill_engine = GameDetailsBuilder.FillEngine()
+    clean_engine = GameDetailsBuilder.CleanEngine()
+    transfer_engine = GameDetailsBuilder.TransferEngine()
+    modules = [fill_engine, clean_engine, transfer_engine]
+    all_apps = _get_all_apps(modules)
+    stats = StatusHolder()
+    current_app = {}
+
+    # Process webhook calls
     @app.route('/webhook', methods=['GET', 'POST'])
     def webhook():
         if f.request.headers.get('content-type') == 'application/json':
@@ -47,7 +147,6 @@ def run_app(bot, queue):
             bot.send_message(message.chat.id, 'Запрос на разрешение использования бота не отправлен администратору\n'
                                               'Напишите в личку @JekaFST',
                              reply_to_message_id=message.message_id)
-
 
     @bot.message_handler(commands=['ask_to_add_gameid'])
     def ask_to_add_gameid(message):
@@ -553,9 +652,56 @@ def run_app(bot, queue):
                 send_coords_task = Task(message.chat.id, 'send_coords', coords=coords, message_id=message.message_id)
                 queue.put((99, send_coords_task))
 
-    @app.route("/", methods=['GET', 'POST'])
-    def hello():
-        return 'Hello world!'
+    @app.route("/")
+    def index():
+        return get_index(app.root_path)
+
+    @app.route("/apps", methods=['GET'])
+    def apps():
+        app_names = [{"name": app["name"]} for app in all_apps]
+        return f.jsonify(app_names)
+
+    @app.route('/builder/<app_name>', methods=['GET'])
+    def app_get(app_name):
+        app = find_app(app_name, all_apps)
+        client_id = f.request.cookies.get('builder_client_id')
+        current_app[client_id] = app_name
+        if 'get_fn' in app:
+            get_fn = app['get_fn']
+            return f.jsonify(get_fn())
+        return f.jsonify(stats.get_status('%s_%s' % (app_name, client_id)))
+
+    @app.route("/builder/<app_name>", methods=['POST'])
+    def app_post(app_name):
+        app = find_app(app_name, all_apps)
+        client_id = f.request.cookies.get('builder_client_id')
+        current_app[client_id] = app_name
+        stat = stats.get_holder_for_app(app_name, client_id)
+        stat.clear()
+        request_number = stat.set_request()
+        app_fn = app['fn']
+
+        try:
+            with capture_stdout() as debug_info:
+                stat.status(Status.IN_PROGRESS)
+                for message in app_fn(f.request):
+                    if stat.get_request() == request_number:
+                        if message == 'CLEAR_MESSAGES':
+                            del stat.get()['messages'][:]
+                            continue
+                        stat.message(message)
+            if stat.get_request() == request_number:
+                stat.status(Status.DONE)
+        except Exception as e:
+            logging.exception("Exception в game_details_builder - проверьте логи")
+            stat.status(Status.FAILED)
+            stat.message("Fail message: %s" % str(e))
+        if stat.get_request() == request_number:
+            stat.debug_info(debug_info)
+        if current_app[client_id] == app_name:
+            return f.jsonify(stat.get())
+        else:
+            return f.jsonify(stats.get_holder_for_app(current_app[client_id], client_id).get())
 
     @app.route("/session/<session_id>", methods=['GET', 'POST'])
     def admin(session_id):
@@ -610,36 +756,10 @@ def run_app(bot, queue):
     def googledocid():
         return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'googledocid.png', mimetype='image/png')
 
-    @app.route('/builder/<google_sheets_id>')
-    def run_game_details_builder(google_sheets_id):
-        type_id = int(f.request.args.get('type_id'))
-        name = 'builder_%s' % google_sheets_id[-4:]
-        threads = threading.enumerate()
-        for thread in threads:
-            if thread.getName() == name:
-                return 'Previous is in progress'
-        try:
-            type = BUILDER_TYPE_MAPPING[type_id]['type']
-            launch_id = str(DB.insert_building_result_row(type))
-            threading.Thread(name=name, target=game_details_builder, args=(google_sheets_id, launch_id, type_id)).start()
-        except Exception:
-            logging.exception('Builder is not started')
-            launch_id = 'Not started'
-        return launch_id
-
-    @app.route('/builder/result/<launch_id>')
-    def get_launch_result(launch_id):
-        launch_result = DB.get_building_result(launch_id)
-        return launch_result
-
     @app.route('/builder/clean_game_transfer_ids/<game_id>')
     def clean_transfer_ids_for_game(game_id):
         result = 'IDs cleanup is done successfully for game %s' % game_id if DB.clean_game_transfer_ids(game_id) \
             else 'Something went wrong. Write @JekaFST in telegram'
         return result
-
-    @app.route('/builder')
-    def run_game_details_builder_form():
-        return f.render_template("TemplateForGameDetailsBuilder.html")
 
     return app

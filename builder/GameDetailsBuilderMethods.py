@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-from apiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
 import re
-from time import sleep
 import logging
 import requests
+from time import sleep
+from httplib2 import Http
 from bs4 import BeautifulSoup
+from apiclient.discovery import build
 from Const import obj_type_url_mapping
+from oauth2client import file, client, tools
 from SourceGameDataParcers import get_bonus_data_from_engine, get_task_data_from_engine, get_help_data_from_engine, \
     get_penalty_help_data_from_engine, get_lvl_name_comment_data_from_engine, get_lvl_timeout_data_from_engine, \
     get_sector_data_from_engine, check_empty_first_sector, get_lvl_ans_block_data_from_engine, \
@@ -45,27 +45,9 @@ class GoogleDocConnection(object):
 
     def get_move_setup(self, RANGE_NAME='Move_setup', move_all=False):
         transfer_settings = dict()
-        source_game_data = dict()
-        target_game_data = dict()
         result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
         values = result.get('values', [])
         for row in values:
-            if 'source_login' in row:
-                source_game_data['login'] = row[1]
-            if 'source_password' in row:
-                source_game_data['password'] = row[1]
-            if 'source_domain' in row:
-                source_game_data['domain'] = row[1]
-            if 'source_gameid' in row:
-                source_game_data['gameid'] = row[1]
-            if 'target_login' in row:
-                target_game_data['login'] = row[1]
-            if 'target_password' in row:
-                target_game_data['password'] = row[1]
-            if 'target_domain' in row:
-                target_game_data['domain'] = row[1]
-            if 'target_gameid' in row:
-                target_game_data['gameid'] = row[1]
             if 'move_all_levels' in row:
                 move_all = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
             if 'level' in row:
@@ -81,7 +63,7 @@ class GoogleDocConnection(object):
             if 'pen_helps' in row:
                 transfer_settings['pen_helps'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
 
-        return source_game_data, target_game_data, move_all, transfer_settings
+        return move_all, transfer_settings
 
     def get_levels_details(self):
         RANGE_NAME = 'LevelDetails'

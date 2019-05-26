@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+import sys
 import json
 import logging
 import requests
+import contextlib
+from cStringIO import StringIO
 from DBMethods import DBSession, DB
 
 
@@ -99,3 +102,18 @@ def elements_cleanup(urls, elements):
                 DB.cleanup_for_ended_game(line['sessionid'], line['gameid'])
         except Exception:
             logging.exception("Не удалось выполнить %s clenup" % elements)
+
+
+@contextlib.contextmanager
+def capture_stdout():
+    data = []
+    saved_stdout = sys.stdout
+    print "STDOUT CAPTURE ENABLED"
+    try:
+        sys.stdout = _stringio = StringIO()
+        yield data
+    finally:
+        data.extend(_stringio.getvalue().splitlines())
+        del _stringio
+        sys.stdout = saved_stdout
+        print "STDOUT CAPTURE DISABLED"

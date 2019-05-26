@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from DBMethods import DBSession, DB
 from MainClasses import Task
-
-logging.basicConfig(level=logging.INFO)
+from DBMethods import DBSession
 
 
 class ExceptionHandler(object):
@@ -132,16 +130,4 @@ class ExceptionHandler(object):
                 start_updater_task = Task(chat_id, 'start_updater', queue=queue, session_id=chat_id)
                 queue.put((2, start_updater_task))
                 # bot.send_message(chat_id, 'Критическая ошибка при слежении. Перезапустите /start_updater')
-        return wrapped
-
-    @staticmethod
-    def game_details_builder_exception(function):
-        def wrapped(google_sheets_id, launch_id, fill):
-            try:
-                result = function(google_sheets_id, launch_id, fill)
-            except Exception:
-                logging.exception("Exception в game_details_builder - проверьте логи")
-                result = 'Неудача. Проверьте движок и сообщите @JekaFST в телеграмме.'
-            DB.update_building_result(result, launch_id)
-            return result
         return wrapped

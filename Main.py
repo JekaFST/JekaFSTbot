@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 import os
-import threading
-from Queue import PriorityQueue
 import telebot
-from Const import prod, num_worker_threads
-from BotService import run_app
+import logging
+import threading
 from DBMethods import DB
+from BotService import run_app
+from Queue import PriorityQueue
 from MainMethods import reload_backup
 from TaskMathodMap import TaskMethodMap
+from Const import prod, num_worker_threads
+
+logging.basicConfig(level=logging.INFO)
 
 
 def worker():
@@ -26,7 +29,7 @@ bot.set_webhook(url='https://jekafstbot.herokuapp.com/webhook') if prod \
     else bot.set_webhook(url='https://da2400c4.ngrok.io/webhook')
 
 try:
-    threading.Thread(name='th_flask', target=run_app(bot, queue).run, args=('0.0.0.0', port)).start()
+    threading.Thread(name='th_flask', target=run_app(bot, queue).run, kwargs=({'host': '0.0.0.0', 'port': port, 'threaded': True})).start()
 except Exception:
     bot.send_message(45839899, 'Exception в main - не удалось запустить Flask')
 
