@@ -28,21 +28,6 @@ class GoogleDocConnection(object):
             creds = tools.run_flow(flow, store)
         return creds
 
-    def get_setup(self, login='', password='', domain='', gameid='', RANGE_NAME='Setup'):
-        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
-        values = result.get('values', [])
-        for row in values:
-            if 'login' in row:
-                login = row[1]
-            if 'password' in row:
-                password = row[1]
-            if 'domain' in row:
-                domain = row[1]
-            if 'gameid' in row:
-                gameid = row[1]
-
-        return login, password, domain, gameid
-
     def get_move_setup(self, RANGE_NAME='Move_setup', move_all=False):
         transfer_settings = dict()
         result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
