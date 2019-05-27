@@ -11,9 +11,9 @@ from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_he
 
 
 class Buttons:
-    BUTTON_FILL_ENGINE = "Заполнить движок".decode('utf-8')
-    BUTTON_CLEAN_ENGINE = "Очистить движок".decode('utf-8')
-    BUTTON_TRANSFER_ENGINE = "Перенести движок".decode('utf-8')
+    BUTTON_FILL_ENGINE = "Заполнить движок"
+    BUTTON_CLEAN_ENGINE = "Очистить движок"
+    BUTTON_TRANSFER_ENGINE = "Перенести движок"
 
 
 class FillEngine(object):
@@ -33,7 +33,7 @@ class FillEngine(object):
         return login, password, domain, game_id, gdoc_id
 
     def fill_engine(self, request):
-        yield 'Заполнение движка запущено'.decode('utf-8')
+        yield 'Заполнение движка запущено'
         login, password, domain, game_id, gdoc_id = self.__get_fill_engine_data(request.json)
         if 'demo' in domain or game_id in DB.get_gameids_for_builder_list():
             google_doc_connection = GoogleDocConnection(gdoc_id)
@@ -42,7 +42,7 @@ class FillEngine(object):
             levels_details = google_doc_connection.get_levels_details()
             if levels_details:
                 logging.log(logging.INFO, "Updating of level details is started")
-                yield 'Обновление данных уровней запущено'.decode('utf-8')
+                yield 'Обновление данных уровней запущено'
                 for i, level_details in enumerate(levels_details):
                     if i % 15 == 0:
                         sleep(5)
@@ -64,13 +64,13 @@ class FillEngine(object):
                         logging.log(logging.INFO, "Updating of level %s details is finished" % level_details[14])
                     except Exception:
                         logging.exception("Exception on level %s details updating" % level_details[14])
-                yield 'Обновление данных уровней выполнено'.decode('utf-8')
+                yield 'Обновление данных уровней выполнено'
                 logging.log(logging.INFO, "Updating of level details is finished")
 
             helps = google_doc_connection.get_helps()
             if helps:
                 logging.log(logging.INFO, "Filling of helps is started")
-                yield 'Заполнение подсказок запущено'.decode('utf-8')
+                yield 'Заполнение подсказок запущено'
                 for i, help in enumerate(helps):
                     if i % 30 == 0:
                         sleep(5)
@@ -81,13 +81,13 @@ class FillEngine(object):
                         logging.log(logging.INFO, "Filling of help %s is finished" % str(i + 1))
                     except Exception:
                         logging.exception("Exception on help %s filling" % str(i + 1))
-                yield 'Заполнение подсказок выполнено'.decode('utf-8')
+                yield 'Заполнение подсказок выполнено'
                 logging.log(logging.INFO, "Filling of helps is finished")
 
             bonuses = google_doc_connection.get_bonuses()
             if bonuses:
                 logging.log(logging.INFO, "Filling of bonuses is started")
-                yield 'Заполнение бонусов запущено'.decode('utf-8')
+                yield 'Заполнение бонусов запущено'
                 for i, bonus in enumerate(bonuses):
                     if i % 30 == 0:
                         sleep(5)
@@ -98,13 +98,13 @@ class FillEngine(object):
                         logging.log(logging.INFO, "Filling of bonus %s is finished" % str(i + 1))
                     except Exception:
                         logging.exception("Exception on bonus %s filling" % str(i + 1))
-                yield 'Заполнение бонусов выполнено'.decode('utf-8')
+                yield 'Заполнение бонусов выполнено'
                 logging.log(logging.INFO, "Filling of bonuses is finished")
 
             level_sectors_dict = google_doc_connection.get_sectors()
             if level_sectors_dict:
                 logging.log(logging.INFO, "Filling of sectors is started")
-                yield 'Заполнение секторов запущено'.decode('utf-8')
+                yield 'Заполнение секторов запущено'
                 for level, sectors in level_sectors_dict.items():
                     try:
                         logging.log(logging.INFO, "Filling of sectors for level %s is started" % level)
@@ -119,13 +119,13 @@ class FillEngine(object):
                         clean_empty_first_sector(en_connection, level)
                     except Exception:
                         logging.exception("Exception on sectors filling for level %s" % level)
-                yield 'Заполнение секторов выполнено'.decode('utf-8')
+                yield 'Заполнение секторов выполнено'
                 logging.log(logging.INFO, "Filling of sectors is finished")
 
             penalty_helps = google_doc_connection.get_penalty_helps()
             if penalty_helps:
                 logging.log(logging.INFO, "Filling of penalty helps is started")
-                yield 'Заполнение штрафных подсказок запущено'.decode('utf-8')
+                yield 'Заполнение штрафных подсказок запущено'
                 for i, penalty_help in enumerate(penalty_helps):
                     if i % 30 == 0:
                         sleep(5)
@@ -136,13 +136,13 @@ class FillEngine(object):
                         logging.log(logging.INFO, "Filling of penalty help %s is finished" % str(i + 1))
                     except Exception:
                         logging.exception("Exception on penalty help %s filling" % str(i + 1))
-                yield 'Заполнение штрафных подсказок выполнено'.decode('utf-8')
+                yield 'Заполнение штрафных подсказок выполнено'
                 logging.log(logging.INFO, "Filling of penalty helps is finished")
 
             tasks = google_doc_connection.get_tasks()
             if tasks:
                 logging.log(logging.INFO, "Filling of tasks is started")
-                yield 'Заполнение заданий запущено'.decode('utf-8')
+                yield 'Заполнение заданий запущено'
                 for i, task in enumerate(tasks):
                     if i % 30 == 0:
                         sleep(5)
@@ -153,13 +153,13 @@ class FillEngine(object):
                         logging.log(logging.INFO, "Filling of task %s is finished" % str(i + 1))
                     except Exception:
                         logging.exception("Exception on task %s filling" % str(i + 1))
-                yield 'Заполнение заданий выполнено'.decode('utf-8')
+                yield 'Заполнение заданий выполнено'
                 logging.log(logging.INFO, "Filling of tasks is finished")
 
-            yield 'Проверьте правильность переноса данных в движок.'.decode('utf-8')
+            yield 'Проверьте правильность переноса данных в движок.'
             logging.log(logging.INFO, "Filling of game is finished successfully")
         else:
-            yield 'Заполнение данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'.decode('utf-8')
+            yield 'Заполнение данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'
 
 
 class CleanEngine(object):
@@ -257,13 +257,13 @@ class CleanEngine(object):
                                 answers_data = get_answers_data(response.text, answers[0])
                                 del_answer_data, del_answer_url, params = make_del_answer_data_and_url(en_connection.domain, en_connection.gameid, answers_data, level_row[4], answers[0])
                                 en_connection.create_en_object(del_answer_url, del_answer_data, 'sector', params)
-                        yield 'Cleanup of level %s finished' % level_row[4]
                         logging.log(logging.INFO, "Cleanup of sectors for level %s finished" % level_row[4])
 
+                yield 'Очистка данных из уровня %s выполнена' % level_row[4]
                 logging.log(logging.INFO, "Cleanup of level %s finished" % level_row[4])
-            yield 'Проверьте правильность удаления данных из движка.'.decode('utf-8')
+            yield 'Проверьте правильность удаления данных из движка.'
         else:
-            yield 'Очистка данных для данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'.decode('utf-8')
+            yield 'Очистка данных для данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'
 
 
 class TransferEngine(object):
@@ -289,7 +289,7 @@ class TransferEngine(object):
         return s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, gdoc_id
 
     def transfer_game(self, request):
-        yield 'Перенос движка запущен'.decode('utf-8')
+        yield 'Перенос движка запущен'
         s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, gdoc_id = self.__get_transfer_engine_data(request.json)
         if 'demo' in tg_domain or tg_game_id in DB.get_gameids_for_builder_list():
             google_doc_connection = GoogleDocConnection(gdoc_id)
@@ -304,22 +304,22 @@ class TransferEngine(object):
                     transfer_settings['source_ln'] = source_ln
                     transfer_settings['target_ln'] = source_ln
                     logging.log(logging.INFO, "Moving of source level %s to target level %s is started" % (source_ln, source_ln))
-                    yield 'Moving of source level %s to target level %s is started' % (source_ln, source_ln)
+                    yield 'Перенос данных из %s уровня в %s уровень запущен' % (source_ln, source_ln)
                     self.__transfer_level(source_en_conn, target_en_conn, **transfer_settings)
-                    yield 'Moving of source level %s to target level %s is finished successfully' % (source_ln, source_ln)
+                    yield 'Перенос данных из %s уровня в %s уровень выполнен' % (source_ln, source_ln)
                     logging.log(logging.INFO, "Moving of source level %s to target level %s is finished successfully" % (source_ln, source_ln))
             else:
                 move_levels_mappings = google_doc_connection.get_move_levels_mapping()
                 for mlm in move_levels_mappings:
                     logging.log(logging.INFO, "Moving of source level %s to target level %s is started" % (mlm['source_ln'], mlm['target_ln']))
-                    yield 'Moving of source level %s to target level %s is started' % (mlm['source_ln'], mlm['target_ln'])
+                    yield 'Перенос данных из %s уровня в %s уровень запущен' % (mlm['source_ln'], mlm['target_ln'])
                     self.__transfer_level(source_en_conn, target_en_conn, **mlm)
-                    yield 'Moving of source level %s to target level %s is finished successfully' % (mlm['source_ln'], mlm['target_ln'])
+                    yield 'Перенос данных из %s уровня в %s уровень выполнен' % (mlm['source_ln'], mlm['target_ln'])
                     logging.log(logging.INFO, "Moving of source level %s to target level %s is finished successfully" % (mlm['source_ln'], mlm['target_ln']))
 
-            yield 'Проверьте правильность переноса данных.'.decode('utf-8')
+            yield 'Проверьте правильность переноса данных.'
         else:
-            yield 'Перенос в целевую игру не разрешен. Напишите @JekaFST в телеграмме для получения разрешения'.decode('utf-8')
+            yield 'Перенос в целевую игру не разрешен. Напишите @JekaFST в телеграмме для получения разрешения'
 
     def __transfer_level(self, source_en_conn, target_en_conn, source_ln=None, target_ln=None, level=None, task=None, helps=None, bonuses=None, pen_helps=None, sectors=None):
         level_page = source_en_conn.get_level_page(source_ln)
