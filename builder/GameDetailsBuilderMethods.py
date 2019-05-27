@@ -30,7 +30,10 @@ class GoogleDocConnection(object):
 
     def get_move_setup(self, RANGE_NAME='Move_setup', move_all=False):
         transfer_settings = dict()
-        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        try:
+            result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        except:
+            raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])
         for row in values:
             if 'move_all_levels' in row:
@@ -50,28 +53,37 @@ class GoogleDocConnection(object):
 
         return move_all, transfer_settings
 
-    def get_levels_details(self):
-        RANGE_NAME = 'LevelDetails'
-        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+    def get_levels_details(self, RANGE_NAME='LevelDetails'):
+        try:
+            result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        except:
+            raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         return values
 
-    def get_helps(self):
-        RANGE_NAME = 'Helps'
-        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+    def get_helps(self, RANGE_NAME='Helps'):
+        try:
+            result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        except:
+            raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         return values
 
-    def get_bonuses(self):
-        RANGE_NAME = 'Bonuses'
-        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+    def get_bonuses(self, RANGE_NAME='Bonuses'):
+        try:
+            result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        except:
+            raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         return values
 
-    def get_sectors(self):
+
+    def get_sectors(self, RANGE_NAME='Sectors'):
         level_sectors_dict = dict()
-        RANGE_NAME = 'Sectors'
-        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        try:
+            result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        except:
+            raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         for row in values:
             if row[2] not in level_sectors_dict.keys():
@@ -79,27 +91,35 @@ class GoogleDocConnection(object):
             level_sectors_dict[row[2]].append(row)
         return level_sectors_dict
 
-    def get_penalty_helps(self):
-        RANGE_NAME = 'PenaltyHelps'
-        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+    def get_penalty_helps(self, RANGE_NAME='PenaltyHelps'):
+        try:
+            result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        except:
+            raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         return values
 
-    def get_tasks(self):
-        RANGE_NAME = 'Tasks'
-        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+    def get_tasks(self, RANGE_NAME='Tasks'):
+        try:
+            result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        except:
+            raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         return values
 
-    def get_cleanup_level_rows(self):
-        RANGE_NAME = 'Cleanup'
-        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+    def get_cleanup_level_rows(self, RANGE_NAME='Cleanup'):
+        try:
+            result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        except:
+            raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         return values
 
-    def get_move_levels_mapping(self):
-        RANGE_NAME = 'Move_exact_levels'
-        result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+    def get_move_levels_mapping(self, RANGE_NAME='Move_exact_levels'):
+        try:
+            result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
+        except:
+            raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         move_levels_mappings = [{'source_ln': row[6],
                                  'target_ln': row[7],
@@ -129,7 +149,7 @@ class ENConnection(object):
             cookie = response.request.headers['Cookie']
         except Exception:
             logging.exception("Can't get cookies by login URL")
-            cookie = ''
+            raise Exception("Can't login to EN")
         return cookie
 
     def get_level_ids(self):
@@ -139,6 +159,8 @@ class ENConnection(object):
         response = requests.get(url, params=params, headers={'Cookie': self.cookie})
         soup = BeautifulSoup(response.text, 'html.parser')
         td = soup.find(id='ddlCopyFrom')
+        if not td:
+            raise IndexError('Levels for game %s are not found' % self.gameid)
         for option_tag in td.contents:
             level_ids_dict[option_tag.text] = option_tag.attrs['value']
         return level_ids_dict
