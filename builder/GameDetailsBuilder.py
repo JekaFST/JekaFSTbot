@@ -190,6 +190,8 @@ class CleanEngine(object):
             for i, level_row in enumerate(google_doc_connection.get_cleanup_level_rows()):
                 logging.log(logging.INFO, "Cleanup of level %s started" % level_row[4])
                 yield 'Cleanup of level %s started' % level_row[4]
+                message = 'Очистка данных из уровня %s запущена' % level_row[4]
+                yield message.decode('utf-8')
 
                 level_page = en_connection.get_level_page(level_row[4])
                 sectors_to_del, helps_to_del, bonuses_to_del, pen_helps_to_del, _ = parse_level_page(level_row, level_page)
