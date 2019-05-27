@@ -11,9 +11,9 @@ from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_he
 
 
 class Buttons:
-    BUTTON_FILL_ENGINE = "Заполнить движок"
-    BUTTON_CLEAN_ENGINE = "Очистить движок"
-    BUTTON_TRANSFER_ENGINE = "Перенести движок"
+    BUTTON_FILL_ENGINE = "Заполнить движок".decode('utf-8')
+    BUTTON_CLEAN_ENGINE = "Очистить движок".decode('utf-8')
+    BUTTON_TRANSFER_ENGINE = "Перенести движок".decode('utf-8')
 
 
 class FillEngine(object):
