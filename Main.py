@@ -13,7 +13,7 @@ from Const import prod, num_worker_threads
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def worker():
