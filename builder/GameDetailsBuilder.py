@@ -236,7 +236,7 @@ class CleanEngine(object):
                             if i % 30 == 0:
                                 sleep(5)
                             params = {
-                                'gid': en_connection.game_id,
+                                'gid': en_connection.gameid,
                                 'level': level_row[4],
                                 'delsector': sector_to_del,
                                 'swanswers': 1
@@ -247,7 +247,7 @@ class CleanEngine(object):
                         answers = re.findall('divAnswersView_(\d+)', level_page)
                         if answers:
                             read_params = {
-                                'gid': en_connection.game_id,
+                                'gid': en_connection.gameid,
                                 'level': level_row[4],
                                 'editanswers': answers[0],
                                 'swanswers': '1'
