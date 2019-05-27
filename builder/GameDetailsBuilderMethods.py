@@ -359,7 +359,8 @@ def task_data_from_gdoc(row):
         'forMemberID': 0,
         'inputTask': row[0] if row[0] else ''
     }
-    if 'false' not in row[1].lower():
+    # if 'false' not in row[1].lower():
+    if row[1] and row[1].lower() not in ['y', 'yes', 'true']:
         task_data['chkReplaceNlToBr'] = 'on'
     return task_data
 
