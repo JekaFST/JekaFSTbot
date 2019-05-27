@@ -179,7 +179,7 @@ class CleanEngine(object):
         return login, password, domain, game_id, gdoc_id
 
     def clean_engine(self, request):
-        yield 'Очистка движка запущена'.decode('utf-8')
+        yield 'Очистка движка запущена'
         message = 'Очистка уровня %s запущена' % str(1)
         yield message.decode('utf-8')
         login, password, domain, game_id, gdoc_id = self.__get_clean_engine_data(request.json)
