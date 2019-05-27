@@ -28,13 +28,13 @@ bot.remove_webhook()
 bot.set_webhook(url='https://jekafstbot.herokuapp.com/webhook') if prod \
     else bot.set_webhook(url='https://da2400c4.ngrok.io/webhook')
 
-# try:
-#     threading.Thread(name='th_flask', target=run_app(bot, queue).run, kwargs=({'host': '0.0.0.0', 'port': port, 'threaded': True})).start()
-# except Exception:
-#     bot.send_message(45839899, 'Exception в main - не удалось запустить Flask')
+try:
+    threading.Thread(name='th_flask', target=run_app(bot, queue).run, kwargs=({'host': '0.0.0.0', 'port': port, 'threaded': True})).start()
+except Exception:
+    bot.send_message(45839899, 'Exception в main - не удалось запустить Flask')
 
 reload_backup(bot, queue)
 for i in range(num_worker_threads):
     threading.Thread(target=worker).start()
 
-run_app(bot, queue).run(host='0.0.0.0', port=port)
+# run_app(bot, queue).run(host='0.0.0.0', port=port)
