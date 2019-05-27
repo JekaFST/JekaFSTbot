@@ -11,9 +11,9 @@ from MainMethods import reload_backup
 from TaskMathodMap import TaskMethodMap
 from Const import prod, num_worker_threads
 
-# reload(sys)
-# sys.setdefaultencoding('utf-8')
-logging.basicConfig(level=logging.INFO)
+reload(sys)
+sys.setdefaultencoding('utf-8')
+logging.basicConfig(level=logging.DEBUG)
 
 
 def worker():
