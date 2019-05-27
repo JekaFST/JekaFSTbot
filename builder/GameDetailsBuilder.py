@@ -187,7 +187,7 @@ class CleanEngine(object):
 
             for i, level_row in enumerate(google_doc_connection.get_cleanup_level_rows()):
                 logging.log(logging.INFO, "Cleanup of level %s started" % level_row[4])
-                yield str('Очистка данных из уровня %s запущена' % level_row[4]).decode('utf-8')
+                yield str('Очистка данных из уровня %s запущена' % level_row[4]).encode('utf-8')
 
                 level_page = en_connection.get_level_page(level_row[4])
                 sectors_to_del, helps_to_del, bonuses_to_del, pen_helps_to_del, _ = parse_level_page(level_row, level_page)
@@ -257,7 +257,7 @@ class CleanEngine(object):
                                 answers_data = get_answers_data(response.text, answers[0])
                                 del_answer_data, del_answer_url, params = make_del_answer_data_and_url(en_connection.domain, en_connection.gameid, answers_data, level_row[4], answers[0])
                                 en_connection.create_en_object(del_answer_url, del_answer_data, 'sector', params)
-                        yield str('Очистка данных из уровня %s выполнена' % level_row[4]).decode('utf-8')
+                        yield str('Очистка данных из уровня %s выполнена' % level_row[4]).encode('utf-8')
                         logging.log(logging.INFO, "Cleanup of sectors for level %s finished" % level_row[4])
 
                 logging.log(logging.INFO, "Cleanup of level %s finished" % level_row[4])
