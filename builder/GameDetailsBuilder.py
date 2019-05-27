@@ -180,7 +180,8 @@ class CleanEngine(object):
 
     def clean_engine(self, request):
         yield 'Очистка движка запущена'.decode('utf-8')
-        yield 'Очистка уровня %s запущена' % str(1)
+        message = 'Очистка уровня %s запущена' % str(1)
+        yield message.decode('utf-8')
         login, password, domain, game_id, gdoc_id = self.__get_clean_engine_data(request.json)
         if 'demo' in domain or game_id in DB.get_gameids_for_builder_list():
             google_doc_connection = GoogleDocConnection(gdoc_id)
