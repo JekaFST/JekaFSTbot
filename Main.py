@@ -37,4 +37,4 @@ reload_backup(bot, queue)
 for i in range(num_worker_threads):
     threading.Thread(target=worker).start()
 
-run_app(bot, queue).run(host='0.0.0.0', port=port, threaded=True)
+run_app(bot, queue).run(host='0.0.0.0', port=port)
