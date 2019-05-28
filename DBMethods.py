@@ -736,26 +736,6 @@ class DB(object):
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
-    def insert_building_result_row(text):
-        sql = "INSERT INTO buildingresults (result) VALUES ('%s движка еще выполняется') RETURNING id" % text
-        with connection_pool.get_conn() as db_connection:
-            _, rows = db_connection.execute_returning_insert_cur(sql)
-            return rows[0][0]
-
-    @staticmethod
-    def update_building_result(result, launch_id):
-        sql = "UPDATE buildingresults SET result = '%s' WHERE id = %s" % (result, launch_id)
-        with connection_pool.get_conn() as db_connection:
-            db_connection.execute_insert_cur(sql)
-
-    @staticmethod
-    def get_building_result(launch_id):
-        sql = "SELECT result FROM buildingresults WHERE id = %s" % launch_id
-        with connection_pool.get_conn() as db_connection:
-            rows = db_connection.execute_select_cur(sql)
-            return rows[0][0]
-
-    @staticmethod
     def insert_game_transfer_row(gameid, header, data):
         sql = """INSERT INTO gametransferids (gameid, %s)
                 VALUES (%s, '%s')""" % (header, gameid, data)
