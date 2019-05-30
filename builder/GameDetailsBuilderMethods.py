@@ -197,7 +197,6 @@ class ENConnection(object):
                     sleep(5)
                     self.cookie = self.update_cookies()
                     continue
-                response_checker(data, type, response_2.text)
                 return True
         except Exception:
             logging.exception("Failed to create %s. Data: %s" % (type, str(data)))
@@ -464,54 +463,6 @@ def lvl_sectors_required_data_from_gdoc(row):
     return lvl_sectors_required_data
 
 
-def response_checker(data, type, text):
-    try:
-        type_checker_map[type](data, text)
-    except Exception:
-        logging.exception('Error in response_checker')
-
-
-def help_checker(data, text):
-    soup = BeautifulSoup(text, 'html.parser')
-    help_text = soup.find(id='PromptText')
-    if help_text and data['NewPrompt'] != help_text.text:
-        logging.warning("Help text mismatch. Data: %s" % str(data))
-
-
-def bonus_checker(data, text):
-    soup = BeautifulSoup(text, 'html.parser')
-    bonus_name = soup.find(id='panelBonusName')
-    if bonus_name and data['txtBonusName'] and data['txtBonusName'] != bonus_name.text:
-        logging.warning("There is a mismatch in a bonus name. Data: %s" % str(data))
-
-
-def sector_checker(data, text):
-    return
-
-
-def lvl_name_comment_checker(data, text):
-    return
-
-
-def lvl_timeout_checker(data, text):
-    return
-
-
-def lvl_checker(data, text):
-    return
-
-
-def penalty_help_checker(data, text):
-    soup = BeautifulSoup(text, 'html.parser')
-    pen_help_text = soup.find(id='divPromptComment')
-    if pen_help_text and data['txtPenaltyComment'] != pen_help_text.text:
-        logging.warning("Penalty help text mismatch. Data: %s" % str(data))
-
-
-def task_checker(data, text):
-    return
-
-
 def parse_level_page(row, level_page, sectors=list(), helps=list(), bonuses=list(), pen_helps=list(), transfer=False):
     if row[0].lower() in ['y', 'yes', 'true']:
         sectors = re.findall(r'divSectorManage_(\d+)\'', level_page)
@@ -539,18 +490,6 @@ def clean_empty_first_sector(en_connection, level):
             'swanswers': 1
         }
         en_connection.delete_en_object(params, 'sector')
-
-
-type_checker_map = {
-    'help': help_checker,
-    'bonus': bonus_checker,
-    'sector': sector_checker,
-    'PenaltyHelp': penalty_help_checker,
-    'task': task_checker,
-    'level_name': lvl_name_comment_checker,
-    'level_timeout': lvl_timeout_checker,
-    'level': lvl_checker,
-}
 
 
 def get_exact_ids(exact_ids, all_ids):
