@@ -33,8 +33,8 @@ class FillEngine(object):
         return login, password, domain, game_id, gdoc_id
 
     def fill_engine(self, request):
-        yield 'Заполнение движка запущено'
         login, password, domain, game_id, gdoc_id = self.__get_fill_engine_data(request.json)
+        yield 'Заполнение движка из дока %s запущено' % gdoc_id
         if 'demo' in domain or game_id in DB.get_gameids_for_builder_list():
             google_doc_connection = GoogleDocConnection(gdoc_id)
             en_connection = ENConnection(domain, login, password, game_id)
@@ -179,8 +179,8 @@ class CleanEngine(object):
         return login, password, domain, game_id, gdoc_id
 
     def clean_engine(self, request):
-        yield 'Очистка движка запущена'
         login, password, domain, game_id, gdoc_id = self.__get_clean_engine_data(request.json)
+        yield 'Очистка движка из дока %s запущена' % gdoc_id
         if 'demo' in domain or game_id in DB.get_gameids_for_builder_list():
             google_doc_connection = GoogleDocConnection(gdoc_id)
             en_connection = ENConnection(domain, login, password, game_id)
@@ -289,8 +289,8 @@ class TransferEngine(object):
         return s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, gdoc_id
 
     def transfer_game(self, request):
-        yield 'Перенос движка запущен'
         s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, gdoc_id = self.__get_transfer_engine_data(request.json)
+        yield 'Перенос движка из дока %s запущен' % gdoc_id
         if 'demo' in tg_domain or tg_game_id in DB.get_gameids_for_builder_list():
             google_doc_connection = GoogleDocConnection(gdoc_id)
             move_all, transfer_settings = google_doc_connection.get_move_setup()
