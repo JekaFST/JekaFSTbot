@@ -11,11 +11,10 @@ import flask as f
 from Const import helptext
 from collections import namedtuple
 from DBMethods import DB, DBSession
-from builder import GameDetailsBuilder
 from MainClasses import Task, Validations
 from TextConvertingMethods import find_coords
+from builder import FillEngine, CleanEngine, TransferEngine
 from BotServiceMethods import add_level_bonuses, add_level_sectors, run_db_cleanup, capture_stdout
-
 
 StatusHolderCls = namedtuple("StatusHolder", ["message", "debug_info", "status", "get", "clear", "set_request", "get_request"])
 
@@ -108,9 +107,9 @@ def get_index(root_path):
 def run_app():
     app = f.Flask(__name__)
 
-    fill_engine = GameDetailsBuilder.FillEngine()
-    clean_engine = GameDetailsBuilder.CleanEngine()
-    transfer_engine = GameDetailsBuilder.TransferEngine()
+    fill_engine = FillEngine.FillEngine()
+    clean_engine = CleanEngine.CleanEngine()
+    transfer_engine = TransferEngine.TransferEngine()
     modules = [fill_engine, clean_engine, transfer_engine]
     all_apps = _get_all_apps(modules)
     stats = StatusHolder()
