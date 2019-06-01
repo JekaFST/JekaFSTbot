@@ -206,12 +206,24 @@
                         </tr>
                     </table>
                 </div>
-                <div><br>
-                    <label>Введите ID гуглдока для переноса:
-                        <input type="text" style="width: 400px" name="gdoc_id" class="form-control text-left" v-model="gdoc_id">
-                    </label>
+                <div>
+                    <table>
+                        <tr>
+                            <td>
+                                <label>Введите ID гуглдока для переноса:
+                                    <input type="text" style="width: 400px" name="gdoc_id" class="form-control text-left" v-model="gdoc_id">
+                                </label>
+                                <button @click.prevent="transfer_engine(s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, gdoc_id)">Запустить перенос игры</button>
+                            </td>
+                            <td>
+                                <label>Введите ID игры для чистки перенесенных объектов:
+                                    <input type="text" style="width: 400px" name="game_id_to_clean" class="form-control text-left" v-model="game_id_to_clean">
+                                </label>
+                                <button @click.prevent="clean_transfer(game_id_to_clean)">Запустить чистку перенсенных объектов</button>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
-                <button @click.prevent="transfer_engine(s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, gdoc_id)">Запустить перенос игры</button>
                 <logger-component v-bind:data="data"></logger-component>
             </form>
         </div>
@@ -388,6 +400,7 @@
                 tg_domain: '',
                 tg_game_id: '',
                 gdoc_id: '',
+                game_id_to_clean: '',
                 show_error: false,
                 error_text: '',
             }
@@ -446,6 +459,11 @@
                   gdoc_id: gdoc_id,
                 })
               }
+            },
+            clean_transfer: function (game_id_to_clean) {
+              this.app.post({
+                game_id_to_clean: game_id_to_clean,
+              })
             }
           },
         })

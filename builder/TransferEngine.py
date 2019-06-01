@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import json
 import logging
 from time import sleep
 from DBMethods import DB
@@ -37,37 +38,42 @@ class TransferEngine(object):
         return s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, gdoc_id
 
     def transfer_game(self, request):
-        s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, gdoc_id = self.__get_transfer_engine_data(request.json)
-        yield 'Перенос движка из дока %s запущен' % gdoc_id
-        if 'demo' in tg_domain or tg_game_id in DB.get_gameids_for_builder_list():
-            google_doc_connection = GoogleDocConnection(gdoc_id)
-            move_all, transfer_settings = google_doc_connection.get_move_setup()
-            source_en_conn = ENConnection(s_domain, s_login, s_password, s_game_id)
-            target_en_conn = ENConnection(tg_domain, tg_login, tg_password, tg_game_id)
-
-            if move_all:
-                sorted_level_ids = sorted(source_en_conn.level_ids_dict.items(), key=lambda item: item[1])
-                for sorted_level_id in sorted_level_ids:
-                    source_ln = sorted_level_id[0]
-                    transfer_settings['source_ln'] = source_ln
-                    transfer_settings['target_ln'] = source_ln
-                    logging.log(logging.INFO, "Moving of source level %s to target level %s is started" % (source_ln, source_ln))
-                    yield 'Перенос данных из %s уровня в %s уровень запущен' % (source_ln, source_ln)
-                    self.__transfer_level(source_en_conn, target_en_conn, **transfer_settings)
-                    yield 'Перенос данных из %s уровня в %s уровень выполнен' % (source_ln, source_ln)
-                    logging.log(logging.INFO, "Moving of source level %s to target level %s is finished successfully" % (source_ln, source_ln))
-            else:
-                move_levels_mappings = google_doc_connection.get_move_levels_mapping()
-                for mlm in move_levels_mappings:
-                    logging.log(logging.INFO, "Moving of source level %s to target level %s is started" % (mlm['source_ln'], mlm['target_ln']))
-                    yield 'Перенос данных из %s уровня в %s уровень запущен' % (mlm['source_ln'], mlm['target_ln'])
-                    self.__transfer_level(source_en_conn, target_en_conn, **mlm)
-                    yield 'Перенос данных из %s уровня в %s уровень выполнен' % (mlm['source_ln'], mlm['target_ln'])
-                    logging.log(logging.INFO, "Moving of source level %s to target level %s is finished successfully" % (mlm['source_ln'], mlm['target_ln']))
-
-            yield 'Проверьте правильность переноса данных.'
+        if 'game_id_to_clean' in json.loads(request.data).keys():
+            game_id = json.loads(request.data)['game_id_to_clean']
+            DB.clean_game_transfer_ids(game_id)
+            yield 'Чистка перенсенных айди игры %s выполнена' % game_id
         else:
-            yield 'Перенос в целевую игру не разрешен. Напишите @JekaFST в телеграмме для получения разрешения'
+            s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, gdoc_id = self.__get_transfer_engine_data(request.json)
+            yield 'Перенос движка из дока %s запущен' % gdoc_id
+            if 'demo' in tg_domain or tg_game_id in DB.get_gameids_for_builder_list():
+                google_doc_connection = GoogleDocConnection(gdoc_id)
+                move_all, transfer_settings = google_doc_connection.get_move_setup()
+                source_en_conn = ENConnection(s_domain, s_login, s_password, s_game_id)
+                target_en_conn = ENConnection(tg_domain, tg_login, tg_password, tg_game_id)
+
+                if move_all:
+                    sorted_level_ids = sorted(source_en_conn.level_ids_dict.items(), key=lambda item: item[1])
+                    for sorted_level_id in sorted_level_ids:
+                        source_ln = sorted_level_id[0]
+                        transfer_settings['source_ln'] = source_ln
+                        transfer_settings['target_ln'] = source_ln
+                        logging.log(logging.INFO, "Moving of source level %s to target level %s is started" % (source_ln, source_ln))
+                        yield 'Перенос данных из %s уровня в %s уровень запущен' % (source_ln, source_ln)
+                        self.__transfer_level(source_en_conn, target_en_conn, **transfer_settings)
+                        yield 'Перенос данных из %s уровня в %s уровень выполнен' % (source_ln, source_ln)
+                        logging.log(logging.INFO, "Moving of source level %s to target level %s is finished successfully" % (source_ln, source_ln))
+                else:
+                    move_levels_mappings = google_doc_connection.get_move_levels_mapping()
+                    for mlm in move_levels_mappings:
+                        logging.log(logging.INFO, "Moving of source level %s to target level %s is started" % (mlm['source_ln'], mlm['target_ln']))
+                        yield 'Перенос данных из %s уровня в %s уровень запущен' % (mlm['source_ln'], mlm['target_ln'])
+                        self.__transfer_level(source_en_conn, target_en_conn, **mlm)
+                        yield 'Перенос данных из %s уровня в %s уровень выполнен' % (mlm['source_ln'], mlm['target_ln'])
+                        logging.log(logging.INFO, "Moving of source level %s to target level %s is finished successfully" % (mlm['source_ln'], mlm['target_ln']))
+
+                yield 'Проверьте правильность переноса данных.'
+            else:
+                yield 'Перенос в целевую игру не разрешен. Напишите @JekaFST в телеграмме для получения разрешения'
 
     def __transfer_level(self, source_en_conn, target_en_conn, source_ln=None, target_ln=None, level=None, task=None, helps=None, bonuses=None, pen_helps=None, sectors=None):
         level_page = source_en_conn.get_level_page(source_ln)

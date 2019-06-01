@@ -755,10 +755,4 @@ def run_app():
     def googledocid():
         return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'googledocid.png', mimetype='image/png')
 
-    @app.route('/builder/clean_game_transfer_ids/<game_id>')
-    def clean_transfer_ids_for_game(game_id):
-        result = 'IDs cleanup is done successfully for game %s' % game_id if DB.clean_game_transfer_ids(game_id) \
-            else 'Something went wrong. Write @JekaFST in telegram'
-        return result
-
     return app
