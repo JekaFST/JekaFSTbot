@@ -24,17 +24,24 @@ class CleanEngine(object):
         if 'http://' not in domain:
             domain = 'http://' + domain
         game_id = request.get('game_id').strip()
-        gdoc_id = request.get('gdoc_id').strip()
-        return login, password, domain, game_id, gdoc_id
+        levels = request.get('levels')
+        return login, password, domain, game_id, levels
+
+    def __get_cleanup_level_rows(self, en_connection, levels):
+        if len(levels) == 1 and levels[0]['level_number'] == 'all':
+            level_rows = [[levels[0]['sectors'], levels[0]['helps'], levels[0]['bonuses'], levels[0]['pen_helps'], level_number] for level_number in en_connection.level_ids_dict.keys()]
+        else:
+            level_rows = [[level['sectors'], level['helps'], level['bonuses'], level['pen_helps'], level['level_number']] for level in levels]
+        return level_rows
 
     def clean_engine(self, request):
-        login, password, domain, game_id, gdoc_id = self.__get_clean_engine_data(request.json)
-        yield 'Очистка движка из дока %s запущена' % gdoc_id
+        login, password, domain, game_id, levels = self.__get_clean_engine_data(request.json)
+        yield 'Очистка движка запущена'
         if 'demo' in domain or game_id in DB.get_gameids_for_builder_list():
-            google_doc_connection = GoogleDocConnection(gdoc_id)
             en_connection = ENConnection(domain, login, password, game_id)
 
-            for i, level_row in enumerate(google_doc_connection.get_cleanup_level_rows()):
+            level_rows = self.__get_cleanup_level_rows(en_connection, levels)
+            for i, level_row in level_rows:
                 logging.log(logging.INFO, "Cleanup of level %s started" % level_row[4])
                 yield 'Очистка данных из уровня %s запущена' % level_row[4]
 

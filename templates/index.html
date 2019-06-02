@@ -76,8 +76,7 @@
                         <summary>Инструкция</summary>
                         Заполнение движка происходит из гуглдока. <a href="https://docs.google.com/spreadsheets/d/16--OmJQr9DeGCfLb3H19ddVJ0mp9UsiypX2xg67im6E" target="_blank">Шаблон гуглдока</a><br>
                         Создайте у себя копию гуглдока, чтобы из нее заполнять движок. Откройте доступ по ссылке хотя бы для чтения (либо всем, либо для jekafst@gmail.com. Скрипт читает гуглдок от этого пользователя).<br><br>
-                        В гуглдоке есть набор листов для создания соответствующих объектов уровней (заданий, секторов, подсказок, бонусов, штрафных подсказок) и заполнения деталей уровня.<br>
-                        Лист Cleanup используется для очистки движка.<br><br>
+                        В гуглдоке есть набор листов для создания соответствующих объектов уровней (заданий, секторов, подсказок, бонусов, штрафных подсказок) и заполнения деталей уровня.<br><br>
                         <b>ВАЖНО:</b><br>
                         Скрипт не создает уровни в движке. Перед заполнением - создайте нужное количество уровней вручную.<br>
                         Удалять листы гуглдока и менять порядок колонок нельзя.<br>
@@ -146,13 +145,48 @@
                             </td>
                         </tr>
                     </table>
-                </div>
-                <div><br>
-                    <label>Введите ID гуглдока для очистки:
-                        <input type="text" style="width: 400px" name="gdoc_id" class="form-control text-left" v-model="gdoc_id">
-                    </label>
-                </div>
-                <button @click.prevent="clean_engine(login, password, domain, game_id, gdoc_id)">Запустить очистку игры</button>
+                </div><br>
+                <div>
+                    <table>
+                        <tr>
+                            <td>
+                                <label>Номер уровня</label>
+                            </td>
+                            <td>
+                                <label>Сектора</label>
+                            </td>
+                            <td>
+                                <label>Подсказки</label>
+                            </td>
+                            <td>
+                                <label>Бонусы</label>
+                            </td>
+                            <td>
+                                <label>Штрафные подсказки</label>
+                            </td>
+                        </tr>
+                        <tr v-for="level in levels">
+                            <td>
+                                <input type="text" name="level_number" class="form-control" v-model="level.level_number" placeholder="all или 1/2/3/...">
+                            </td>
+                            <td>
+                                <input type="text" name="sectors" class="form-control" v-model="level.sectors" placeholder="y or n">
+                            </td>
+                            <td>
+                                <input type="text" name="helps" class="form-control" v-model="level.helps" placeholder="all or 1/2/3/...">
+                            </td>
+                            <td>
+                                <input type="text" name="bonuses" class="form-control" v-model="level.bonuses" placeholder="all or 1/2/3/...">
+                            </td>
+                            <td>
+                                <input type="text" name="pen_helps" class="form-control" v-model="level.pen_helps" placeholder="all or 1/2/3/...">
+                            </td>
+                        </tr>
+                    </table>
+                    <button @click.prevent="add_level()" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                    <button @click.prevent="delete_level()" v-if="levels.length > 1" type="button" class="btn btn-default"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+                </div><br>
+                <button @click.prevent="clean_engine(login, password, domain, game_id, levels)">Запустить очистку игры</button>
                 <logger-component v-bind:data="data"></logger-component>
             </form>
         </div>
@@ -167,6 +201,24 @@
                 </div>
             </small-modal>
             <form id="transfer_engine" role="form">
+                <div>
+                    <details>
+                        <summary>Инструкция</summary>
+                        Заполнение движка происходит из гуглдока. <a href="https://docs.google.com/spreadsheets/d/16--OmJQr9DeGCfLb3H19ddVJ0mp9UsiypX2xg67im6E" target="_blank">Шаблон гуглдока</a><br>
+                        Создайте у себя копию гуглдока, чтобы из нее заполнять движок. Откройте доступ по ссылке хотя бы для чтения (либо всем, либо для jekafst@gmail.com. Скрипт читает гуглдок от этого пользователя).<br><br>
+                        В гуглдоке есть набор листов для создания соответствующих объектов уровней (заданий, секторов, подсказок, бонусов, штрафных подсказок) и заполнения деталей уровня.<br>
+                        Лист Cleanup используется для очистки движка.<br><br>
+                        <b>ВАЖНО:</b><br>
+                        Скрипт не создает уровни в движке. Перед заполнением - создайте нужное количество уровней вручную.<br>
+                        Удалять листы гуглдока и менять порядок колонок нельзя.<br>
+                        Каждая строка гуглдока создает 1 объект в движке.<br>
+                        Обязательные колонки отмечены звездочкой.<br><br>
+                    </details>
+                    <details>
+                        <summary>Пример айди гуглдока</summary>
+                        <img src="googledocid">
+                   </details>
+                </div>
                 <div>
                     <h4>Конфигурация:</h4>
                     <table>
@@ -343,7 +395,7 @@
                 password: '',
                 domain: '',
                 game_id: '',
-                gdoc_id: '',
+                levels: [{level_number: '', sectors: '', helps: '', bonuses: '', pen_helps: ''}],
                 show_error: false,
                 error_text: '',
             }
@@ -352,7 +404,24 @@
             this.app.get()
           },
           methods: {
-            clean_engine: function (login, password, domain, game_id, gdoc_id) {
+            add_level: function (){
+              this.levels.push({level_number: '', sectors: '', helps: '', bonuses: '', pen_helps: ''})
+              },
+            delete_level: function (){
+              this.levels.pop()
+              },
+            clean_engine: function (login, password, domain, game_id, levels) {
+              for (var i = 0; i < levels.length; ++i)
+                if (!levels[i].level_number) {
+                  this.show_error = true;
+                  this.error_text = 'level_number для одной из строк не задан'
+                  return;
+                }
+                else if (levels[i].level_number == 'all' && levels.length > 1) {
+                    this.show_error = true;
+                    this.error_text = 'Нельзя выбрать несколько строк с уровнями, если в одной из них выбраны номер уровня = all'
+                    return;
+                }
               if (!login){
                 this.show_error = true;
                 this.error_text = 'Логин не заполнен'
@@ -369,17 +438,13 @@
                 this.show_error = true;
                 this.error_text = 'ID игры не заполнен'
               }
-              else if (!gdoc_id){
-                this.show_error = true;
-                this.error_text = 'ID гуглдока не заполнен'
-              }
               else {
                 this.app.post({
                   login: login,
                   password: password,
                   domain: domain,
                   game_id: game_id,
-                  gdoc_id: gdoc_id,
+                  levels: levels,
                 })
               }
             }
