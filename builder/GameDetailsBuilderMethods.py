@@ -46,7 +46,7 @@ class GoogleDocConnection(object):
                 transfer_settings['helps'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
             if 'bonuses' in row:
                 transfer_settings['bonuses'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
-            if 'bonuses' in row:
+            if 'sectors' in row:
                 transfer_settings['sectors'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
             if 'pen_helps' in row:
                 transfer_settings['pen_helps'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False

@@ -128,6 +128,11 @@
             </small-modal>
             <form id="clean_engine" role="form">
                 <div>
+                    <details>
+                        <summary>Инструкция</summary>
+                    </details>
+                </div><br>
+                <div>
                     <h4>Конфигурация:</h4>
                     <table>
                         <tr>
@@ -150,7 +155,7 @@
                     <table>
                         <tr>
                             <td>
-                                <label>Номер уровня</label>
+                                <label>№ уровня</label>
                             </td>
                             <td>
                                 <label>Сектора</label>
@@ -167,19 +172,19 @@
                         </tr>
                         <tr v-for="level in levels">
                             <td>
-                                <input type="text" name="level_number" class="form-control" v-model="level.level_number" placeholder="all или 1/2/3/...">
+                                <input type="text" style="width: 100px" name="level_number" class="form-control" v-model="level.level_number" placeholder="all или 1/2/3/...">
                             </td>
                             <td>
-                                <input type="text" name="sectors" class="form-control" v-model="level.sectors" placeholder="y or n">
+                                <input type="text" style="width: 150px" name="sectors" class="form-control" v-model="level.sectors" placeholder="y or n">
                             </td>
                             <td>
-                                <input type="text" name="helps" class="form-control" v-model="level.helps" placeholder="all or 1/2/3/...">
+                                <input type="text" style="width: 150px" name="helps" class="form-control" v-model="level.helps" placeholder="all or 1/2/3/...">
                             </td>
                             <td>
-                                <input type="text" name="bonuses" class="form-control" v-model="level.bonuses" placeholder="all or 1/2/3/...">
+                                <input type="text" style="width: 150px" name="bonuses" class="form-control" v-model="level.bonuses" placeholder="all or 1/2/3/...">
                             </td>
                             <td>
-                                <input type="text" name="pen_helps" class="form-control" v-model="level.pen_helps" placeholder="all or 1/2/3/...">
+                                <input type="text" style="width: 150px" name="pen_helps" class="form-control" v-model="level.pen_helps" placeholder="all or 1/2/3/...">
                             </td>
                         </tr>
                     </table>
@@ -204,21 +209,8 @@
                 <div>
                     <details>
                         <summary>Инструкция</summary>
-                        Заполнение движка происходит из гуглдока. <a href="https://docs.google.com/spreadsheets/d/16--OmJQr9DeGCfLb3H19ddVJ0mp9UsiypX2xg67im6E" target="_blank">Шаблон гуглдока</a><br>
-                        Создайте у себя копию гуглдока, чтобы из нее заполнять движок. Откройте доступ по ссылке хотя бы для чтения (либо всем, либо для jekafst@gmail.com. Скрипт читает гуглдок от этого пользователя).<br><br>
-                        В гуглдоке есть набор листов для создания соответствующих объектов уровней (заданий, секторов, подсказок, бонусов, штрафных подсказок) и заполнения деталей уровня.<br>
-                        Лист Cleanup используется для очистки движка.<br><br>
-                        <b>ВАЖНО:</b><br>
-                        Скрипт не создает уровни в движке. Перед заполнением - создайте нужное количество уровней вручную.<br>
-                        Удалять листы гуглдока и менять порядок колонок нельзя.<br>
-                        Каждая строка гуглдока создает 1 объект в движке.<br>
-                        Обязательные колонки отмечены звездочкой.<br><br>
                     </details>
-                    <details>
-                        <summary>Пример айди гуглдока</summary>
-                        <img src="googledocid">
-                   </details>
-                </div>
+                </div><br>
                 <div>
                     <h4>Конфигурация:</h4>
                     <table>
@@ -262,19 +254,72 @@
                     <table>
                         <tr>
                             <td>
-                                <label>Введите ID гуглдока для переноса:
-                                    <input type="text" style="width: 400px" name="gdoc_id" class="form-control text-left" v-model="gdoc_id">
-                                </label>
-                                <button @click.prevent="transfer_engine(s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, gdoc_id)">Запустить перенос игры</button>
+                                <label>№ уровня</label>
                             </td>
                             <td>
-                                <label>Введите ID игры для чистки перенесенных объектов:
-                                    <input type="text" style="width: 400px" name="game_id_to_clean" class="form-control text-left" v-model="game_id_to_clean">
-                                </label>
-                                <button @click.prevent="clean_transfer(game_id_to_clean)">Запустить чистку перенсенных объектов</button>
+                                <label>Уровень</label>
+                            </td>
+                            <td>
+                                <label>Задание</label>
+                            </td>
+                            <td>
+                                <label>Подсказки</label>
+                            </td>
+                            <td>
+                                <label>Бонусы</label>
+                            </td>
+                            <td>
+                                <label>Сектора</label>
+                            </td>
+                            <td>
+                                <label>Штрафные подсказки</label>
+                            </td>
+                        </tr>
+                        <tr v-for="level in levels">
+                            <td>
+                                <input type="text" style="width: 100px" name="level_number" class="form-control" v-model="level.level_number" placeholder="all или 1/2/3/...">
+                            </td>
+                            <td>
+                                <select class="form-control" v-model="level.level">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control" v-model="level.task">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control" v-model="level.helps">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control" v-model="level.bonuses">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control" v-model="level.sectors">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control" v-model="level.pen_helps">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
                             </td>
                         </tr>
                     </table>
+                    <button @click.prevent="add_level()" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                    <button @click.prevent="delete_level()" v-if="levels.length > 1" type="button" class="btn btn-default"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+                </div><br>
+                <div>
+                    <button @click.prevent="transfer_engine(s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, levels)">Запустить перенос игры</button><br><br>
+                    <label>Введите ID игры для чистки перенесенных объектов:
+                        <input type="text" style="width: 400px" name="game_id_to_clean" class="form-control text-left" v-model="game_id_to_clean">
+                    </label><br>
+                    <button @click.prevent="clean_transfer(game_id_to_clean)">Запустить чистку перенсенных объектов</button>
                 </div>
                 <logger-component v-bind:data="data"></logger-component>
             </form>
@@ -464,7 +509,8 @@
                 tg_password: '',
                 tg_domain: '',
                 tg_game_id: '',
-                gdoc_id: '',
+                flag_values: ['True', 'False'],
+                levels: [{level_number: '', level: 'False', task: 'False', helps: 'False', bonuses: 'False', sectors: 'False', pen_helps: 'False'}],
                 game_id_to_clean: '',
                 show_error: false,
                 error_text: '',
@@ -474,7 +520,24 @@
             this.app.get()
           },
           methods: {
-            transfer_engine: function (s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, gdoc_id) {
+            add_level: function (){
+              this.levels.push({level_number: '', level: 'False', task: 'False', helps: 'False', bonuses: 'False', sectors: 'False', pen_helps: 'False'})
+              },
+            delete_level: function (){
+              this.levels.pop()
+              },
+            transfer_engine: function (s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, levels) {
+              for (var i = 0; i < levels.length; ++i)
+                if (!levels[i].level_number) {
+                  this.show_error = true;
+                  this.error_text = 'level_number для одной из строк не задан'
+                  return;
+                }
+                else if (levels[i].level_number == 'all' && levels.length > 1) {
+                    this.show_error = true;
+                    this.error_text = 'Нельзя выбрать несколько строк с уровнями, если в одной из них выбраны номер уровня = all'
+                    return;
+                }
               if (!s_login){
                 this.show_error = true;
                 this.error_text = 'Логин исходной игры не заполнен'
@@ -521,7 +584,7 @@
                   tg_password: tg_password,
                   tg_domain: tg_domain,
                   tg_game_id: tg_game_id,
-                  gdoc_id: gdoc_id,
+                  levels: levels,
                 })
               }
             },
