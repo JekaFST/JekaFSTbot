@@ -157,7 +157,7 @@
                         <option v-for="flag_value in flag_values">{{flag_value}}</option>
                     </select>
                 </div>
-                <div v-if="clean_all === 'False'">
+                <div v-if="clean_all === 'Нет'">
                     <table>
                         <tr>
                             <td>
@@ -178,19 +178,19 @@
                         </tr>
                         <tr v-for="level in levels">
                             <td>
-                                <input type="text" style="width: 100px" name="level_number" class="form-control" v-model="level.level_number" placeholder="all или 1/2/3/...">
+                                <input type="text" style="width: 150px" name="level_number" class="form-control" v-model="level.level_number" placeholder="номер уровня">
                             </td>
                             <td>
-                                <input type="text" style="width: 150px" name="sectors" class="form-control" v-model="level.sectors" placeholder="y or n">
+                                <input type="text" style="width: 150px" name="sectors" class="form-control" v-model="level.sectors" placeholder="да или нет">
                             </td>
                             <td>
-                                <input type="text" style="width: 150px" name="helps" class="form-control" v-model="level.helps" placeholder="all or 1/2/3/...">
+                                <input type="text" style="width: 150px" name="helps" class="form-control" v-model="level.helps" placeholder="все или 1/2/3/...">
                             </td>
                             <td>
-                                <input type="text" style="width: 150px" name="bonuses" class="form-control" v-model="level.bonuses" placeholder="all or 1/2/3/...">
+                                <input type="text" style="width: 150px" name="bonuses" class="form-control" v-model="level.bonuses" placeholder="все или 1/2/3/...">
                             </td>
                             <td>
-                                <input type="text" style="width: 150px" name="pen_helps" class="form-control" v-model="level.pen_helps" placeholder="all or 1/2/3/...">
+                                <input type="text" style="width: 150px" name="pen_helps" class="form-control" v-model="level.pen_helps" placeholder="все или 1/2/3/...">
                             </td>
                         </tr>
                     </table>
@@ -215,16 +215,16 @@
                         </tr>
                         <tr>
                             <td>
-                                <input type="text" style="width: 150px" name="sectors" class="form-control" v-model="clean_all_details.sectors" placeholder="y or n">
+                                <input type="text" style="width: 150px" name="sectors" class="form-control" v-model="clean_all_details.sectors" placeholder="да или нет">
                             </td>
                             <td>
-                                <input type="text" style="width: 150px" name="helps" class="form-control" v-model="clean_all_details.helps" placeholder="all or 1/2/3/...">
+                                <input type="text" style="width: 150px" name="helps" class="form-control" v-model="clean_all_details.helps" placeholder="все или 1/2/3/...">
                             </td>
                             <td>
-                                <input type="text" style="width: 150px" name="bonuses" class="form-control" v-model="clean_all_details.bonuses" placeholder="all or 1/2/3/...">
+                                <input type="text" style="width: 150px" name="bonuses" class="form-control" v-model="clean_all_details.bonuses" placeholder="все или 1/2/3/...">
                             </td>
                             <td>
-                                <input type="text" style="width: 150px" name="pen_helps" class="form-control" v-model="clean_all_details.pen_helps" placeholder="all or 1/2/3/...">
+                                <input type="text" style="width: 150px" name="pen_helps" class="form-control" v-model="clean_all_details.pen_helps" placeholder="все или 1/2/3/...">
                             </td>
                         </tr>
                     </table>
@@ -287,8 +287,70 @@
                             </td>
                         </tr>
                     </table>
-                </div>
+                </div><br>
                 <div>
+                    <label>Перенести все уровни</label>
+                    <select style="width: 100px" class="form-control" v-model="move_all">
+                        <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                    </select>
+                </div>
+                <div v-if="move_all === 'Да'">
+                    <table>
+                        <tr>
+                            <td>
+                                <label>Уровень</label>
+                            </td>
+                            <td>
+                                <label>Задание</label>
+                            </td>
+                            <td>
+                                <label>Подсказки</label>
+                            </td>
+                            <td>
+                                <label>Бонусы</label>
+                            </td>
+                            <td>
+                                <label>Сектора</label>
+                            </td>
+                            <td>
+                                <label>Штрафные подсказки</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <select class="form-control" v-model="move_all_details.level">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control" v-model="move_all_details.task">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control" v-model="move_all_details.helps">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control" v-model="move_all_details.bonuses">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control" v-model="move_all_details.sectors">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control" v-model="move_all_details.pen_helps">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div><br>
+                <div v-else>
                     <table>
                         <tr>
                             <td>
@@ -315,7 +377,7 @@
                         </tr>
                         <tr v-for="level in levels">
                             <td>
-                                <input type="text" style="width: 100px" name="level_number" class="form-control" v-model="level.level_number" placeholder="all или 1/2/3/...">
+                                <input type="text" style="width: 100px" name="level_number" class="form-control" v-model="level.level_number" placeholder="номер уровня">
                             </td>
                             <td>
                                 <select class="form-control" v-model="level.level">
@@ -353,7 +415,7 @@
                     <button @click.prevent="delete_level()" v-if="levels.length > 1" type="button" class="btn btn-default"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
                 </div><br>
                 <div>
-                    <button @click.prevent="transfer_engine(s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, levels)">Запустить перенос игры</button><br><br>
+                    <button @click.prevent="transfer_engine(s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, move_all, move_all_details, levels)">Запустить перенос игры</button><br><br>
                     <label>Введите ID игры для чистки перенесенных объектов:
                         <input type="text" style="width: 400px" name="game_id_to_clean" class="form-control text-left" v-model="game_id_to_clean">
                     </label><br>
@@ -478,10 +540,10 @@
                 password: '',
                 domain: '',
                 game_id: '',
-                levels: [{level_number: '', sectors: '', helps: '', bonuses: '', pen_helps: ''}],
+                clean_all: 'Нет',
                 clean_all_details: {sectors: '', helps: '', bonuses: '', pen_helps: ''},
-                clean_all: 'False',
-                flag_values: ['True', 'False'],
+                levels: [{level_number: '', sectors: '', helps: '', bonuses: '', pen_helps: ''}],
+                flag_values: ['Да', 'Нет'],
                 show_error: false,
                 error_text: '',
             }
@@ -497,17 +559,6 @@
               this.levels.pop()
               },
             clean_engine: function (login, password, domain, game_id, levels, clean_all, clean_all_details) {
-              for (var i = 0; i < levels.length; ++i)
-                if (!levels[i].level_number) {
-                  this.show_error = true;
-                  this.error_text = 'level_number для одной из строк не задан'
-                  return;
-                }
-                else if (levels[i].level_number == 'all' && levels.length > 1) {
-                    this.show_error = true;
-                    this.error_text = 'Нельзя выбрать несколько строк с уровнями, если в одной из них выбраны номер уровня = all'
-                    return;
-                }
               if (!login){
                 this.show_error = true;
                 this.error_text = 'Логин не заполнен'
@@ -525,15 +576,32 @@
                 this.error_text = 'ID игры не заполнен'
               }
               else {
-                this.app.post({
-                  login: login,
-                  password: password,
-                  domain: domain,
-                  game_id: game_id,
-                  levels: levels,
-                  clean_all: clean_all,
-                  clean_all_details: clean_all_details,
-                })
+                if (clean_all == 'Нет') {
+                  for (var i = 0; i < levels.length; ++i)
+                    if (!levels[i].level_number) {
+                      this.show_error = true;
+                      this.error_text = 'Номер уровня для одной из строк не задан'
+                      return;
+                    }
+                  this.app.post({
+                    login: login,
+                    password: password,
+                    domain: domain,
+                    game_id: game_id,
+                    levels: levels,
+                    clean_all: false,
+                  })
+                }
+                else {
+                  this.app.post({
+                    login: login,
+                    password: password,
+                    domain: domain,
+                    game_id: game_id,
+                    clean_all: true,
+                    clean_all_details: clean_all_details,
+                  })
+                }
               }
             }
           },
@@ -552,9 +620,11 @@
                 tg_password: '',
                 tg_domain: '',
                 tg_game_id: '',
-                flag_values: ['True', 'False'],
-                levels: [{level_number: '', level: 'False', task: 'False', helps: 'False', bonuses: 'False', sectors: 'False', pen_helps: 'False'}],
+                move_all: 'Да',
+                move_all_details: {level: 'Да', task: 'Да', helps: 'Да', bonuses: 'Да', sectors: 'Да', pen_helps: 'Да'}
+                levels: [{level_number: '', level: 'Да', task: 'Да', helps: 'Да', bonuses: 'Да', sectors: 'Да', pen_helps: 'Да'}],
                 game_id_to_clean: '',
+                flag_values: ['Да', 'Нет'],
                 show_error: false,
                 error_text: '',
             }
@@ -564,23 +634,12 @@
           },
           methods: {
             add_level: function (){
-              this.levels.push({level_number: '', level: 'False', task: 'False', helps: 'False', bonuses: 'False', sectors: 'False', pen_helps: 'False'})
+              this.levels.push({level_number: '', level: 'Да', task: 'Да', helps: 'Да', bonuses: 'Да', sectors: 'Да', pen_helps: 'Да'})
               },
             delete_level: function (){
               this.levels.pop()
               },
-            transfer_engine: function (s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, levels) {
-              for (var i = 0; i < levels.length; ++i)
-                if (!levels[i].level_number) {
-                  this.show_error = true;
-                  this.error_text = 'level_number для одной из строк не задан'
-                  return;
-                }
-                else if (levels[i].level_number == 'all' && levels.length > 1) {
-                    this.show_error = true;
-                    this.error_text = 'Нельзя выбрать несколько строк с уровнями, если в одной из них выбраны номер уровня = all'
-                    return;
-                }
+            transfer_engine: function (s_login, s_password, s_domain, s_game_id, tg_login, tg_password, tg_domain, tg_game_id, move_all, move_all_details, levels) {
               if (!s_login){
                 this.show_error = true;
                 this.error_text = 'Логин исходной игры не заполнен'
@@ -618,23 +677,52 @@
                 this.error_text = 'ID гуглдока не заполнен'
               }
               else {
-                this.app.post({
-                  s_login: s_login,
-                  s_password: s_password,
-                  s_domain: s_domain,
-                  s_game_id: s_game_id,
-                  tg_login: tg_login,
-                  tg_password: tg_password,
-                  tg_domain: tg_domain,
-                  tg_game_id: tg_game_id,
-                  levels: levels,
-                })
+                if (move_all == 'Да') {
+                  this.app.post({
+                    s_login: s_login,
+                    s_password: s_password,
+                    s_domain: s_domain,
+                    s_game_id: s_game_id,
+                    tg_login: tg_login,
+                    tg_password: tg_password,
+                    tg_domain: tg_domain,
+                    tg_game_id: tg_game_id,
+                    move_all: true,
+                    move_all_details: move_all_details,
+                  })
+                }
+                else {
+                  for (var i = 0; i < levels.length; ++i)
+                    if (!levels[i].level_number) {
+                      this.show_error = true;
+                      this.error_text = 'level_number для одной из строк не задан'
+                      return;
+                    }
+                  this.app.post({
+                    s_login: s_login,
+                    s_password: s_password,
+                    s_domain: s_domain,
+                    s_game_id: s_game_id,
+                    tg_login: tg_login,
+                    tg_password: tg_password,
+                    tg_domain: tg_domain,
+                    tg_game_id: tg_game_id,
+                    move_all: true,
+                    levels: levels,
+                  })
+                }
               }
             },
             clean_transfer: function (game_id_to_clean) {
-              this.app.post({
-                game_id_to_clean: game_id_to_clean,
-              })
+              if (!game_id_to_clean) {
+                this.show_error = true;
+                this.error_text = 'ID игры для чистки перенесенных объектов не задан'
+              }
+              else {
+                this.app.post({
+                  game_id_to_clean: game_id_to_clean,
+                })
+              }
             }
           },
         })

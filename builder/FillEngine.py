@@ -154,4 +154,4 @@ class FillEngine(object):
             yield 'Проверьте правильность переноса данных в движок.'
             logging.log(logging.INFO, "Filling of game is finished successfully")
         else:
-            yield 'Заполнение данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'
+            yield 'Приложение платное - заполнение данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'

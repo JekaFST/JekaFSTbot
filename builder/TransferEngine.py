@@ -73,7 +73,7 @@ class TransferEngine(object):
 
                 yield 'Проверьте правильность переноса данных.'
             else:
-                yield 'Перенос в целевую игру не разрешен. Напишите @JekaFST в телеграмме для получения разрешения'
+                yield 'Приложение платное - перенос в целевую игру не разрешен. Напишите @JekaFST в телеграмме для получения разрешения'
 
     def __transfer_level(self, source_en_conn, target_en_conn, source_ln=None, target_ln=None, level=None, task=None, helps=None, bonuses=None, pen_helps=None, sectors=None):
         level_page = source_en_conn.get_level_page(source_ln)
