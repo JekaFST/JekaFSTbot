@@ -211,7 +211,7 @@ class TransferEngine(object):
                 clean_empty_first_sector(target_en_conn, target_ln)
             else:
                 answers = re.findall('divAnswersView_(\d+)', level_page)
-                if answers:
+                if answers and answers[0] not in DB.get_game_transfer_ids(source_en_conn.gameid, 'answersid'):
                     read_params = {
                         'gid': source_en_conn.gameid,
                         'level': source_ln,
