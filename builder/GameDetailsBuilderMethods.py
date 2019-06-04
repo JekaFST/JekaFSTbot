@@ -463,18 +463,18 @@ def lvl_sectors_required_data_from_gdoc(row):
     return lvl_sectors_required_data
 
 
-def parse_level_page(row, level_page, sectors=list(), helps=list(), bonuses=list(), pen_helps=list(), transfer=False):
-    if row['sectors'] and row['sectors'].lower() == 'да':
+def parse_level_page(level, level_page, sectors=list(), helps=list(), bonuses=list(), pen_helps=list(), transfer=False):
+    if level['sectors'] and level['sectors'].lower() == 'да':
         sectors = re.findall(r'divSectorManage_(\d+)\'', level_page)
-    if row['helps']:
+    if level['helps']:
         help_ids = re.findall(r'prid=(\d+)\'', level_page)
-        helps = help_ids if row['helps'] == 'все' or transfer else get_exact_ids(re.findall(r'[^/]+', row['helps']), help_ids)
-    if row['bonuses']:
+        helps = help_ids if level['helps'] == 'все' or transfer else get_exact_ids(re.findall(r'[^/]+', level['helps']), help_ids)
+    if level['bonuses']:
         bonus_ids = re.findall(r'bonus=(\d+)', level_page)
-        bonuses = bonus_ids if row['bonuses'] == 'все' or transfer else get_exact_ids(re.findall(r'[^/]+', row['bonuses']), bonus_ids)
-    if row['pen_helps']:
+        bonuses = bonus_ids if level['bonuses'] == 'все' or transfer else get_exact_ids(re.findall(r'[^/]+', level['bonuses']), bonus_ids)
+    if level['pen_helps']:
         pen_helps_ids = re.findall(r'prid=(\d+)&penalty', level_page)
-        pen_helps = pen_helps_ids if row['pen_helps'] == 'все' or transfer else get_exact_ids(re.findall(r'[^/]+', row['pen_helps']), pen_helps_ids)
+        pen_helps = pen_helps_ids if level['pen_helps'] == 'все' or transfer else get_exact_ids(re.findall(r'[^/]+', level['pen_helps']), pen_helps_ids)
     task_ids = re.findall(r'tid=(\d+)', level_page) if transfer else None
     return sectors, helps, bonuses, pen_helps, task_ids
 
