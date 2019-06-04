@@ -349,7 +349,7 @@
                             </td>
                         </tr>
                     </table>
-                </div><br>
+                </div>
                 <div v-else>
                     <table>
                         <tr>
@@ -377,7 +377,7 @@
                         </tr>
                         <tr v-for="level in levels">
                             <td>
-                                <input type="text" style="width: 100px" name="level_number" class="form-control" v-model="level.level_number" placeholder="номер уровня">
+                                <input type="text" style="width: 150px" name="level_number" class="form-control" v-model="level.level_number" placeholder="номер уровня">
                             </td>
                             <td>
                                 <select class="form-control" v-model="level.level">
@@ -621,7 +621,7 @@
                 tg_domain: '',
                 tg_game_id: '',
                 move_all: 'Да',
-                move_all_details: {level: 'Да', task: 'Да', helps: 'Да', bonuses: 'Да', sectors: 'Да', pen_helps: 'Да'}
+                move_all_details: {level: 'Да', task: 'Да', helps: 'Да', bonuses: 'Да', sectors: 'Да', pen_helps: 'Да'},
                 levels: [{level_number: '', level: 'Да', task: 'Да', helps: 'Да', bonuses: 'Да', sectors: 'Да', pen_helps: 'Да'}],
                 game_id_to_clean: '',
                 flag_values: ['Да', 'Нет'],
