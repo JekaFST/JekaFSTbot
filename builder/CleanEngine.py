@@ -46,7 +46,7 @@ class CleanEngine(object):
             en_connection = ENConnection(domain, login, password, game_id)
 
             levels_to_clean = self.__get_cleanup_levels_to_clean(en_connection, request.json)
-            for i, level_to_clean in levels_to_clean:
+            for level_to_clean in levels_to_clean:
                 logging.log(logging.INFO, "Cleanup of level %s started" % level_to_clean['level_number'])
                 yield 'Очистка данных из уровня %s запущена' % level_to_clean['level_number']
 
@@ -55,7 +55,9 @@ class CleanEngine(object):
 
                 if helps_to_del:
                     logging.log(logging.INFO, "Cleanup of helps for level %s started" % level_to_clean['level_number'])
-                    for help_to_del in helps_to_del:
+                    for i, help_to_del in enumerate(helps_to_del):
+                        if i % 30 == 0:
+                            sleep(5)
                         params = {
                             'gid': game_id,
                             'action': 'PromptDelete',
@@ -67,7 +69,9 @@ class CleanEngine(object):
 
                 if bonuses_to_del:
                     logging.log(logging.INFO, "Cleanup of bonuses for level %s started" % level_to_clean['level_number'])
-                    for bonus_to_del in bonuses_to_del:
+                    for i, bonus_to_del in enumerate(bonuses_to_del):
+                        if i % 30 == 0:
+                            sleep(5)
                         params = {
                             'gid': game_id,
                             'action': 'delete',
@@ -79,7 +83,9 @@ class CleanEngine(object):
 
                 if pen_helps_to_del:
                     logging.log(logging.INFO, "Cleanup of penalty helps for level %s started" % level_to_clean['level_number'])
-                    for pen_help_to_del in pen_helps_to_del:
+                    for i, pen_help_to_del in enumerate(pen_helps_to_del):
+                        if i % 30 == 0:
+                            sleep(5)
                         params = {
                             'gid': game_id,
                             'action': 'PromptDelete',

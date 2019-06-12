@@ -354,7 +354,10 @@
                     <table>
                         <tr>
                             <td>
-                                <label>№ уровня</label>
+                                <label>№ переносимого уровеня</label>
+                            </td>
+                            <td>
+                                <label>№ целевого уровеня</label>
                             </td>
                             <td>
                                 <label>Уровень</label>
@@ -377,7 +380,10 @@
                         </tr>
                         <tr v-for="level in levels">
                             <td>
-                                <input type="text" style="width: 150px" name="level_number" class="form-control" v-model="level.level_number" placeholder="номер уровня">
+                                <input type="text" style="width: 150px" name="source_ln" class="form-control" v-model="level.source_ln" placeholder="номер уровня">
+                            </td>
+                            <td>
+                                <input type="text" style="width: 150px" name="target_ln" class="form-control" v-model="level.target_ln" placeholder="номер уровня">
                             </td>
                             <td>
                                 <select class="form-control" v-model="level.level">
@@ -622,7 +628,7 @@
                 tg_game_id: '',
                 move_all: 'Да',
                 move_all_details: {level: 'Да', task: 'Да', helps: 'Да', bonuses: 'Да', sectors: 'Да', pen_helps: 'Да'},
-                levels: [{level_number: '', level: 'Да', task: 'Да', helps: 'Да', bonuses: 'Да', sectors: 'Да', pen_helps: 'Да'}],
+                levels: [{source_ln: '',target_ln: '', level: 'Да', task: 'Да', helps: 'Да', bonuses: 'Да', sectors: 'Да', pen_helps: 'Да'}],
                 game_id_to_clean: '',
                 flag_values: ['Да', 'Нет'],
                 show_error: false,
@@ -634,7 +640,7 @@
           },
           methods: {
             add_level: function (){
-              this.levels.push({level_number: '', level: 'Да', task: 'Да', helps: 'Да', bonuses: 'Да', sectors: 'Да', pen_helps: 'Да'})
+              this.levels.push({source_ln: '',target_ln: '', level: 'Да', task: 'Да', helps: 'Да', bonuses: 'Да', sectors: 'Да', pen_helps: 'Да'})
               },
             delete_level: function (){
               this.levels.pop()
@@ -707,7 +713,7 @@
                     tg_password: tg_password,
                     tg_domain: tg_domain,
                     tg_game_id: tg_game_id,
-                    move_all: true,
+                    move_all: false,
                     levels: levels,
                   })
                 }
