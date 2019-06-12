@@ -354,10 +354,10 @@
                     <table>
                         <tr>
                             <td>
-                                <label>№ переносимого уровеня</label>
+                                <label>Откуда</label>
                             </td>
                             <td>
-                                <label>№ целевого уровеня</label>
+                                <label>Куда</label>
                             </td>
                             <td>
                                 <label>Уровень</label>
@@ -380,10 +380,10 @@
                         </tr>
                         <tr v-for="level in levels">
                             <td>
-                                <input type="text" style="width: 150px" name="source_ln" class="form-control" v-model="level.source_ln" placeholder="номер уровня">
+                                <input type="text" style="width: 90px" name="source_ln" class="form-control" v-model="level.source_ln" placeholder="№ уровня">
                             </td>
                             <td>
-                                <input type="text" style="width: 150px" name="target_ln" class="form-control" v-model="level.target_ln" placeholder="номер уровня">
+                                <input type="text" style="width: 90px" name="target_ln" class="form-control" v-model="level.target_ln" placeholder="№ уровня">
                             </td>
                             <td>
                                 <select class="form-control" v-model="level.level">
