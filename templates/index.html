@@ -678,10 +678,6 @@
                 this.show_error = true;
                 this.error_text = 'ID игры целевой игры не заполнен'
               }
-              else if (!gdoc_id){
-                this.show_error = true;
-                this.error_text = 'ID гуглдока не заполнен'
-              }
               else {
                 if (move_all == 'Да') {
                   this.app.post({
@@ -699,9 +695,9 @@
                 }
                 else {
                   for (var i = 0; i < levels.length; ++i)
-                    if (!levels[i].level_number) {
+                    if (!levels[i].source_ln || !levels[i].target_ln) {
                       this.show_error = true;
-                      this.error_text = 'level_number для одной из строк не задан'
+                      this.error_text = 'Номер исходного или целевого уровня для одной из строк не задан'
                       return;
                     }
                   this.app.post({

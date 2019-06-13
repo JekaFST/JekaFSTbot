@@ -28,13 +28,13 @@ class CleanEngine(object):
         return login, password, domain, game_id, levels
 
     def __get_cleanup_levels_to_clean(self, en_connection, request):
-        clean_all = request.get['clean_all']
+        clean_all = request.get('clean_all')
         if clean_all:
-            clean_all_details = request.get['clean_all_details']
+            clean_all_details = request.get('clean_all_details')
             levels_to_clean = [{'level_number': level_number, 'sectors': clean_all_details['sectors'], 'helps': clean_all_details['helps'],
                                 'bonuses': clean_all_details['bonuses'], 'pen_helps': clean_all_details['pen_helps']} for level_number in en_connection.level_ids_dict.keys()]
         else:
-            levels = request.get['levels']
+            levels = request.get('levels')
             levels_to_clean = [{'level_number': level['level_number'], 'sectors': level['sectors'], 'helps': level['helps'],
                                 'bonuses': level['bonuses'], 'pen_helps': level['pen_helps']} for level in levels]
         return levels_to_clean
