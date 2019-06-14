@@ -755,4 +755,8 @@ def run_app():
     def googledocid():
         return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'googledocid.png', mimetype='image/png')
 
+    @app.route('/gameid')
+    def gameid():
+        return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'gameid.png', mimetype='image/png')
+
     return app
