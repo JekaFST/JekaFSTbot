@@ -44,7 +44,7 @@ def launch_session(session, bot, chat_id):
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
                 'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
-                'и запустите репстинг в канал /start_channel\r\n' \
+                'и запустите репостинг в канал /start_channel\r\n' \
                 'если имя канала задано по умолчания, постинг уже активирован\r\n' \
                 'для остановки репостинга в канал введите /stop_channel'
     elif normal and not storm:
@@ -52,7 +52,7 @@ def launch_session(session, bot, chat_id):
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
                 'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
-                'и запустите репстинг в канал /start_channel\r\n' \
+                'и запустите репостинг в канал /start_channel\r\n' \
                 'если имя канала задано по умолчания, постинг уже активирован\r\n' \
                 'для остановки репостинга в канал введите /stop_channel'
     elif normal and storm:
@@ -60,7 +60,7 @@ def launch_session(session, bot, chat_id):
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
                 'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
-                'и запустите репстинг в канал /start_channel\r\n' \
+                'и запустите репостинг в канал /start_channel\r\n' \
                 'если имя канала задано по умолчания, постинг уже активирован\r\n' \
                 'для остановки репостинга в канал введите /stop_channel'
     elif not storm:
@@ -68,14 +68,14 @@ def launch_session(session, bot, chat_id):
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
                 'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
-                'и запустите репстинг в канал /start_channel\r\n' \
+                'и запустите репостинг в канал /start_channel\r\n' \
                 'для остановки репостинга в канал введите /stop_channel'
     else:
         reply = 'Сессия активирована. Штурмовая игра не в активном состоянии\r\n' \
                 'для запуска слежения введите /start_updater\r\n' \
                 'для остановки слежения введите /stop_updater\r\n' \
                 'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
-                'и запустите репстинг в канал /start_channel\r\n' \
+                'и запустите репостинг в канал /start_channel\r\n' \
                 'для остановки репостинга в канал введите /stop_channel'
     if DBSession.update_bool_flag(session['sessionid'], 'active', 'True'):
         bot.send_message(chat_id, reply)
