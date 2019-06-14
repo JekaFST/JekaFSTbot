@@ -51,7 +51,7 @@ class CleanEngine(object):
                 yield 'Очистка данных из уровня %s запущена' % level_to_clean['level_number']
 
                 level_page = en_connection.get_level_page(level_to_clean['level_number'])
-                sectors_to_del, helps_to_del, bonuses_to_del, pen_helps_to_del, _ = parse_level_page(level_to_clean, level_page)
+                sectors_to_del, helps_to_del, bonuses_to_del, pen_helps_to_del, _ = parse_level_page(level_page, level=level_to_clean)
 
                 if helps_to_del:
                     logging.log(logging.INFO, "Cleanup of helps for level %s started" % level_to_clean['level_number'])

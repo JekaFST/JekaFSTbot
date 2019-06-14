@@ -75,9 +75,9 @@ class TransferEngine(object):
 
     def __transfer_level(self, source_en_conn, target_en_conn, source_ln=None, target_ln=None, level=None, task=None, helps=None, bonuses=None, pen_helps=None, sectors=None):
         level_page = source_en_conn.get_level_page(source_ln)
-        sector_ids, help_ids, bonus_ids, pen_help_ids, task_ids = parse_level_page(['y', 'all', 'all', 'all'], level_page, transfer=True)
+        sector_ids, help_ids, bonus_ids, pen_help_ids, task_ids = parse_level_page(level_page, transfer=True)
 
-        if level:
+        if level.lower() == 'да':
             if check_ans_block_enabled(level_page):
                 read_params = {
                     'gid': source_en_conn.gameid,
@@ -119,7 +119,7 @@ class TransferEngine(object):
                 lvl_timeout_data, level_url, params = make_lvl_timeout_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln)
                 target_en_conn.create_en_object(level_url, lvl_timeout_data, 'level', params)
 
-        if task:
+        if task.lower() == 'да':
             for i, task_id in enumerate(task_ids):
                 if i % 30 == 0:
                     sleep(5)
@@ -136,7 +136,7 @@ class TransferEngine(object):
                         if target_en_conn.create_en_object(task_url, task_data, 'task', params):
                             DB.insert_game_transfer_row(source_en_conn.gameid, 'taskid', task_id)
 
-        if bonuses:
+        if bonuses.lower() == 'да':
             for i, bonus_id in enumerate(bonus_ids):
                 if i % 30 == 0:
                     sleep(5)
@@ -154,7 +154,7 @@ class TransferEngine(object):
                         if target_en_conn.create_en_object(bonus_url, bonus_data, 'bonus', params):
                             DB.insert_game_transfer_row(source_en_conn.gameid, 'bonusid', bonus_id)
 
-        if helps:
+        if helps.lower() == 'да':
             for i, help_id in enumerate(help_ids):
                 if i % 30 == 0:
                     sleep(5)
@@ -171,7 +171,7 @@ class TransferEngine(object):
                         if target_en_conn.create_en_object(help_url, help_data, 'help', params):
                             DB.insert_game_transfer_row(source_en_conn.gameid, 'helpid', help_id)
 
-        if pen_helps:
+        if pen_helps.lower() == 'да':
             for i, pen_help_id in enumerate(pen_help_ids):
                 if i % 30 == 0:
                     sleep(5)
@@ -189,7 +189,7 @@ class TransferEngine(object):
                         if target_en_conn.create_en_object(pen_help_url, pen_help_data, 'PenaltyHelp', params):
                             DB.insert_game_transfer_row(source_en_conn.gameid, 'penhelpid', pen_help_id)
 
-        if sectors:
+        if sectors.lower() == 'да':
             if sector_ids:
                 for i, sector_id in enumerate(sector_ids):
                     if i % 30 == 0:

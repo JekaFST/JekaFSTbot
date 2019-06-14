@@ -463,19 +463,32 @@ def lvl_sectors_required_data_from_gdoc(row):
     return lvl_sectors_required_data
 
 
-def parse_level_page(level, level_page, sectors=list(), helps=list(), bonuses=list(), pen_helps=list(), transfer=False):
+def parse_level_page(level_page, level=None, transfer=False):
+    sectors, helps, bonuses, pen_helps, task_ids = __parse_level_page_transfer(level_page) if transfer else __parse_level_page_cleanup(level, level_page)
+    return sectors, helps, bonuses, pen_helps, task_ids
+
+
+def __parse_level_page_cleanup(level, level_page, sectors=list(), helps=list(), bonuses=list(), pen_helps=list(), task_ids=None):
     if level['sectors'] and level['sectors'].lower() == 'да':
         sectors = re.findall(r'divSectorManage_(\d+)\'', level_page)
     if level['helps']:
         help_ids = re.findall(r'prid=(\d+)\'', level_page)
-        helps = help_ids if level['helps'] == 'все' or transfer else get_exact_ids(re.findall(r'[^/]+', level['helps']), help_ids)
+        helps = help_ids if level['helps'] == 'все' else get_exact_ids(re.findall(r'[^/]+', level['helps']), help_ids)
     if level['bonuses']:
         bonus_ids = re.findall(r'bonus=(\d+)', level_page)
-        bonuses = bonus_ids if level['bonuses'] == 'все' or transfer else get_exact_ids(re.findall(r'[^/]+', level['bonuses']), bonus_ids)
+        bonuses = bonus_ids if level['bonuses'] == 'все' else get_exact_ids(re.findall(r'[^/]+', level['bonuses']), bonus_ids)
     if level['pen_helps']:
         pen_helps_ids = re.findall(r'prid=(\d+)&penalty', level_page)
-        pen_helps = pen_helps_ids if level['pen_helps'] == 'все' or transfer else get_exact_ids(re.findall(r'[^/]+', level['pen_helps']), pen_helps_ids)
-    task_ids = re.findall(r'tid=(\d+)', level_page) if transfer else None
+        pen_helps = pen_helps_ids if level['pen_helps'] == 'все' else get_exact_ids(re.findall(r'[^/]+', level['pen_helps']), pen_helps_ids)
+    return sectors, helps, bonuses, pen_helps, task_ids
+
+
+def __parse_level_page_transfer(level_page):
+    sectors = re.findall(r'divSectorManage_(\d+)\'', level_page)
+    helps = re.findall(r'prid=(\d+)\'', level_page)
+    bonuses = re.findall(r'bonus=(\d+)', level_page)
+    pen_helps = re.findall(r'prid=(\d+)&penalty', level_page)
+    task_ids = re.findall(r'tid=(\d+)', level_page)
     return sectors, helps, bonuses, pen_helps, task_ids
 
 

@@ -181,7 +181,9 @@
                                 <input type="text" style="width: 150px" name="level_number" class="form-control" v-model="level.level_number" placeholder="номер уровня">
                             </td>
                             <td>
-                                <input type="text" style="width: 150px" name="sectors" class="form-control" v-model="level.sectors" placeholder="да или нет">
+                                <select class="form-control" v-model="level.sectors">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
                             </td>
                             <td>
                                 <input type="text" style="width: 150px" name="helps" class="form-control" v-model="level.helps" placeholder="все или 1/2/3/...">
@@ -215,7 +217,9 @@
                         </tr>
                         <tr>
                             <td>
-                                <input type="text" style="width: 150px" name="sectors" class="form-control" v-model="clean_all_details.sectors" placeholder="да или нет">
+                                <select class="form-control" v-model="clean_all_details.sectors">
+                                    <option v-for="flag_value in flag_values">{{flag_value}}</option>
+                                </select>
                             </td>
                             <td>
                                 <input type="text" style="width: 150px" name="helps" class="form-control" v-model="clean_all_details.helps" placeholder="все или 1/2/3/...">
@@ -547,8 +551,8 @@
                 domain: '',
                 game_id: '',
                 clean_all: 'Нет',
-                clean_all_details: {sectors: '', helps: '', bonuses: '', pen_helps: ''},
-                levels: [{level_number: '', sectors: '', helps: '', bonuses: '', pen_helps: ''}],
+                clean_all_details: {sectors: 'Нет', helps: '', bonuses: '', pen_helps: ''},
+                levels: [{level_number: '', sectors: 'Нет', helps: '', bonuses: '', pen_helps: ''}],
                 flag_values: ['Да', 'Нет'],
                 show_error: false,
                 error_text: '',
@@ -559,7 +563,7 @@
           },
           methods: {
             add_level: function (){
-              this.levels.push({level_number: '', sectors: '', helps: '', bonuses: '', pen_helps: ''})
+              this.levels.push({level_number: '', sectors: 'Нет', helps: '', bonuses: '', pen_helps: ''})
               },
             delete_level: function (){
               this.levels.pop()
