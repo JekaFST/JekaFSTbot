@@ -147,10 +147,10 @@ class ENConnection(object):
         try:
             response = requests.post(self.login_url, data={'Login': self.login, 'Password': self.password}, headers={'Cookie': 'lang=ru'})
             cookie = response.request.headers['Cookie']
+            return cookie
         except Exception:
             logging.exception("Can't get cookies by login URL")
             raise Exception("Can't login to EN")
-        return cookie
 
     def get_level_ids(self):
         level_ids_dict = dict()
@@ -165,39 +165,44 @@ class ENConnection(object):
             level_ids_dict[option_tag.text] = option_tag.attrs['value']
         return level_ids_dict
 
-    def get_level_page(self, level_number, result=''):
+    def get_level_page(self, level_number):
         url = self.domain + obj_type_url_mapping['level']
         params = {'gid': self.gameid, 'level': level_number, 'swanswers': '1'}
         try:
             for i in xrange(2):
                 response = requests.get(url, params=params, headers={'Cookie': self.cookie})
-                if not response.status_code == 200:
-                    logging.warning("Failed to get level page %s" % level_number)
-                    result = ''
-                    break
-                if "your requests have been classified as robot's requests." in response.text.lower():
+                if response.status_code != 200:
+                    logging.log(logging.WARNING, "Failed to get level page %s" % level_number)
+                    return False
+                elif "your requests have been classified as robot's requests." in response.text.lower() and i == 0:
                     sleep(5)
                     self.cookie = self.update_cookies()
                     continue
-                result = response.text
-                break
+                elif "your requests have been classified as robot's requests." in response.text.lower() and i > 0:
+                    logging.log(logging.WARNING, "Failed to get level page %s" % level_number)
+                    return False
+                else:
+                    return response.text
         except Exception:
             logging.exception("Failed to get level page %s" % level_number)
-        return result
+            return False
 
     def create_en_object(self, url, data, type, params):
         try:
             for i in xrange(2):
                 response = requests.post(url, data=data, headers={'Cookie': self.cookie}, allow_redirects=False, params=params)
-                if not response.status_code == 302:
-                    logging.warning("Failed to create %s. Data: %s" % (type, str(data)))
-                    break
-                response_2 = requests.get(response.next.url, headers={'Cookie': self.cookie}, allow_redirects=False)
-                if "your requests have been classified as robot's requests." in response_2.text.lower():
+                if response.status_code != 302:
+                    logging.log(logging.WARNING, "Failed to create %s. Data: %s" % (type, str(data)))
+                    return False
+                elif 'NotHumanRequest' in response.next.url and i == 0:
                     sleep(5)
                     self.cookie = self.update_cookies()
                     continue
-                return True
+                elif 'NotHumanRequest' in response.next.url and i > 0:
+                    logging.log(logging.WARNING, "Failed to create %s. Data: %s" % (type, str(data)))
+                    return False
+                else:
+                    return True
         except Exception:
             logging.exception("Failed to create %s. Data: %s" % (type, str(data)))
 
@@ -206,33 +211,41 @@ class ENConnection(object):
         try:
             for i in xrange(2):
                 response = requests.get(url, params=params, headers={'Cookie': self.cookie})
-                if not response.status_code == 200:
-                    logging.warning("Failed to delete %s. Data: %s" % (type, str(params)))
-                    break
-                if "your requests have been classified as robot's requests." in response.text.lower():
+                if response.status_code != 200:
+                    logging.log(logging.WARNING, "Failed to delete %s. Data: %s" % (type, str(params)))
+                    return False
+                elif "your requests have been classified as robot's requests." in response.text.lower() and i == 0:
                     sleep(5)
                     self.cookie = self.update_cookies()
                     continue
-                break
+                elif "your requests have been classified as robot's requests." in response.text.lower() and i > 0:
+                    logging.log(logging.WARNING, "Failed to delete %s. Data: %s" % (type, str(params)))
+                    return False
+                else:
+                    return True
         except Exception:
             logging.exception("Failed to delete %s. Data: %s" % (type, str(params)))
 
-    def read_en_object(self, params, type, response=None):
+    def read_en_object(self, params, type):
         url = self.domain + obj_type_url_mapping[type]
         try:
             for i in xrange(2):
                 response = requests.get(url, params=params, headers={'Cookie': self.cookie})
-                if not response.status_code == 200:
-                    logging.warning("Failed to read %s. Data: %s" % (type, str(params)))
-                    break
-                if "your requests have been classified as robot's requests." in response.text.lower():
+                if response.status_code != 200:
+                    logging.log(logging.WARNING, "Failed to read %s. Data: %s" % (type, str(params)))
+                    return False
+                elif "your requests have been classified as robot's requests." in response.text.lower() and i == 0:
                     sleep(5)
                     self.cookie = self.update_cookies()
                     continue
-                break
+                elif "your requests have been classified as robot's requests." in response.text.lower() and i > 0:
+                    logging.log(logging.WARNING, "Failed to read %s. Data: %s" % (type, str(params)))
+                    return False
+                else:
+                    return response
         except Exception:
             logging.exception("Failed to read %s. Data: %s" % (type, str(params)))
-        return response
+            return False
 
 
 def make_help_data_and_url(row, domain, gameid, source_task_text=None, target_level_number=None):
@@ -494,6 +507,8 @@ def __parse_level_page_transfer(level_page):
 
 def clean_empty_first_sector(en_connection, level):
     level_page = en_connection.get_level_page(level)
+    if not level_page:
+        return False
     sector_id_to_clean = check_empty_first_sector(level_page)
     if sector_id_to_clean:
         params = {
@@ -502,7 +517,10 @@ def clean_empty_first_sector(en_connection, level):
             'delsector': sector_id_to_clean,
             'swanswers': 1
         }
-        en_connection.delete_en_object(params, 'sector')
+        result = en_connection.delete_en_object(params, 'sector')
+    else:
+        result = True
+    return result
 
 
 def get_exact_ids(exact_ids, all_ids):

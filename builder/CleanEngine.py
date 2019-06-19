@@ -51,84 +51,88 @@ class CleanEngine(object):
                 yield 'Очистка данных из уровня %s запущена' % level_to_clean['level_number']
 
                 level_page = en_connection.get_level_page(level_to_clean['level_number'])
-                sectors_to_del, helps_to_del, bonuses_to_del, pen_helps_to_del, _ = parse_level_page(level_page, level=level_to_clean)
-
-                if helps_to_del:
-                    logging.log(logging.INFO, "Cleanup of helps for level %s started" % level_to_clean['level_number'])
-                    for i, help_to_del in enumerate(helps_to_del):
-                        if i % 30 == 0:
-                            sleep(5)
-                        params = {
-                            'gid': game_id,
-                            'action': 'PromptDelete',
-                            'prid': help_to_del,
-                            'level': level_to_clean['level_number']
-                        }
-                        en_connection.delete_en_object(params, 'help')
-                    logging.log(logging.INFO, "Cleanup of helps for level %s finished" % level_to_clean['level_number'])
-
-                if bonuses_to_del:
-                    logging.log(logging.INFO, "Cleanup of bonuses for level %s started" % level_to_clean['level_number'])
-                    for i, bonus_to_del in enumerate(bonuses_to_del):
-                        if i % 30 == 0:
-                            sleep(5)
-                        params = {
-                            'gid': game_id,
-                            'action': 'delete',
-                            'bonus': bonus_to_del,
-                            'level': level_to_clean['level_number']
-                        }
-                        en_connection.delete_en_object(params, 'bonus')
-                    logging.log(logging.INFO, "Cleanup of bonuses for level %s finished" % level_to_clean['level_number'])
-
-                if pen_helps_to_del:
-                    logging.log(logging.INFO, "Cleanup of penalty helps for level %s started" % level_to_clean['level_number'])
-                    for i, pen_help_to_del in enumerate(pen_helps_to_del):
-                        if i % 30 == 0:
-                            sleep(5)
-                        params = {
-                            'gid': game_id,
-                            'action': 'PromptDelete',
-                            'prid': pen_help_to_del,
-                            'level': level_to_clean['level_number'],
-                            'penalty': '1'
-                        }
-                        en_connection.delete_en_object(params, 'pen_help')
-                    logging.log(logging.INFO, "Cleanup of penalty helps for level %s finished" % level_to_clean['level_number'])
-
-                if sectors_to_del:
-                    logging.log(logging.INFO,"Cleanup of sectors for level %s started" % level_to_clean['level_number'])
-                    for i, sector_to_del in enumerate(sectors_to_del):
-                        if i % 30 == 0:
-                            sleep(5)
-                        params = {
-                            'gid': en_connection.gameid,
-                            'level': level_to_clean['level_number'],
-                            'delsector': sector_to_del,
-                            'swanswers': 1
-                        }
-                        en_connection.delete_en_object(params, 'sector')
-                    logging.log(logging.INFO, "Cleanup of sectors for level %s finished" % level_to_clean['level_number'])
+                if not level_page:
+                    logging.log(logging.WARNING, "Cleanup of level %s failed" % level_to_clean['level_number'])
+                    yield 'Очистка данных из уровня %s не выполнена. Скрипт не смог получить уровень' % level_to_clean['level_number']
                 else:
-                    if level_to_clean['sectors'] and level_to_clean['sectors'].lower() == 'да':
+                    sectors_to_del, helps_to_del, bonuses_to_del, pen_helps_to_del, _ = parse_level_page(level_page, level=level_to_clean)
+
+                    if helps_to_del:
+                        logging.log(logging.INFO, "Cleanup of helps for level %s started" % level_to_clean['level_number'])
+                        for i, help_to_del in enumerate(helps_to_del):
+                            if i % 30 == 0:
+                                sleep(5)
+                            params = {
+                                'gid': game_id,
+                                'action': 'PromptDelete',
+                                'prid': help_to_del,
+                                'level': level_to_clean['level_number']
+                            }
+                            en_connection.delete_en_object(params, 'help')
+                        logging.log(logging.INFO, "Cleanup of helps for level %s finished" % level_to_clean['level_number'])
+
+                    if bonuses_to_del:
+                        logging.log(logging.INFO, "Cleanup of bonuses for level %s started" % level_to_clean['level_number'])
+                        for i, bonus_to_del in enumerate(bonuses_to_del):
+                            if i % 30 == 0:
+                                sleep(5)
+                            params = {
+                                'gid': game_id,
+                                'action': 'delete',
+                                'bonus': bonus_to_del,
+                                'level': level_to_clean['level_number']
+                            }
+                            en_connection.delete_en_object(params, 'bonus')
+                        logging.log(logging.INFO, "Cleanup of bonuses for level %s finished" % level_to_clean['level_number'])
+
+                    if pen_helps_to_del:
+                        logging.log(logging.INFO, "Cleanup of penalty helps for level %s started" % level_to_clean['level_number'])
+                        for i, pen_help_to_del in enumerate(pen_helps_to_del):
+                            if i % 30 == 0:
+                                sleep(5)
+                            params = {
+                                'gid': game_id,
+                                'action': 'PromptDelete',
+                                'prid': pen_help_to_del,
+                                'level': level_to_clean['level_number'],
+                                'penalty': '1'
+                            }
+                            en_connection.delete_en_object(params, 'pen_help')
+                        logging.log(logging.INFO, "Cleanup of penalty helps for level %s finished" % level_to_clean['level_number'])
+
+                    if sectors_to_del:
                         logging.log(logging.INFO,"Cleanup of sectors for level %s started" % level_to_clean['level_number'])
-                        answers = re.findall('divAnswersView_(\d+)', level_page)
-                        if answers:
-                            read_params = {
+                        for i, sector_to_del in enumerate(sectors_to_del):
+                            if i % 30 == 0:
+                                sleep(5)
+                            params = {
                                 'gid': en_connection.gameid,
                                 'level': level_to_clean['level_number'],
-                                'editanswers': answers[0],
-                                'swanswers': '1'
+                                'delsector': sector_to_del,
+                                'swanswers': 1
                             }
-                            response = en_connection.read_en_object(read_params, 'sector')
-                            if response:
-                                answers_data = get_answers_data(response.text, answers[0])
-                                del_answer_data, del_answer_url, params = make_del_answer_data_and_url(en_connection.domain, en_connection.gameid, answers_data, level_to_clean['level_number'], answers[0])
-                                en_connection.create_en_object(del_answer_url, del_answer_data, 'sector', params)
+                            en_connection.delete_en_object(params, 'sector')
                         logging.log(logging.INFO, "Cleanup of sectors for level %s finished" % level_to_clean['level_number'])
+                    else:
+                        if level_to_clean['sectors'] and level_to_clean['sectors'].lower() == 'да':
+                            logging.log(logging.INFO,"Cleanup of sectors for level %s started" % level_to_clean['level_number'])
+                            answers = re.findall('divAnswersView_(\d+)', level_page)
+                            if answers:
+                                read_params = {
+                                    'gid': en_connection.gameid,
+                                    'level': level_to_clean['level_number'],
+                                    'editanswers': answers[0],
+                                    'swanswers': '1'
+                                }
+                                response = en_connection.read_en_object(read_params, 'sector')
+                                if response:
+                                    answers_data = get_answers_data(response.text, answers[0])
+                                    del_answer_data, del_answer_url, params = make_del_answer_data_and_url(en_connection.domain, en_connection.gameid, answers_data, level_to_clean['level_number'], answers[0])
+                                    en_connection.create_en_object(del_answer_url, del_answer_data, 'sector', params)
+                            logging.log(logging.INFO, "Cleanup of sectors for level %s finished" % level_to_clean['level_number'])
 
-                yield 'Очистка данных из уровня %s выполнена' % level_to_clean['level_number']
-                logging.log(logging.INFO, "Cleanup of level %s finished" % level_to_clean['level_number'])
+                    yield 'Очистка данных из уровня %s выполнена' % level_to_clean['level_number']
+                    logging.log(logging.INFO, "Cleanup of level %s finished" % level_to_clean['level_number'])
             yield 'Проверьте правильность удаления данных из движка.'
         else:
             yield 'Очистка данных для данной игры не разрешено. Напишите @JekaFST в телеграмме для получения разрешения'

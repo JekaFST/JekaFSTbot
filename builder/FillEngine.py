@@ -111,7 +111,8 @@ class FillEngine(object):
                                 sector_data, sector_url, params = make_sector_data_and_url(sector, en_connection.domain, game_id)
                                 en_connection.create_en_object(sector_url, sector_data, 'sector', params)
                         logging.log(logging.INFO, "Filling of sectors for level %s is finished" % level)
-                        clean_empty_first_sector(en_connection, level)
+                        if not clean_empty_first_sector(en_connection, level):
+                            yield 'Проверьте правильность заполнения секторов по уровню %s' % level
                     except Exception:
                         logging.exception("Exception on sectors filling for level %s" % level)
                 yield 'Заполнение секторов выполнено'
