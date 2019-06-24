@@ -104,6 +104,7 @@ def get_index(root_path):
         return response
 
 
+# def run_app():
 def run_app(bot, queue):
     app = f.Flask(__name__)
 
