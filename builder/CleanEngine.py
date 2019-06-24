@@ -128,7 +128,9 @@ class CleanEngine(object):
                                 if response:
                                     answers_data = get_answers_data(response.text, answers[0])
                                     del_answer_data, del_answer_url, params = make_del_answer_data_and_url(en_connection.domain, en_connection.gameid, answers_data, level_to_clean['level_number'], answers[0])
-                                    en_connection.create_en_object(del_answer_url, del_answer_data, 'sector', params)
+                                    if not en_connection.create_en_object(del_answer_url, del_answer_data, 'sector', params):
+                                        yield 'Проверьте, что удаление секторов из уровня %s выполнено' % level_to_clean['level_number']
+                                        logging.log(logging.WARNING, "Check cleanup of sectors for level %s" % level_to_clean['level_number'])
                             logging.log(logging.INFO, "Cleanup of sectors for level %s finished" % level_to_clean['level_number'])
 
                     yield 'Очистка данных из уровня %s выполнена' % level_to_clean['level_number']

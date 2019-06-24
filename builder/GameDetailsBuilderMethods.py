@@ -205,6 +205,7 @@ class ENConnection(object):
                     return True
         except Exception:
             logging.exception("Failed to create %s. Data: %s" % (type, str(data)))
+            return False
 
     def delete_en_object(self, params, type):
         url = self.domain + obj_type_url_mapping[type]
@@ -225,6 +226,7 @@ class ENConnection(object):
                     return True
         except Exception:
             logging.exception("Failed to delete %s. Data: %s" % (type, str(params)))
+            return False
 
     def read_en_object(self, params, type):
         url = self.domain + obj_type_url_mapping[type]
