@@ -93,7 +93,10 @@ class TransferEngine(object):
                     response = source_en_conn.read_en_object(read_params, 'level')
                     if response:
                         lvl_ans_block_data, level_url, params = make_lvl_ans_block_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln)
-                        target_en_conn.create_en_object(level_url, lvl_ans_block_data, 'level_name', params)
+                        if not target_en_conn.create_en_object(level_url, lvl_ans_block_data, 'level_name', params):
+                            return False
+                    else:
+                        return False
 
                 if not check_all_sectors_required(level_page):
                     read_params = {
@@ -104,7 +107,10 @@ class TransferEngine(object):
                     response = source_en_conn.read_en_object(read_params, 'level')
                     if response:
                         lvl_sectors_required_data, level_sectors_required_url, params = make_lvl_sectors_required_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln)
-                        target_en_conn.create_en_object(level_sectors_required_url, lvl_sectors_required_data, 'level_name', params)
+                        if not target_en_conn.create_en_object(level_sectors_required_url, lvl_sectors_required_data, 'level_name', params):
+                            return False
+                    else:
+                        return False
 
                 read_params = {
                     'gid': source_en_conn.gameid,
@@ -113,7 +119,10 @@ class TransferEngine(object):
                 response = source_en_conn.read_en_object(read_params, 'level_name')
                 if response:
                     lvl_name_comment_data, level_url, params = make_lvl_name_comment_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln)
-                    target_en_conn.create_en_object(level_url, lvl_name_comment_data, 'level_name', params)
+                    if not target_en_conn.create_en_object(level_url, lvl_name_comment_data, 'level_name', params):
+                        return False
+                else:
+                    return False
 
                 read_params = {
                     'gid': source_en_conn.gameid,
@@ -123,7 +132,10 @@ class TransferEngine(object):
                 response = source_en_conn.read_en_object(read_params, 'level_timeout')
                 if response:
                     lvl_timeout_data, level_url, params = make_lvl_timeout_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln)
-                    target_en_conn.create_en_object(level_url, lvl_timeout_data, 'level', params)
+                    if not target_en_conn.create_en_object(level_url, lvl_timeout_data, 'level', params):
+                        return False
+                else:
+                    return False
 
             if task.lower() == 'да':
                 for i, task_id in enumerate(task_ids):
@@ -141,6 +153,10 @@ class TransferEngine(object):
                             task_data, task_url, params = make_task_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln)
                             if target_en_conn.create_en_object(task_url, task_data, 'task', params):
                                 DB.insert_game_transfer_row(source_en_conn.gameid, 'taskid', task_id)
+                            else:
+                                return False
+                        else:
+                            return False
 
             if bonuses.lower() == 'да':
                 for i, bonus_id in enumerate(bonus_ids):
@@ -159,6 +175,10 @@ class TransferEngine(object):
                             bonus_data, bonus_url, params = make_bonus_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, target_en_conn.level_ids_dict, response.text, target_ln)
                             if target_en_conn.create_en_object(bonus_url, bonus_data, 'bonus', params):
                                 DB.insert_game_transfer_row(source_en_conn.gameid, 'bonusid', bonus_id)
+                            else:
+                                return False
+                        else:
+                            return False
 
             if helps.lower() == 'да':
                 for i, help_id in enumerate(help_ids):
@@ -176,6 +196,10 @@ class TransferEngine(object):
                             help_data, help_url, params = make_help_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln)
                             if target_en_conn.create_en_object(help_url, help_data, 'help', params):
                                 DB.insert_game_transfer_row(source_en_conn.gameid, 'helpid', help_id)
+                            else:
+                                return False
+                        else:
+                            return False
 
             if pen_helps.lower() == 'да':
                 for i, pen_help_id in enumerate(pen_help_ids):
@@ -194,6 +218,10 @@ class TransferEngine(object):
                             pen_help_data, pen_help_url, params = make_penalty_help_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln)
                             if target_en_conn.create_en_object(pen_help_url, pen_help_data, 'PenaltyHelp', params):
                                 DB.insert_game_transfer_row(source_en_conn.gameid, 'penhelpid', pen_help_id)
+                            else:
+                                return False
+                        else:
+                            return False
 
             if sectors.lower() == 'да':
                 if sector_ids:
@@ -210,8 +238,12 @@ class TransferEngine(object):
                             response = source_en_conn.read_en_object(read_params, 'sector')
                             if response:
                                 sector_data, sector_url, params = make_sector_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln, sector_id)
-                                target_en_conn.create_en_object(sector_url, sector_data, 'sector', params)
-                                DB.insert_game_transfer_row(source_en_conn.gameid, 'sectorid', sector_id)
+                                if target_en_conn.create_en_object(sector_url, sector_data, 'sector', params):
+                                    DB.insert_game_transfer_row(source_en_conn.gameid, 'sectorid', sector_id)
+                                else:
+                                    return False
+                            else:
+                                return False
                     if not clean_empty_first_sector(target_en_conn, target_ln):
                         return False
                 else:
@@ -226,7 +258,11 @@ class TransferEngine(object):
                         response = source_en_conn.read_en_object(read_params, 'sector')
                         if response:
                             sector_data, sector_url, params = make_sector_data_and_url(None, target_en_conn.domain, target_en_conn.gameid, response.text, target_ln, answers[0])
-                            target_en_conn.create_en_object(sector_url, sector_data, 'sector', params)
-                            DB.insert_game_transfer_row(source_en_conn.gameid, 'answersid', answers[0])
+                            if target_en_conn.create_en_object(sector_url, sector_data, 'sector', params):
+                                DB.insert_game_transfer_row(source_en_conn.gameid, 'answersid', answers[0])
+                            else:
+                                return False
+                        else:
+                            return False
 
             return True
