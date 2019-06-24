@@ -68,7 +68,9 @@ class CleanEngine(object):
                                 'prid': help_to_del,
                                 'level': level_to_clean['level_number']
                             }
-                            en_connection.delete_en_object(params, 'help')
+                            if not en_connection.delete_en_object(params, 'help'):
+                                yield 'Проверьте удаление подсказки %s из уровня %s' % (str(i + 1), level_to_clean['level_number'])
+                                logging.log(logging.WARNING, "Check cleanup of help %s for level %s" % (str(i + 1), level_to_clean['level_number']))
                         logging.log(logging.INFO, "Cleanup of helps for level %s finished" % level_to_clean['level_number'])
 
                     if bonuses_to_del:
@@ -82,7 +84,9 @@ class CleanEngine(object):
                                 'bonus': bonus_to_del,
                                 'level': level_to_clean['level_number']
                             }
-                            en_connection.delete_en_object(params, 'bonus')
+                            if not en_connection.delete_en_object(params, 'bonus'):
+                                yield 'Проверьте удаление бонуса %s из уровня %s' % (str(i + 1), level_to_clean['level_number'])
+                                logging.log(logging.WARNING, "Check cleanup of bonus %s for level %s" % (str(i + 1), level_to_clean['level_number']))
                         logging.log(logging.INFO, "Cleanup of bonuses for level %s finished" % level_to_clean['level_number'])
 
                     if pen_helps_to_del:
@@ -97,7 +101,9 @@ class CleanEngine(object):
                                 'level': level_to_clean['level_number'],
                                 'penalty': '1'
                             }
-                            en_connection.delete_en_object(params, 'pen_help')
+                            if not en_connection.delete_en_object(params, 'pen_help'):
+                                yield 'Проверьте удаление штрафной подсказки %s из уровня %s' % (str(i + 1), level_to_clean['level_number'])
+                                logging.log(logging.WARNING, "Check cleanup of penalty help %s for level %s" % (str(i + 1), level_to_clean['level_number']))
                         logging.log(logging.INFO, "Cleanup of penalty helps for level %s finished" % level_to_clean['level_number'])
 
                     if sectors_to_del:
@@ -111,7 +117,9 @@ class CleanEngine(object):
                                 'delsector': sector_to_del,
                                 'swanswers': 1
                             }
-                            en_connection.delete_en_object(params, 'sector')
+                            if not en_connection.delete_en_object(params, 'sector'):
+                                yield 'Проверьте удаление сектора %s из уровня %s' % (str(i + 1), level_to_clean['level_number'])
+                                logging.log(logging.WARNING, "Check cleanup of sector %s for level %s" % (str(i + 1), level_to_clean['level_number']))
                         logging.log(logging.INFO, "Cleanup of sectors for level %s finished" % level_to_clean['level_number'])
                     else:
                         if level_to_clean['sectors'] and level_to_clean['sectors'].lower() == 'да':
