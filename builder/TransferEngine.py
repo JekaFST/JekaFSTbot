@@ -69,8 +69,8 @@ class TransferEngine(object):
                         yield 'Перенос данных из %s уровня в %s уровень выполнен' % (level_to_transfer['source_ln'], level_to_transfer['target_ln'])
                         logging.log(logging.INFO, "Moving of source level %s to target level %s is finished successfully" % (level_to_transfer['source_ln'], level_to_transfer['target_ln']))
                     else:
-                        yield 'Перенос данных из %s уровня в %s уровень не выполнен' % (level_to_transfer['source_ln'], level_to_transfer['target_ln'])
-                        logging.log(logging.WARNING, "Moving of source level %s to target level %s is failed" % (level_to_transfer['source_ln'], level_to_transfer['target_ln']))
+                        yield 'Перенос данных из %s уровня в %s уровень не выполнен до конца' % (level_to_transfer['source_ln'], level_to_transfer['target_ln'])
+                        logging.log(logging.WARNING, "Moving of source level %s to target level %s is incomplete" % (level_to_transfer['source_ln'], level_to_transfer['target_ln']))
 
                 yield 'Проверьте правильность переноса данных.'
             else:
