@@ -30,6 +30,15 @@
         <div id="all_en_helpers">
             <div class="row">
                 <div class="col-sm-3 col-md-3 sidebar">
+                    <h4 align="center"><b>МЕНЮ</b></h4>
+                </div>
+                <div class="col-sm-9 main">
+                    По всем вопросам можно писать @JekaFST в телеграм.<br>
+                    <b>Также в аренду сдается игровой бот. <a href="https://jekafstbot.herokuapp.com/instruction" target="_blank">Инструкция</a>.</b><br>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3 col-md-3 sidebar">
                     <ul class="nav nav-sidebar">
                         <li v-for="app in apps">
                               <button type="button" class="btn btn-sm btn-info col-sm-10"
@@ -43,10 +52,6 @@
                     </ul>
                 </div>
                 <div class="col-sm-9 main">
-                    <div>
-                        По всем вопросам можно писать @JekaFST в телеграм.<br>
-                        <b>Также в аренду сдается игровой бот. <a href="https://jekafstbot.herokuapp.com/instruction" target="_blank">Инструкция</a>.</b><br>
-                    </div>
                     <div v-if="selected_app">
                         <h3>{{ selected_app.name }}</h3>
                         <div v-html="selected_app.content"></div>
