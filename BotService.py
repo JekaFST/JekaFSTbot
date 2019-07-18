@@ -137,7 +137,8 @@ def run_app(bot, queue):
             title = str(message.chat.title.encode('utf-8')) if message.chat.title else ''
             text = '<b>%s</b> запрашивает разрешение на работу с ботом из чата "%s"\r\nchat_id: %s' % \
                    (str(message.from_user.username.encode('utf-8')), title, str(message.chat.id))
-            admin_id = message.from_user.id if message.from_user.id in [66204553] else 45839899
+            # admin_id = message.from_user.id if message.from_user.id in [66204553] else 45839899
+            admin_id = 45839899
             bot.send_message(admin_id, text, parse_mode='HTML')
             bot.send_message(message.chat.id, 'Запрос на разрешение использования бота отправлен администратору\n'
                                               'Если вам не придет ответ в течение нескольких часов - напишите в личку @JekaFST',
@@ -161,7 +162,8 @@ def run_app(bot, queue):
                 title = str(message.chat.title.encode('utf-8')) if message.chat.title else ''
                 text = '<b>%s</b> запрашивает разрешение на игру %s для чата "%s"\r\nchat_id: %s' % \
                        (str(message.from_user.username.encode('utf-8')), game_id, title, str(message.chat.id))
-                admin_id = message.from_user.id if message.from_user.id in [66204553] else 45839899
+                # admin_id = message.from_user.id if message.from_user.id in [66204553] else 45839899
+                admin_id = 45839899
                 bot.send_message(admin_id, text, parse_mode='HTML')
                 bot.send_message(message.chat.id, 'Запрос на разрешение игры для этого чата отправлен администратору\n'
                                                   'Если вам не придет ответ в течение нескольких часов - напишите в личку @JekaFST',
@@ -192,7 +194,7 @@ def run_app(bot, queue):
 
     @bot.message_handler(commands=['add'])
     def add_chat_to_allowed(message):
-        if message.chat.id not in [45839899, 66204553]:
+        if message.chat.id not in [45839899]:  # 66204553
             bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
             return
         chat_id = int(re.search(r'[-\d]+', str(message.text.encode('utf-8'))).group(0))
@@ -208,7 +210,7 @@ def run_app(bot, queue):
 
     @bot.message_handler(commands=['add_game_id'])
     def add_game_id(message):
-        if message.chat.id not in [45839899, 66204553]:
+        if message.chat.id not in [45839899]:  # 66204553
             bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
             return
         chat_id = int(re.findall(r':\s+([-\d]+)$', str(message.text.encode('utf-8')))[0])
