@@ -28,35 +28,12 @@ class GoogleDocConnection(object):
             creds = tools.run_flow(flow, store)
         return creds
 
-    def get_move_setup(self, RANGE_NAME='Move_setup', move_all=False):
-        transfer_settings = dict()
-        try:
-            result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
-        except:
-            raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
-        values = result.get('values', [])
-        for row in values:
-            if 'move_all_levels' in row:
-                move_all = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
-            if 'level' in row:
-                transfer_settings['level'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
-            if 'task' in row:
-                transfer_settings['task'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
-            if 'helps' in row:
-                transfer_settings['helps'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
-            if 'bonuses' in row:
-                transfer_settings['bonuses'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
-            if 'sectors' in row:
-                transfer_settings['sectors'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
-            if 'pen_helps' in row:
-                transfer_settings['pen_helps'] = True if len(row) > 1 and row[1].lower() in ['yes', 'y', 'true'] else False
-
-        return move_all, transfer_settings
-
     def get_levels_details(self, RANGE_NAME='LevelDetails'):
         try:
             result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
-        except:
+        except Exception as e:
+            if e.resp.status == 403:
+                raise Exception('Нет доступа на просмотр гуглдока для jekafst@gmail.com')
             raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         return values
@@ -64,7 +41,9 @@ class GoogleDocConnection(object):
     def get_helps(self, RANGE_NAME='Helps'):
         try:
             result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
-        except:
+        except Exception as e:
+            if e.resp.status == 403:
+                raise Exception('Нет доступа на просмотр гуглдока для jekafst@gmail.com')
             raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         return values
@@ -72,17 +51,20 @@ class GoogleDocConnection(object):
     def get_bonuses(self, RANGE_NAME='Bonuses'):
         try:
             result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
-        except:
+        except Exception as e:
+            if e.resp.status == 403:
+                raise Exception('Нет доступа на просмотр гуглдока для jekafst@gmail.com')
             raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         return values
-
 
     def get_sectors(self, RANGE_NAME='Sectors'):
         level_sectors_dict = dict()
         try:
             result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
-        except:
+        except Exception as e:
+            if e.resp.status == 403:
+                raise Exception('Нет доступа на просмотр гуглдока для jekafst@gmail.com')
             raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         for row in values:
@@ -94,7 +76,9 @@ class GoogleDocConnection(object):
     def get_penalty_helps(self, RANGE_NAME='PenaltyHelps'):
         try:
             result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
-        except:
+        except Exception as e:
+            if e.resp.status == 403:
+                raise Exception('Нет доступа на просмотр гуглдока для jekafst@gmail.com')
             raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         return values
@@ -102,35 +86,12 @@ class GoogleDocConnection(object):
     def get_tasks(self, RANGE_NAME='Tasks'):
         try:
             result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
-        except:
+        except Exception as e:
+            if e.resp.status == 403:
+                raise Exception('Нет доступа на просмотр гуглдока для jekafst@gmail.com')
             raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
         values = result.get('values', [])[1:]
         return values
-
-    def get_cleanup_level_rows(self, RANGE_NAME='Cleanup'):
-        try:
-            result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
-        except:
-            raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
-        values = result.get('values', [])[1:]
-        return values
-
-    def get_move_levels_mapping(self, RANGE_NAME='Move_exact_levels'):
-        try:
-            result = self.service.spreadsheets().values().get(spreadsheetId=self.SPREADSHEET_ID, range=RANGE_NAME).execute()
-        except:
-            raise IndexError('%s sheet is not found in google doc' % RANGE_NAME)
-        values = result.get('values', [])[1:]
-        move_levels_mappings = [{'source_ln': row[6],
-                                 'target_ln': row[7],
-                                 'level': True if row[0] and row[0].lower() in ['yes', 'y', 'true'] else False,
-                                 'task': True if row[1] and row[1].lower() in ['yes', 'y', 'true'] else False,
-                                 'helps': True if row[2] and row[2].lower() in ['yes', 'y', 'true'] else False,
-                                 'bonuses': True if row[3] and row[3].lower() in ['yes', 'y', 'true'] else False,
-                                 'sectors': True if row[4] and row[4].lower() in ['yes', 'y', 'true'] else False,
-                                 'pen_helps': True if row[5] and row[5].lower() in ['yes', 'y', 'true'] else False,
-                                 } for row in values]
-        return move_levels_mappings
 
 
 class ENConnection(object):
