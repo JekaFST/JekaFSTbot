@@ -607,7 +607,7 @@ def run_app(bot, queue):
             get_codes_links_task = Task(message.chat.id, 'get_codes_links', session_id=message.chat.id, message_id=message.message_id)
             queue.put((99, get_codes_links_task))
 
-    @bot.message_handler(commands=['get_map_file'])
+    @bot.message_handler(commands=['kml'])
     def get_map_file(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
