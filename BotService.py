@@ -511,7 +511,7 @@ def run_app(bot, queue):
         else:
             bot.send_message(message.chat.id, 'Тег не добавлен в обработчикб повторите попытку')
 
-    @bot.message_handler(commands=['send_ll'])
+    @bot.message_handler(commands=['ll'])
     def send_live_location(message):
         if message.chat.id == -1001204488259:
             return
@@ -570,7 +570,7 @@ def run_app(bot, queue):
             clean_live_location_task = Task(message.chat.id, 'clean_ll', session_id=main_chat_id)
             queue.put((99, clean_live_location_task))
 
-    @bot.message_handler(commands=['add_points_ll'])
+    @bot.message_handler(commands=['addll'])
     def add_points_live_location(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
         if allowed and Validations.check_session_available(message.chat.id, bot):
