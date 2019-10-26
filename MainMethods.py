@@ -362,10 +362,10 @@ def send_code_main(task, bot):
         send_code_to_level(task.code, bot, task.chat_id, task.message_id, session)
     else:
         try:
-            level_number = re.findall(r'([\d]+)\s*[!\.]', task.code)[0]
-            code = re.findall(r'[!\.]\s*(.+)', task.code)[0]
+            level_number = re.findall(r'([\d]+)\s*[!\./]', task.code)[0]
+            code = re.findall(r'[!\./]\s*(.+)', task.code)[0]
         except Exception:
-            bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>!номер уровня!код</b>',
+            bot.send_message(task.chat_id, '\xE2\x9D\x97 Укажите уровень: <b>(! или . или /)номер уровня(! или . или /)код</b>',
                              reply_to_message_id=task.message_id, parse_mode='HTML')
             return
         send_code_to_storm_level(code, level_number, bot, task.chat_id, task.message_id, session)
