@@ -620,6 +620,10 @@ def run_app(bot, queue):
     def send_instruction(message):
         bot.send_message(message.chat.id, 'https://jekafstbot.herokuapp.com/instruction')
 
+    @bot.message_handler(commands=[''])
+    def send_code_command(message):
+        bot.send_message(message.chat.id, 'https://jekafstbot.herokuapp.com/instruction'
+
     @bot.message_handler(regexp='^[!\.]\s*(.+)')
     def main_code_processor(message):
         allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
