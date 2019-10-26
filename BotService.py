@@ -246,7 +246,7 @@ def run_app(bot, queue):
     def help(message):
         allowed, _, _ = Validations.check_permission(message.chat.id, bot)
         if allowed:
-            bot.send_message(message.chat.id, helptext)
+            bot.send_message(message.chat.id, helptext, parse_mode='HTML')
 
     @bot.message_handler(commands=['start_session'])
     def start_session(message):
