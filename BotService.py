@@ -509,7 +509,7 @@ def run_app(bot, queue):
         if DB.insert_tag_in_tags_list(tag_to_add):
             bot.send_message(message.chat.id, 'Тег успешно добавлен в обработчик')
         else:
-            bot.send_message(message.chat.id, 'Тег не добавлен в обработчикб повторите попытку')
+            bot.send_message(message.chat.id, 'Тег не добавлен в обработчик, повторите попытку')
 
     @bot.message_handler(commands=['ll'])
     def send_live_location(message):
@@ -613,7 +613,23 @@ def run_app(bot, queue):
         if allowed and Validations.check_session_available(message.chat.id, bot):
 
             main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
-            get_map_file_task = Task(message.chat.id, 'get_map_file', session_id=main_chat_id, message_id=message.message_id)
+            points = list()
+            chat_points = re.findall(
+                r'.+\s*-\s*\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}\s*-\s*.+|'
+                r'.+\s*-\s*\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}\s*-\s*.+|'
+                r'\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}\s*-\s*.+|'
+                r'\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}\s*-\s*.+|'
+                r'.+\s*-\s*\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}|'
+                r'.+\s*-\s*\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}|'
+                r'\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}|'
+                r'\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}', message.text, re.U)
+            for point in chat_points:
+                points.append({
+                    'name': re.findall(r'(.+)\s*-\s*\d\d\.\d{4,7}', point, re.U)[0] if re.findall(r'(.+)\s*-\s*\d\d\.\d{4,7}', point, re.U) else None,
+                    'coords': re.findall(r'\d\d\.\d{4,7},\s{,3}\d\d\.\d{4,7}|\d\d\.\d{4,7}\s{1,3}\d\d\.\d{4,7}', point)[0],
+                    'description': re.findall(r'\d\d\.\d{4,7}\s*-\s*(.+)', point, re.U)[0] if re.findall(r'\d\d\.\d{4,7}\s*-\s*(.+)', point, re.U) else None
+                })
+            get_map_file_task = Task(message.chat.id, 'get_map_file', session_id=main_chat_id, points=points, message_id=message.message_id)
             queue.put((99, get_map_file_task))
 
     @bot.message_handler(commands=['instruction'])

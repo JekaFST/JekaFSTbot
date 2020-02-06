@@ -635,8 +635,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
         DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
 
 
-def send_map_file(bot, chat_id, session, locations, message_id):
-    # os.chdir(os.getcwd() + '/static/map')
+def __prepare_locations_kml(session, locations):
     kml = simplekml.Kml()
     level_number = DBLevels.get_level_number(session['sessionid'], session['currlevelid'])
     filename = 'level' + str(level_number) + '_' + str(session['sessionid'])[-4:] + '.kml'
@@ -647,6 +646,30 @@ def send_map_file(bot, chat_id, session, locations, message_id):
     if os.path.exists(filename):
         os.remove(filename)
     kml.save(filename)
+    return filename
+
+
+def __prepare_points_kml(points):
+    kml = simplekml.Kml()
+    filename = 'kml_file.kml'
+    for point in points:
+        latitude = re.findall(r'\d\d\.\d{4,7}', str(point['coords']))[0]
+        longitude = re.findall(r'\d\d\.\d{4,7}', str(point['coords']))[1]
+        kml.newpoint(name=point['name'], coords=[(float(longitude), float(latitude))], description=point['description'])
+    if os.path.exists(filename):
+        os.remove(filename)
+    kml.save(filename)
+    return filename
+
+
+def send_map_file(bot, chat_id, session, message_id, locations=None, points=None):
+    # os.chdir(os.getcwd() + '/static/map')
+    if points:
+        filename = __prepare_points_kml(points)
+    elif locations:
+        filename = __prepare_locations_kml(session, locations)
+    else:
+        raise Exception
     doc = open(filename, 'rb')
     bot.send_document(chat_id, doc, reply_to_message_id=message_id)
     doc.close()

@@ -514,7 +514,17 @@ def get_codes_links(task, bot):
 def get_map_file(task, bot):
     session = DBSession.get_session(task.session_id)
     locations = json.loads(session['locations'])
-    if not locations:
-        bot.send_message(task.chat_id, 'Нет координат для отправки')
-        return
-    send_map_file(bot, task.chat_id, session, locations, task.message_id)
+    if task.points:
+        send_map_file(bot, task.chat_id, session, task.message_id, points=task.points)
+    elif locations:
+        send_map_file(bot, task.chat_id, session, task.message_id, locations=locations)
+    else:
+        bot.send_message(task.chat_id, 'Нет координат для отправки ни из чата, ни из движка\n'
+                                       'Шаблон для получения kml файла из чата:\n'
+                                       'название точки - корды - описание точки\n'
+                                       'или\n'
+                                       'название точки - корды\n'
+                                       'или\n'
+                                       'корды - описание точки\n'
+                                       'или\n'
+                                       'корды')

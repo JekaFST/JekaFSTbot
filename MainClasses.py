@@ -68,7 +68,7 @@ class Validations(object):
 
 class Task(object):
     def __init__(self, chat_id, type, session_id=None, message_id=None, user_id=None, queue=None, new_delay=None,
-                 new_login=None, new_password=None, new_domain=None, duration=None, new_game_id=None,
+                 new_login=None, new_password=None, new_domain=None, duration=None, new_game_id=None, points=None,
                  new_channel_name=None, code=None, coords=None, storm_level_number=None, point=None, points_dict=None):
         self.chat_id = chat_id
         self.type = type
@@ -88,3 +88,4 @@ class Task(object):
         self.duration = duration
         self.point = point
         self.points_dict = points_dict
+        self.points = points
