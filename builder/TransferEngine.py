@@ -40,13 +40,28 @@ class TransferEngine(object):
         move_all = request.get('move_all')
         if move_all:
             move_all_details = request.get('move_all_details')
-            levels_to_transfer = [{'source_ln': level_number, 'sectors': move_all_details['sectors'], 'helps': move_all_details['helps'],
-                                   'bonuses': move_all_details['bonuses'], 'pen_helps': move_all_details['pen_helps'],
-                                   'task': move_all_details['task'], 'level': move_all_details['level']} for level_number in en_connection.level_ids_dict.keys()]
+            levels_to_transfer = [{
+                'source_ln': level_number,
+                'target_ln': level_number,
+                'sectors': move_all_details['sectors'],
+                'helps': move_all_details['helps'],
+                'bonuses': move_all_details['bonuses'],
+                'pen_helps': move_all_details['pen_helps'],
+                'task': move_all_details['task'],
+                'level': move_all_details['level']
+            } for level_number in en_connection.level_ids_dict.keys()]
         else:
             levels = request.get('levels')
-            levels_to_transfer = [{'source_ln': level['source_ln'], 'target_ln': level['target_ln'], 'sectors': level['sectors'], 'helps': level['helps'],
-                                'bonuses': level['bonuses'], 'pen_helps': level['pen_helps'], 'task': level['task'], 'level': level['level']} for level in levels]
+            levels_to_transfer = [{
+                'source_ln': level['source_ln'],
+                'target_ln': level['target_ln'],
+                'sectors': level['sectors'],
+                'helps': level['helps'],
+                'bonuses': level['bonuses'],
+                'pen_helps': level['pen_helps'],
+                'task': level['task'],
+                'level': level['level']
+            } for level in levels]
         return levels_to_transfer
 
     def transfer_game(self, request):
