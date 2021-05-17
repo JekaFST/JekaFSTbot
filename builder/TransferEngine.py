@@ -40,7 +40,7 @@ class TransferEngine(object):
         move_all = request.get('move_all')
         if move_all:
             move_all_details = request.get('move_all_details')
-            levels_to_transfer = [{'level_number': level_number, 'sectors': move_all_details['sectors'], 'helps': move_all_details['helps'],
+            levels_to_transfer = [{'source_ln': level_number, 'sectors': move_all_details['sectors'], 'helps': move_all_details['helps'],
                                    'bonuses': move_all_details['bonuses'], 'pen_helps': move_all_details['pen_helps'],
                                    'task': move_all_details['task'], 'level': move_all_details['level']} for level_number in en_connection.level_ids_dict.keys()]
         else:
