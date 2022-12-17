@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
+# import sys
+# import importlib
 import telebot
 import logging
 import threading
 from DBMethods import DB
 from BotService import run_app
-from Queue import PriorityQueue
+from queue import PriorityQueue
 from MainMethods import reload_backup
 from TaskMathodMap import TaskMethodMap
 from Const import prod, num_worker_threads
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+# importlib.reload(sys)
+# sys.setdefaultencoding('utf-8')
 logging.basicConfig(level=logging.INFO)
 
 
