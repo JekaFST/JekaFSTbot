@@ -98,7 +98,7 @@ class ExceptionHandler(object):
         def wrapped(bot, chat_id, session):
             r1 = None
             r2 = None
-            for i in xrange(2):
+            for i in range(2):
                 try:
                     r1, r2 = function(bot, chat_id, session)
                     break

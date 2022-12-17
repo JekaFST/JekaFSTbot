@@ -88,7 +88,7 @@ class ConnectionPool(object):
         self.max_conns = 15
 
     def init_pool(self):
-        for _ in xrange(self.max_conns):
+        for _ in range(self.max_conns):
             db_connection = DBConnection()
             db_connection.open_db_conn()
             self.connection_pool.append(db_connection)

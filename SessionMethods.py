@@ -149,7 +149,7 @@ def get_current_game_model(session, bot, chat_id, from_updater, params=None):
         params = {'json': '1'}
     game_model = None
     normal = None
-    for i in xrange(2):
+    for i in range(2):
         if not i == 0:
             _ = upd_session_cookie(session, bot, chat_id)
             session = DBSession.get_session(session['sessionid'])
@@ -176,8 +176,8 @@ def get_current_game_model(session, bot, chat_id, from_updater, params=None):
                         'подождать минуту или несколько минут и снова запустить слежение'
                 bot.send_message(chat_id, reply)
                 try:
-                    print response
-                    print response.text
+                    print(response)
+                    print(response.text)
                 except:
                     pass
     return game_model, normal
@@ -396,7 +396,7 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
 
     code_request = generate_code_request(level, code, bonus_only)
 
-    for i in xrange(2):
+    for i in range(2):
         if not i == 0:
             _ = upd_session_cookie(session, bot, chat_id)
             session = DBSession.get_session(session['sessionid'])

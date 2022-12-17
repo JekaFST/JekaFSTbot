@@ -152,7 +152,7 @@ def handle_coords(text):
             i = 1 if not locations else len(locations.keys()) + 1
             coord_Y_G = make_Y_G_links(coord) + ' - <b>' + str(i) + '</b>'
             text = text.replace(coord, coord_Y_G)
-            if unicode(i) not in locations.keys():
+            if str(i) not in locations.keys():
                 indexes.append(i)
             locations[str(i)] = coord
 
@@ -270,4 +270,4 @@ def find_coords(text):
 
 text, images, indexes = send_object_text(text)
 telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo").send_message(45839899, text, parse_mode='HTML')
-print text
+print(text)

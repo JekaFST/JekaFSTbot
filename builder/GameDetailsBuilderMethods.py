@@ -130,7 +130,7 @@ class ENConnection(object):
         url = self.domain + obj_type_url_mapping['level']
         params = {'gid': self.gameid, 'level': level_number, 'swanswers': '1'}
         try:
-            for i in xrange(2):
+            for i in range(2):
                 response = requests.get(url, params=params, headers={'Cookie': self.cookie})
                 if response.status_code != 200:
                     logging.log(logging.WARNING, "Failed to get level page %s" % level_number)
@@ -150,7 +150,7 @@ class ENConnection(object):
 
     def create_en_object(self, url, data, type, params):
         try:
-            for i in xrange(2):
+            for i in range(2):
                 response = requests.post(url, data=data, headers={'Cookie': self.cookie}, allow_redirects=False, params=params)
                 if response.status_code != 302:
                     logging.log(logging.WARNING, "Failed to create %s. Data: %s" % (type, str(data)))
@@ -171,7 +171,7 @@ class ENConnection(object):
     def delete_en_object(self, params, type):
         url = self.domain + obj_type_url_mapping[type]
         try:
-            for i in xrange(2):
+            for i in range(2):
                 response = requests.get(url, params=params, headers={'Cookie': self.cookie})
                 if response.status_code != 200:
                     logging.log(logging.WARNING, "Failed to delete %s. Data: %s" % (type, str(params)))
@@ -192,7 +192,7 @@ class ENConnection(object):
     def read_en_object(self, params, type):
         url = self.domain + obj_type_url_mapping[type]
         try:
-            for i in xrange(2):
+            for i in range(2):
                 response = requests.get(url, params=params, headers={'Cookie': self.cookie})
                 if response.status_code != 200:
                     logging.log(logging.WARNING, "Failed to read %s. Data: %s" % (type, str(params)))
