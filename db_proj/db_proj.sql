@@ -1,5 +1,5 @@
 CREATE TABLE public.session_config (
-    session_id          bigint, -- PRIMARY KEY
+    session_id          bigint PRIMARY KEY,
     active              boolean,
     login               varchar,
     password            varchar,
@@ -17,15 +17,9 @@ CREATE TABLE public.session_config (
     send_codes          boolean,
     storm_game          boolean,
     curr_level_id       integer,
-    sectors_to_close    integer,
-    sectors_message_id  integer,
-    locations           varchar,
-    ll_message_ids      integer
+    sectors_to_close    varchar,
+    sectors_message_id  bigint,
+    locations           jsonb,
+    ll_message_ids      jsonb
 --     CONSTRAINT
---     code        char(5) CONSTRAINT firstkey PRIMARY KEY,
---     title       varchar(40) NOT NULL,
---     did         integer NOT NULL,
---     date_prod   date,
---     kind        varchar(10),
---     len         interval hour to minute
 )

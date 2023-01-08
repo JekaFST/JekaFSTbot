@@ -497,8 +497,8 @@ def add_custom_live_locations(task, bot):
 
 
 def clean_live_locations(task, bot):
-    DBSession.update_json_field(task.session_id, 'llmessageids', {})
-    DBSession.update_json_field(task.session_id, 'locations', {})
+    DBSession.update_json_field(task.session_id, 'llmessageids', None)
+    DBSession.update_json_field(task.session_id, 'locations', None)
 
 
 def get_codes_links(task, bot):
