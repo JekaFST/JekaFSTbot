@@ -10,108 +10,112 @@ connection_pool.init_pool()
 class DBSession(object):
     @staticmethod
     def get_sessions_ids():
-        sql = "SELECT sessionid FROM sessionconfig"
+        sql = "SELECT session_id FROM session_config"
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def insert_session(main_chat_id):
-        sql = """INSERT INTO SessionConfig
-                (SessionId, Active, Login, Password, ENDomain, GameId, ChannelName, Cookie, GameURL, LoginURL,
-                GameModelStatus, UseChannel, StopUpdater, PutUpdaterTask, Delay, SendCodes, StormGame, CurrLevelId,
-                sectorstoclose, sectorsmessageid, Locations, llmessageids)
-                VALUES (%s, False, '', '', '', '', '', '', NULL, NULL, '', False, True, NULL, 2, True, NULL, NULL,
-                '', NULL, '{}', '{}')
+        sql = """
+                    INSERT INTO session_config
+                    (session_id, active, login, password, en_domain, game_id, channel_name, cookie, game_url, login_url,
+                    game_model_status, use_channel, stop_updater, put_updater_task, delay, send_codes, storm_game, curr_level_id,
+                    sectors_to_close, sectors_message_id, locations, ll_message_ids)
+                    VALUES (%s, False, '', '', '', '', '', '', NULL, NULL, '', False, True, NULL, 2, True, NULL, NULL,
+                    '', NULL, '{}', '{}')
               """ % main_chat_id
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def get_session(session_id):
-        sql = "SELECT * FROM SessionConfig WHERE sessionid = %s" % session_id
+        sql = "SELECT * FROM session_config WHERE session_id = %s" % session_id
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_dict_select_cur(sql)
             return rows[0] if rows else None
 
     @staticmethod
     def delete_session(session_id):
-        sql = "DELETE FROM SessionConfig WHERE sessionid = %s" % session_id
+        sql = "DELETE FROM session_config WHERE session_id = %s" % session_id
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def get_all_sessions():
-        sql = "SELECT * FROM SessionConfig"
+        sql = "SELECT * FROM session_config"
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_dict_select_cur(sql)
             return rows if rows else list()
 
     @staticmethod
     def update_session_urls(sessionid, urls):
-        sql = """UPDATE SessionConfig
-                SET gameurl = '%s', loginurl = '%s'
-                WHERE sessionid = %s
+        sql = """
+                    UPDATE session_config
+                    SET game_url = '%s', login_url = '%s'
+                    WHERE session_id = %s
               """ % (urls['game_url'], urls['login_url'], sessionid)
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def drop_session_vars(session_id):
-        sql = """UPDATE SessionConfig
-                SET CurrLevelId = NULL, GameURL = NULL, LoginURL = NULL, StormGame = NULL,
-                SendCodes = True, GameModelStatus = '', PutUpdaterTask = Null, StopUpdater = True, Locations = '{}', llmessageids = '{}'
-                WHERE sessionid = %s
+        sql = """
+                    UPDATE session_config
+                    SET CurrLevelId = NULL, GameURL = NULL, LoginURL = NULL, StormGame = NULL,
+                    SendCodes = True, GameModelStatus = '', PutUpdaterTask = Null, StopUpdater = True, Locations = '{}', llmessageids = '{}'
+                    WHERE session_id = %s
               """ % session_id
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def get_locations(session_id):
-        sql = "SELECT locations FROM SessionConfig WHERE sessionid = %s" % session_id
+        sql = "SELECT locations FROM session_config WHERE session_id = %s" % session_id
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return json.loads(rows[0][0])
 
     @staticmethod
     def update_json_field(session_id, header, value):
-        sql = """UPDATE SessionConfig
-                        SET %s = '%s'
-                        WHERE sessionid = %s
-                      """ % (header, json.dumps(value), session_id)
+        sql = """
+                    UPDATE session_config
+                    SET %s = '%s'
+                    WHERE session_id = %s
+              """ % (header, json.dumps(value), session_id)
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def update_text_field(sessionid, header, value):
-        sql = """UPDATE SessionConfig
+        sql = """UPDATE session_config
                         SET %s = $$%s$$
-                        WHERE sessionid = %s
+                        WHERE session_id = %s
                       """ % (header, value, sessionid)
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def get_field_value(sessionid, header):
-        sql = "SELECT %s FROM SessionConfig WHERE sessionid = %s" % (header, sessionid)
+        sql = "SELECT %s FROM session_config WHERE session_id = %s" % (header, sessionid)
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return rows[0][0]
 
     @staticmethod
     def update_bool_flag(sessionid, header, value):
-        sql = """UPDATE SessionConfig
+        sql = """UPDATE session_config
                 SET %s = %s
-                WHERE sessionid = %s
+                WHERE session_id = %s
                 """ % (header, value, sessionid)
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def update_int_field(sessionid, header, value):
-        sql = """UPDATE SessionConfig
+        sql = """UPDATE session_config
                 SET %s = %s
-                WHERE sessionid = %s
+                WHERE session_id = %s
                 """ % (header, value, sessionid)
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
