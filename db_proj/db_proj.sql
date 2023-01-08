@@ -21,5 +21,4 @@ CREATE TABLE public.session_config (
     sectors_message_id  bigint,
     locations           jsonb,
     ll_message_ids      jsonb
---     CONSTRAINT
 )

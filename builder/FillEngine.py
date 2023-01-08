@@ -2,7 +2,7 @@
 import logging
 from time import sleep
 from DBMethods import DB
-from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_help_data_and_url, make_bonus_data_and_url,\
+from builder.GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, make_help_data_and_url, make_bonus_data_and_url,\
     make_sector_data_and_url, make_penalty_help_data_and_url, make_task_data_and_url, make_lvl_name_comment_data_and_url,\
     make_lvl_timeout_data_and_url, clean_empty_first_sector, make_lvl_ans_block_data_and_url, make_lvl_sectors_required_data_and_url
 
