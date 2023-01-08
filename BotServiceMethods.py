@@ -2,9 +2,9 @@
 import sys
 import json
 import logging
+from io import StringIO
 import requests
 import contextlib
-from cStringIO import StringIO
 from DBMethods import DBSession, DB
 
 
