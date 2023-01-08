@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
-import os
+import platform
 
 
-prod = True if 'DYNO' in os.environ.keys() else False
+def is_linux():
+    return platform.system() == 'Linux'
+
+
+prod = True if is_linux() else False
 num_worker_threads = 10
 
 urls = {

@@ -5,7 +5,7 @@ import os
 import telebot
 import logging
 import threading
-# from DBMethods import DB
+from DBMethods import DB
 from BotService import run_app
 from queue import PriorityQueue
 from MainMethods import reload_backup
