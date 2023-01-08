@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from apiclient.discovery import build
 from Const import obj_type_url_mapping
 from oauth2client import file, client, tools
-from SourceGameDataParcers import get_bonus_data_from_engine, get_task_data_from_engine, get_help_data_from_engine, \
+from builder.SourceGameDataParcers import get_bonus_data_from_engine, get_task_data_from_engine, get_help_data_from_engine, \
     get_penalty_help_data_from_engine, get_lvl_name_comment_data_from_engine, get_lvl_timeout_data_from_engine, \
     get_sector_data_from_engine, check_empty_first_sector, get_lvl_ans_block_data_from_engine, \
     get_lvl_sectors_required_data_from_engine
