@@ -96,7 +96,7 @@ def elements_cleanup(urls, elements):
             cookie = response.request.headers['Cookie']
             response = requests.get(line['gameurl'], params={'json': '1'}, headers={'Cookie': cookie})
             game_model = json.loads(response.text)
-            print str(game_model['Event'])
+            print(str(game_model['Event']))
             if game_model['Event'] in [6, 17]:
                 DBSession.drop_session_vars(line['sessionid'])
                 DB.cleanup_for_ended_game(line['sessionid'], line['gameid'])
@@ -108,7 +108,7 @@ def elements_cleanup(urls, elements):
 def capture_stdout():
     data = []
     saved_stdout = sys.stdout
-    print "STDOUT CAPTURE ENABLED"
+    print("STDOUT CAPTURE ENABLED")
     try:
         sys.stdout = _stringio = StringIO()
         yield data
@@ -116,4 +116,4 @@ def capture_stdout():
         data.extend(_stringio.getvalue().splitlines())
         del _stringio
         sys.stdout = saved_stdout
-        print "STDOUT CAPTURE DISABLED"
+        print("STDOUT CAPTURE DISABLED")
