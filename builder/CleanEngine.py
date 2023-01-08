@@ -3,8 +3,8 @@ import re
 import logging
 from time import sleep
 from DBMethods import DB
-from SourceGameDataParcers import get_answers_data
-from GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, parse_level_page, make_del_answer_data_and_url
+from builder.SourceGameDataParcers import get_answers_data
+from builder.GameDetailsBuilderMethods import GoogleDocConnection, ENConnection, parse_level_page, make_del_answer_data_and_url
 
 
 class Buttons:
