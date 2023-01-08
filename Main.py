@@ -43,5 +43,7 @@ bot = telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
 # for i in range(num_worker_threads):
 #     threading.Thread(target=worker).start()
 
-run_app(bot, queue).run(host='0.0.0.0', port=port, threaded=True)
+
+def start():
+    run_app(bot, queue).run(host='0.0.0.0', port=port, threaded=True)
 # run_app().run(host='0.0.0.0', port=443, threaded=True)
