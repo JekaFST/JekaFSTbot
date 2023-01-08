@@ -14,7 +14,7 @@ class DBConnection(object):
 
     def open_db_conn(self):
         self.db_conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require') if prod \
-            else psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='<Fhybr1412' port='5432'")
+            else psycopg2.connect("dbname='JekaFSTbot_base' user='postgres' host='localhost' password='4etZeCNo3WUmZYdemb58' port='5432'")
 
     def execute_select_cur(self, sql):
         if self.db_conn.closed != 0:
