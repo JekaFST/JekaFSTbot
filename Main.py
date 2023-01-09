@@ -17,15 +17,15 @@ from Const import prod, num_worker_threads
 logging.basicConfig(level=logging.INFO)
 
 
-def worker():
-    while True:
-        if not queue.empty():
-            TaskMethodMap.run_task(queue.get()[1], bot)
-            queue.task_done()
+# def worker():
+#     while True:
+#         if not queue.empty():
+#             TaskMethodMap.run_task(queue.get()[1], bot)
+#             queue.task_done()
 
 
 # port = int(os.environ.get('PORT', 5000)) if prod else 443
-port = 5000
+# port = 5000
 queue = PriorityQueue()
 
 # bot = telebot.TeleBot(DB.get_main_bot_token()) if prod else telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
@@ -44,6 +44,6 @@ bot = telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
 #     threading.Thread(target=worker).start()
 
 
-def start():
-    run_app(bot, queue).run(host='0.0.0.0', port=port, threaded=True)
+def start(host, port):
+    run_app(bot, queue).run(host=host, port=port, threaded=True)
 # run_app().run(host='0.0.0.0', port=443, threaded=True)
