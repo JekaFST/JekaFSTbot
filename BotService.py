@@ -784,3 +784,6 @@ def run_app():
         return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'gameid.png', mimetype='image/png')
 
     return app
+
+
+app = run_app()
