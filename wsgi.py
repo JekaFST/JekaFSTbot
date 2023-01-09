@@ -1,5 +1,5 @@
-from Main import start
+from BotService import run_app
 
 
 if __name__ == "__main__":
-    start()
+    run_app().run()

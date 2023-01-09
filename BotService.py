@@ -8,15 +8,18 @@ import logging
 import telebot
 import threading
 import flask as f
-from Const import helptext
+from Const import helptext, num_worker_threads
 from collections import namedtuple
 from DBMethods import DB, DBSession
 from MainClasses import Task, Validations
 from TextConvertingMethods import find_coords
+from Worker import queue
 from builder import FillEngine, CleanEngine, TransferEngine
 from BotServiceMethods import add_level_bonuses, add_level_sectors, run_db_cleanup, capture_stdout
 
+logging.basicConfig(level=logging.INFO)
 StatusHolderCls = namedtuple("StatusHolder", ["message", "debug_info", "status", "get", "clear", "set_request", "get_request"])
+bot = telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
 
 
 class Status:
@@ -104,8 +107,10 @@ def get_index(root_path):
         return response
 
 
-# def run_app():
-def run_app(bot, queue):
+def run_app():
+    for i in range(num_worker_threads):
+        threading.Thread(target=queue.worker, args=[bot]).start()
+# def run_app(bot, queue):
     app = f.Flask(__name__)
 
     fill_engine = FillEngine.FillEngine()

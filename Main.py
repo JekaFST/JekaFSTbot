@@ -14,7 +14,7 @@ from Const import prod, num_worker_threads
 
 # importlib.reload(sys)
 # sys.setdefaultencoding('utf-8')
-logging.basicConfig(level=logging.INFO)
+
 
 
 # def worker():
@@ -26,10 +26,10 @@ logging.basicConfig(level=logging.INFO)
 
 # port = int(os.environ.get('PORT', 5000)) if prod else 443
 # port = 5000
-queue = PriorityQueue()
+# queue = PriorityQueue()
 
 # bot = telebot.TeleBot(DB.get_main_bot_token()) if prod else telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
-bot = telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
+# bot = telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
 # bot.remove_webhook()
 # bot.set_webhook(url='https://jekafstbot.herokuapp.com/webhook') if prod \
 #     else bot.set_webhook(url='https://da2400c4.ngrok.io/webhook')
@@ -40,10 +40,8 @@ bot = telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
 #     bot.send_message(45839899, 'Exception в main - не удалось запустить Flask')
 
 # reload_backup(bot, queue)
-# for i in range(num_worker_threads):
-#     threading.Thread(target=worker).start()
 
 
-def start(host, port):
-    run_app(bot, queue).run(host=host, port=port, threaded=True)
+# def start():
+#     run_app().run(threaded=True)
 # run_app().run(host='0.0.0.0', port=443, threaded=True)
