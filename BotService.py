@@ -20,7 +20,8 @@ from Worker import queue
 logging.basicConfig(level=logging.INFO)
 # StatusHolderCls = namedtuple("StatusHolder", ["message", "debug_info", "status", "get", "clear", "set_request", "get_request"])
 bot = telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
-bot.set_webhook(url='https://0c61-5-8-16-147.eu.ngrok.io/webhook')
+bot.remove_webhook()
+bot.set_webhook(url='https://jekafst.net/webhook')
 
 
 # class Status:
