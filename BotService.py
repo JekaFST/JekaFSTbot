@@ -14,97 +14,98 @@ from DBMethods import DB, DBSession
 from MainClasses import Task, Validations
 from TextConvertingMethods import find_coords
 from Worker import queue
-from builder import FillEngine, CleanEngine, TransferEngine
-from BotServiceMethods import add_level_bonuses, add_level_sectors, run_db_cleanup, capture_stdout
+# from builder import FillEngine, CleanEngine, TransferEngine
+# from BotServiceMethods import add_level_bonuses, add_level_sectors, run_db_cleanup, capture_stdout
 
 logging.basicConfig(level=logging.INFO)
-StatusHolderCls = namedtuple("StatusHolder", ["message", "debug_info", "status", "get", "clear", "set_request", "get_request"])
+# StatusHolderCls = namedtuple("StatusHolder", ["message", "debug_info", "status", "get", "clear", "set_request", "get_request"])
 bot = telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
+bot.set_webhook(url='https://0c61-5-8-16-147.eu.ngrok.io/webhook')
 
 
-class Status:
-    EMPTY = "_"
-    IN_PROGRESS = "Выполняется"
-    FAILED = "Ошибка"
-    DONE = "Выполнено"
-
-
-class StatusHolder(object):
-    def __init__(self):
-        self.statuses = {}
-
-    def get_status(self, key):
-        if key not in self.statuses:
-            self.statuses[key] = {
-                "messages": [],
-                "debug_info": [],
-                "status": Status.EMPTY,
-                "actual_request": 0
-            }
-        return self.statuses[key]
-
-    def get_holder_for_app(self, app_name, ip_address):
-        key = '%s_%s' % (app_name, ip_address)
-        return StatusHolderCls(
-            lambda message: self.add_message(key, message),
-            lambda debug_info: self.add_debug_info(key, debug_info),
-            lambda status: self.set_status(key, status),
-            lambda: self.get_status(key),
-            lambda: self.clear_status(key),
-            lambda: self.set_number_request(key),
-            lambda: self.get_number_request(key)
-        )
-
-    def clear_status(self, app_name):
-        if app_name in self.statuses:
-            del self.statuses[app_name]
-
-    def add_message(self, app_name, message):
-        status = self.get_status(app_name)
-        status["messages"].append(message)
-
-    def add_debug_info(self, app_name, message):
-        status = self.get_status(app_name)
-        status["debug_info"].extend(message)
-
-    def set_status(self, app_name, status_string):
-        status = self.get_status(app_name)
-        status["status"] = status_string
-
-    def get_number_request(self, app_name):
-        status = self.get_status(app_name)
-        return status["actual_request"]
-
-    def set_number_request(self, app_name):
-        status = self.get_status(app_name)
-        request_number = str(uuid.uuid4())
-        status["actual_request"] = request_number
-        return request_number
-
-
-def _get_all_apps(modules):
-    apps = []
-    for module in modules:
-        apps.extend(module.get_applications())
-    return apps
-
-
-def find_app(app_name, all_apps):
-    for app in all_apps:
-        if app['name'] == app_name:
-            return app
-    raise AssertionError("Unknown application '{}'".format(app_name))
-
-
-def get_index(root_path):
-    with open(os.path.join(root_path, 'templates', 'index.html')) as fp:
-        response = f.make_response(fp.read())
-        # response = f.make_response(f.render_template("index.html", apps=apps, base_url='https://jekafstbot.herokuapp.com' if prod else 'http://localhost:443'))
-        if not f.request.cookies.get('builder_client_id'):
-            chars = string.ascii_uppercase + string.digits
-            client_id = ''.join(random.choice(chars) for _ in range(10))
-            response.set_cookie('builder_client_id', client_id)
-        return response
+# class Status:
+#     EMPTY = "_"
+#     IN_PROGRESS = "Выполняется"
+#     FAILED = "Ошибка"
+#     DONE = "Выполнено"
+#
+#
+# class StatusHolder(object):
+#     def __init__(self):
+#         self.statuses = {}
+#
+#     def get_status(self, key):
+#         if key not in self.statuses:
+#             self.statuses[key] = {
+#                 "messages": [],
+#                 "debug_info": [],
+#                 "status": Status.EMPTY,
+#                 "actual_request": 0
+#             }
+#         return self.statuses[key]
+#
+#     def get_holder_for_app(self, app_name, ip_address):
+#         key = '%s_%s' % (app_name, ip_address)
+#         return StatusHolderCls(
+#             lambda message: self.add_message(key, message),
+#             lambda debug_info: self.add_debug_info(key, debug_info),
+#             lambda status: self.set_status(key, status),
+#             lambda: self.get_status(key),
+#             lambda: self.clear_status(key),
+#             lambda: self.set_number_request(key),
+#             lambda: self.get_number_request(key)
+#         )
+#
+#     def clear_status(self, app_name):
+#         if app_name in self.statuses:
+#             del self.statuses[app_name]
+#
+#     def add_message(self, app_name, message):
+#         status = self.get_status(app_name)
+#         status["messages"].append(message)
+#
+#     def add_debug_info(self, app_name, message):
+#         status = self.get_status(app_name)
+#         status["debug_info"].extend(message)
+#
+#     def set_status(self, app_name, status_string):
+#         status = self.get_status(app_name)
+#         status["status"] = status_string
+#
+#     def get_number_request(self, app_name):
+#         status = self.get_status(app_name)
+#         return status["actual_request"]
+#
+#     def set_number_request(self, app_name):
+#         status = self.get_status(app_name)
+#         request_number = str(uuid.uuid4())
+#         status["actual_request"] = request_number
+#         return request_number
+#
+#
+# def _get_all_apps(modules):
+#     apps = []
+#     for module in modules:
+#         apps.extend(module.get_applications())
+#     return apps
+#
+#
+# def find_app(app_name, all_apps):
+#     for app in all_apps:
+#         if app['name'] == app_name:
+#             return app
+#     raise AssertionError("Unknown application '{}'".format(app_name))
+#
+#
+# def get_index(root_path):
+#     with open(os.path.join(root_path, 'templates', 'index.html'), encoding="utf8") as fp:
+#         response = f.make_response(fp.read())
+#         # response = f.make_response(f.render_template("index.html", apps=apps, base_url='https://jekafstbot.herokuapp.com' if prod else 'http://localhost:443'))
+#         if not f.request.cookies.get('builder_client_id'):
+#             chars = string.ascii_uppercase + string.digits
+#             client_id = ''.join(random.choice(chars) for _ in range(10))
+#             response.set_cookie('builder_client_id', client_id)
+#         return response
 
 
 def run_app():
@@ -113,13 +114,13 @@ def run_app():
 # def run_app(bot, queue):
     app = f.Flask(__name__)
 
-    fill_engine = FillEngine.FillEngine()
-    clean_engine = CleanEngine.CleanEngine()
-    transfer_engine = TransferEngine.TransferEngine()
-    modules = [fill_engine, clean_engine, transfer_engine]
-    all_apps = _get_all_apps(modules)
-    stats = StatusHolder()
-    current_app = {}
+    # fill_engine = FillEngine.FillEngine()
+    # clean_engine = CleanEngine.CleanEngine()
+    # transfer_engine = TransferEngine.TransferEngine()
+    # modules = [fill_engine, clean_engine, transfer_engine]
+    # all_apps = _get_all_apps(modules)
+    # stats = StatusHolder()
+    # current_app = {}
 
     # Process webhook calls
     @app.route('/webhook', methods=['GET', 'POST'])
@@ -677,111 +678,112 @@ def run_app():
 
     @app.route("/")
     def index():
-        return get_index(app.root_path)
+        return f.render_template("TemplateForInstruction.html")
+        # return get_index(app.root_path)
 
-    @app.route("/apps", methods=['GET'])
-    def apps():
-        app_names = [{"name": app["name"]} for app in all_apps]
-        return f.jsonify(app_names)
+    # @app.route("/apps", methods=['GET'])
+    # def apps():
+    #     app_names = [{"name": app["name"]} for app in all_apps]
+    #     return f.jsonify(app_names)
+    #
+    # @app.route('/builder/<app_name>', methods=['GET'])
+    # def app_get(app_name):
+    #     app = find_app(app_name, all_apps)
+    #     client_id = f.request.cookies.get('builder_client_id')
+    #     current_app[client_id] = app_name
+    #     if 'get_fn' in app:
+    #         get_fn = app['get_fn']
+    #         return f.jsonify(get_fn())
+    #     return f.jsonify(stats.get_status('%s_%s' % (app_name, client_id)))
+    #
+    # @app.route("/builder/<app_name>", methods=['POST'])
+    # def app_post(app_name):
+    #     app = find_app(app_name, all_apps)
+    #     client_id = f.request.cookies.get('builder_client_id')
+    #     current_app[client_id] = app_name
+    #     stat = stats.get_holder_for_app(app_name, client_id)
+    #     stat.clear()
+    #     request_number = stat.set_request()
+    #     app_fn = app['fn']
+    #
+    #     try:
+    #         with capture_stdout() as debug_info:
+    #             stat.status(Status.IN_PROGRESS)
+    #             for message in app_fn(f.request):
+    #                 if stat.get_request() == request_number:
+    #                     if message == 'CLEAR_MESSAGES':
+    #                         del stat.get()['messages'][:]
+    #                         continue
+    #                     stat.message(message)
+    #         if stat.get_request() == request_number:
+    #             stat.status(Status.DONE)
+    #     except Exception as e:
+    #         logging.exception("Exception в game_details_builder - проверьте логи")
+    #         stat.status(Status.FAILED)
+    #         stat.message("Fail message: %s" % str(e))
+    #     if stat.get_request() == request_number:
+    #         stat.debug_info(debug_info)
+    #     if current_app[client_id] == app_name:
+    #         return f.jsonify(stat.get())
+    #     else:
+    #         return f.jsonify(stats.get_holder_for_app(current_app[client_id], client_id).get())
+    #
+    # @app.route("/session/<session_id>", methods=['GET', 'POST'])
+    # def admin(session_id):
+    #     session = DBSession.get_session(session_id)
+    #     data = dict()
+    #     # chat = bot.get_chat(int(session_id))
+    #     # data['chat_title'] = chat.title.encode('utf-8')
+    #     data['updater'] = 'Stopped' if session['stopupdater'] else 'Launched'
+    #     data['updater_task'] = 'TRUE' if session['putupdatertask'] else 'FALSE'
+    #     return f.render_template("TemplateForSession.html", title='Session for chat: %s' % session_id, data=data)
 
-    @app.route('/builder/<app_name>', methods=['GET'])
-    def app_get(app_name):
-        app = find_app(app_name, all_apps)
-        client_id = f.request.cookies.get('builder_client_id')
-        current_app[client_id] = app_name
-        if 'get_fn' in app:
-            get_fn = app['get_fn']
-            return f.jsonify(get_fn())
-        return f.jsonify(stats.get_status('%s_%s' % (app_name, client_id)))
-
-    @app.route("/builder/<app_name>", methods=['POST'])
-    def app_post(app_name):
-        app = find_app(app_name, all_apps)
-        client_id = f.request.cookies.get('builder_client_id')
-        current_app[client_id] = app_name
-        stat = stats.get_holder_for_app(app_name, client_id)
-        stat.clear()
-        request_number = stat.set_request()
-        app_fn = app['fn']
-
-        try:
-            with capture_stdout() as debug_info:
-                stat.status(Status.IN_PROGRESS)
-                for message in app_fn(f.request):
-                    if stat.get_request() == request_number:
-                        if message == 'CLEAR_MESSAGES':
-                            del stat.get()['messages'][:]
-                            continue
-                        stat.message(message)
-            if stat.get_request() == request_number:
-                stat.status(Status.DONE)
-        except Exception as e:
-            logging.exception("Exception в game_details_builder - проверьте логи")
-            stat.status(Status.FAILED)
-            stat.message("Fail message: %s" % str(e))
-        if stat.get_request() == request_number:
-            stat.debug_info(debug_info)
-        if current_app[client_id] == app_name:
-            return f.jsonify(stat.get())
-        else:
-            return f.jsonify(stats.get_holder_for_app(current_app[client_id], client_id).get())
-
-    @app.route("/session/<session_id>", methods=['GET', 'POST'])
-    def admin(session_id):
-        session = DBSession.get_session(session_id)
-        data = dict()
-        # chat = bot.get_chat(int(session_id))
-        # data['chat_title'] = chat.title.encode('utf-8')
-        data['updater'] = 'Stopped' if session['stopupdater'] else 'Launched'
-        data['updater_task'] = 'TRUE' if session['putupdatertask'] else 'FALSE'
-        return f.render_template("TemplateForSession.html", title='Session for chat: %s' % session_id, data=data)
-
-    @app.route("/instruction", methods=['GET', 'POST'])
+    @app.route("/instruction", methods=['GET'])
     def send_instruction():
         return f.render_template("TemplateForInstruction.html")
+    #
+    # @app.route("/DBcleanup", methods=['GET', 'POST'])
+    # def db_cleanup():
+    #     threads = threading.enumerate()
+    #     for thread in threads:
+    #         if thread.getName() == 'th_db_cleanup':
+    #             return 'Чистка базы от элементов закончившихся игр уже запущена. Нельзя запустить повторно.'
+    #     threading.Thread(name='th_db_cleanup', target=run_db_cleanup, args=[bot]).start()
+    #     return 'Чистка базы от элементов закончившихся игр запущена'
+    #
+    # @app.route("/<session_id>/<game_id>", methods=['GET', 'POST'])
+    # def all_codes_per_game(session_id, game_id):
+    #     levels_dict = dict()
+    #     sectors_lines = DB.get_sectors_per_game(session_id, game_id)
+    #     bonus_lines = DB.get_bonuses_per_game(session_id, game_id)
+    #     levels_dict = add_level_sectors(levels_dict, sectors_lines)
+    #     levels_dict = add_level_bonuses(levels_dict, bonus_lines)
+    #
+    #     levels_list = [level for level in levels_dict.values()]
+    #     return f.render_template("TemplateForCodes.html", title='All codes per game', levels_list=levels_list)
+    #
+    # @app.route("/<session_id>/<game_id>/<level_number>", methods=['GET', 'POST'])
+    # def all_codes_per_level(session_id, game_id, level_number):
+    #     levels_dict = dict()
+    #     sectors_lines = DB.get_sectors_per_level(session_id, game_id, level_number)
+    #     bonus_lines = DB.get_bonuses_per_level(session_id, game_id, level_number)
+    #     levels_dict = add_level_sectors(levels_dict, sectors_lines)
+    #     levels_dict = add_level_bonuses(levels_dict, bonus_lines)
+    #
+    #     levels_list = [level for level in levels_dict.values()]
+    #     return f.render_template("TemplateForCodes.html", title='All codes per %s level' % level_number, levels_list=levels_list)
 
-    @app.route("/DBcleanup", methods=['GET', 'POST'])
-    def db_cleanup():
-        threads = threading.enumerate()
-        for thread in threads:
-            if thread.getName() == 'th_db_cleanup':
-                return 'Чистка базы от элементов закончившихся игр уже запущена. Нельзя запустить повторно.'
-        threading.Thread(name='th_db_cleanup', target=run_db_cleanup, args=[bot]).start()
-        return 'Чистка базы от элементов закончившихся игр запущена'
-
-    @app.route("/<session_id>/<game_id>", methods=['GET', 'POST'])
-    def all_codes_per_game(session_id, game_id):
-        levels_dict = dict()
-        sectors_lines = DB.get_sectors_per_game(session_id, game_id)
-        bonus_lines = DB.get_bonuses_per_game(session_id, game_id)
-        levels_dict = add_level_sectors(levels_dict, sectors_lines)
-        levels_dict = add_level_bonuses(levels_dict, bonus_lines)
-
-        levels_list = [level for level in levels_dict.values()]
-        return f.render_template("TemplateForCodes.html", title='All codes per game', levels_list=levels_list)
-
-    @app.route("/<session_id>/<game_id>/<level_number>", methods=['GET', 'POST'])
-    def all_codes_per_level(session_id, game_id, level_number):
-        levels_dict = dict()
-        sectors_lines = DB.get_sectors_per_level(session_id, game_id, level_number)
-        bonus_lines = DB.get_bonuses_per_level(session_id, game_id, level_number)
-        levels_dict = add_level_sectors(levels_dict, sectors_lines)
-        levels_dict = add_level_bonuses(levels_dict, bonus_lines)
-
-        levels_list = [level for level in levels_dict.values()]
-        return f.render_template("TemplateForCodes.html", title='All codes per %s level' % level_number, levels_list=levels_list)
-
-    @app.route('/favicon.ico')
+    @app.route('/favicon.ico', methods=['GET'])
     def favicon():
         return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'favicon.ico', mimetype='image/png')
 
-    @app.route('/googledocid')
-    def googledocid():
-        return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'googledocid.png', mimetype='image/png')
-
-    @app.route('/gameid')
-    def gameid():
-        return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'gameid.png', mimetype='image/png')
+    # @app.route('/googledocid')
+    # def googledocid():
+    #     return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'googledocid.png', mimetype='image/png')
+    #
+    # @app.route('/gameid')
+    # def gameid():
+    #     return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'gameid.png', mimetype='image/png')
 
     return app
 

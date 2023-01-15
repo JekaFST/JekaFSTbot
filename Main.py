@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 # import sys
 # import importlib
-import telebot
-import logging
-import threading
-from DBMethods import DB
-from BotService import run_app
-from queue import PriorityQueue
-from MainMethods import reload_backup
-from TaskMathodMap import TaskMethodMap
-from Const import prod, num_worker_threads
+# import telebot
+# import logging
+# import threading
+# from DBMethods import DB
+# from BotService import run_app
+# from queue import PriorityQueue
+# from MainMethods import reload_backup
+# from TaskMathodMap import TaskMethodMap
+# from Const import prod, num_worker_threads
 
 # importlib.reload(sys)
 # sys.setdefaultencoding('utf-8')
