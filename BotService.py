@@ -1,125 +1,26 @@
 # -*- coding: utf-8 -*-
 import re
 import os
-# import uuid
-# import string
-# import random
 import logging
 import telebot
 import threading
 import flask as f
-from Const import helptext, num_worker_threads
-# from collections import namedtuple
-from DBMethods import DB, DBSession
-from MainClasses import Task, Validations
-from TextConvertingMethods import find_coords
+from DBMethods import DB
 from Worker import queue
-# from builder import FillEngine, CleanEngine, TransferEngine
-# from BotServiceMethods import add_level_bonuses, add_level_sectors, run_db_cleanup, capture_stdout
+from MainClasses import Task, Validations
+from BotServiceMethods import run_db_cleanup
+from TextConvertingMethods import find_coords
+from Const import helptext, num_worker_threads
 
 logging.basicConfig(level=logging.INFO)
-# StatusHolderCls = namedtuple("StatusHolder", ["message", "debug_info", "status", "get", "clear", "set_request", "get_request"])
 bot = telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
-
-
-# class Status:
-#     EMPTY = "_"
-#     IN_PROGRESS = "Выполняется"
-#     FAILED = "Ошибка"
-#     DONE = "Выполнено"
-#
-#
-# class StatusHolder(object):
-#     def __init__(self):
-#         self.statuses = {}
-#
-#     def get_status(self, key):
-#         if key not in self.statuses:
-#             self.statuses[key] = {
-#                 "messages": [],
-#                 "debug_info": [],
-#                 "status": Status.EMPTY,
-#                 "actual_request": 0
-#             }
-#         return self.statuses[key]
-#
-#     def get_holder_for_app(self, app_name, ip_address):
-#         key = '%s_%s' % (app_name, ip_address)
-#         return StatusHolderCls(
-#             lambda message: self.add_message(key, message),
-#             lambda debug_info: self.add_debug_info(key, debug_info),
-#             lambda status: self.set_status(key, status),
-#             lambda: self.get_status(key),
-#             lambda: self.clear_status(key),
-#             lambda: self.set_number_request(key),
-#             lambda: self.get_number_request(key)
-#         )
-#
-#     def clear_status(self, app_name):
-#         if app_name in self.statuses:
-#             del self.statuses[app_name]
-#
-#     def add_message(self, app_name, message):
-#         status = self.get_status(app_name)
-#         status["messages"].append(message)
-#
-#     def add_debug_info(self, app_name, message):
-#         status = self.get_status(app_name)
-#         status["debug_info"].extend(message)
-#
-#     def set_status(self, app_name, status_string):
-#         status = self.get_status(app_name)
-#         status["status"] = status_string
-#
-#     def get_number_request(self, app_name):
-#         status = self.get_status(app_name)
-#         return status["actual_request"]
-#
-#     def set_number_request(self, app_name):
-#         status = self.get_status(app_name)
-#         request_number = str(uuid.uuid4())
-#         status["actual_request"] = request_number
-#         return request_number
-#
-#
-# def _get_all_apps(modules):
-#     apps = []
-#     for module in modules:
-#         apps.extend(module.get_applications())
-#     return apps
-#
-#
-# def find_app(app_name, all_apps):
-#     for app in all_apps:
-#         if app['name'] == app_name:
-#             return app
-#     raise AssertionError("Unknown application '{}'".format(app_name))
-#
-#
-# def get_index(root_path):
-#     with open(os.path.join(root_path, 'templates', 'index.html'), encoding="utf8") as fp:
-#         response = f.make_response(fp.read())
-#         # response = f.make_response(f.render_template("index.html", apps=apps, base_url='https://jekafstbot.herokuapp.com' if prod else 'http://localhost:443'))
-#         if not f.request.cookies.get('builder_client_id'):
-#             chars = string.ascii_uppercase + string.digits
-#             client_id = ''.join(random.choice(chars) for _ in range(10))
-#             response.set_cookie('builder_client_id', client_id)
-#         return response
 
 
 def run_app():
     for i in range(num_worker_threads):
         threading.Thread(target=queue.worker, args=[bot]).start()
-# def run_app(bot, queue):
-    app = f.Flask(__name__)
 
-    # fill_engine = FillEngine.FillEngine()
-    # clean_engine = CleanEngine.CleanEngine()
-    # transfer_engine = TransferEngine.TransferEngine()
-    # modules = [fill_engine, clean_engine, transfer_engine]
-    # all_apps = _get_all_apps(modules)
-    # stats = StatusHolder()
-    # current_app = {}
+    app = f.Flask(__name__)
 
     # Process webhook calls
     @app.route('/webhook', methods=['GET', 'POST'])
@@ -131,53 +32,6 @@ def run_app():
             return ''
         else:
             f.abort(403)
-
-    @bot.message_handler(commands=['ask_for_permission'])
-    def ask_for_permission(message):
-        main_chat_ids, _ = DB.get_allowed_chat_ids()
-        if message.chat.id in main_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат уже разрешен для работы с ботом')
-            return
-        try:
-            title = str(message.chat.title.encode('utf-8')) if message.chat.title else ''
-            text = '<b>%s</b> запрашивает разрешение на работу с ботом из чата "%s"\r\nchat_id: %s' % \
-                   (str(message.from_user.username.encode('utf-8')), title, str(message.chat.id))
-            # admin_id = message.from_user.id if message.from_user.id in [66204553] else 45839899
-            admin_id = 45839899
-            bot.send_message(admin_id, text, parse_mode='HTML')
-            bot.send_message(message.chat.id, 'Запрос на разрешение использования бота отправлен администратору\n'
-                                              'Если вам не придет ответ в течение нескольких часов - напишите в личку @JekaFST',
-                             reply_to_message_id=message.message_id)
-        except Exception:
-            logging.exception('Запрос на разрешение не отправлен')
-            bot.send_message(message.chat.id, 'Запрос на разрешение использования бота не отправлен администратору\n'
-                                              'Напишите в личку @JekaFST',
-                             reply_to_message_id=message.message_id)
-
-    @bot.message_handler(commands=['ask_to_add_gameid'])
-    def ask_to_add_gameid(message):
-        allowed, main_chat_ids, _ = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
-            allowed_game_ids = DB.get_allowed_game_ids(message.chat.id)
-            game_id = re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)
-            if game_id in allowed_game_ids:
-                bot.send_message(message.chat.id, 'Данная игра уже разрешена для этого чата')
-                return
-            try:
-                title = str(message.chat.title.encode('utf-8')) if message.chat.title else ''
-                text = '<b>%s</b> запрашивает разрешение на игру %s для чата "%s"\r\nchat_id: %s' % \
-                       (str(message.from_user.username.encode('utf-8')), game_id, title, str(message.chat.id))
-                # admin_id = message.from_user.id if message.from_user.id in [66204553] else 45839899
-                admin_id = 45839899
-                bot.send_message(admin_id, text, parse_mode='HTML')
-                bot.send_message(message.chat.id, 'Запрос на разрешение игры для этого чата отправлен администратору\n'
-                                                  'Если вам не придет ответ в течение нескольких часов - напишите в личку @JekaFST',
-                                 reply_to_message_id=message.message_id)
-            except Exception:
-                logging.exception('Запрос на разрешение игры не отправлен')
-                bot.send_message(message.chat.id, 'Запрос на разрешение игры из этого чата не отправлен администратору\n'
-                                                  'Напишите в личку @JekaFST',
-                                 reply_to_message_id=message.message_id)
 
     @bot.message_handler(commands=['join'])
     def join_session(message):
@@ -197,53 +51,15 @@ def run_app():
             reset_join_task = Task(message.chat.id, 'reset_join', message_id=message.message_id, user_id=message.from_user.id)
             queue.queue.put((99, reset_join_task))
 
-    @bot.message_handler(commands=['add'])
-    def add_chat_to_allowed(message):
-        if message.chat.id not in [45839899]:  # 66204553
-            bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
-            return
-        chat_id = int(re.search(r'[-\d]+', str(message.text.encode('utf-8'))).group(0))
-        main_chat_ids, _ = DB.get_allowed_chat_ids()
-        if chat_id in main_chat_ids:
-            bot.send_message(message.chat.id, 'Данный чат уже разрешен для работы с ботом')
-            return
-        if DB.insert_main_chat_id(chat_id):
-            bot.send_message(chat_id, 'Этот чат добавлен в список разрешенных для работы с ботом')
-        else:
-            bot.send_message(message.chat.id, 'Этот чат не добавлен в список разрешенных для работы с ботом\r\n'
-                                              'Insert не выполнен')
-
-    @bot.message_handler(commands=['add_game_id'])
-    def add_game_id(message):
-        if message.chat.id not in [45839899]:  # 66204553
-            bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
-            return
-        chat_id = int(re.findall(r':\s+([-\d]+)$', str(message.text.encode('utf-8')))[0])
-        game_id = re.findall(r'/add_game_id\s+(\d+)\s*:', str(message.text.encode('utf-8')))[0]
-        allowed_game_ids = DB.get_allowed_game_ids(chat_id)
-        if game_id not in allowed_game_ids:
-            allowed_game_ids += game_id if not allowed_game_ids else ', ' + game_id
-            if DB.update_allowed_game_ids(chat_id, allowed_game_ids):
-                bot.send_message(chat_id, 'Игра %s разрешена' % game_id)
-            else:
-                bot.send_message(message.chat.id, 'Игра не разрешена. Insert не выполнен')
-
-    @bot.message_handler(commands=['add_builder_game_id'])
-    def add_builder_game_id(message):
-        if message.chat.id != 45839899:
-            bot.send_message(message.chat.id, 'Данная команда не доступна из этого чата')
-            return
-        game_id = re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)
-        if game_id not in DB.get_gameids_for_builder_list():
-            if DB.insert_gameids_for_builder(game_id):
-                bot.send_message(message.chat.id, 'Игра %s добавлена в разрешенные для game builder' % game_id)
-            else:
-                bot.send_message(message.chat.id, 'Игра для game builder не разрешена. Insert не выполнен')
-
     @bot.message_handler(commands=['start'])
     def start(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and not Validations.check_from_add_chat(message.chat.id, add_chat_ids):
+        if Validations.check_from_add_chat(message.chat.id):
+            bot.send_message(message.chat.id,
+                             'Нельзя создать сессию для этого чата.\n'
+                             'Этот чат является дополнительным для существующей сессии.'
+                             'Краткая инструкция к боту доступна по ссылке:\n'
+                             'https://jekafst.net/instruction', disable_web_page_preview=True)
+        else:
             start_task = Task(message.chat.id, 'start')
             queue.queue.put((99, start_task))
 
@@ -639,7 +455,7 @@ def run_app():
 
     @bot.message_handler(commands=['instruction'])
     def send_instruction(message):
-        bot.send_message(message.chat.id, 'https://jekafstbot.herokuapp.com/instruction')
+        bot.send_message(message.chat.id, 'https://jekafst.net/instruction')
 
     @bot.message_handler(regexp='^[!\./]\s*(.+)')
     def main_code_processor(message):
@@ -678,111 +494,23 @@ def run_app():
     @app.route("/")
     def index():
         return f.render_template("TemplateForInstruction.html")
-        # return get_index(app.root_path)
-
-    # @app.route("/apps", methods=['GET'])
-    # def apps():
-    #     app_names = [{"name": app["name"]} for app in all_apps]
-    #     return f.jsonify(app_names)
-    #
-    # @app.route('/builder/<app_name>', methods=['GET'])
-    # def app_get(app_name):
-    #     app = find_app(app_name, all_apps)
-    #     client_id = f.request.cookies.get('builder_client_id')
-    #     current_app[client_id] = app_name
-    #     if 'get_fn' in app:
-    #         get_fn = app['get_fn']
-    #         return f.jsonify(get_fn())
-    #     return f.jsonify(stats.get_status('%s_%s' % (app_name, client_id)))
-    #
-    # @app.route("/builder/<app_name>", methods=['POST'])
-    # def app_post(app_name):
-    #     app = find_app(app_name, all_apps)
-    #     client_id = f.request.cookies.get('builder_client_id')
-    #     current_app[client_id] = app_name
-    #     stat = stats.get_holder_for_app(app_name, client_id)
-    #     stat.clear()
-    #     request_number = stat.set_request()
-    #     app_fn = app['fn']
-    #
-    #     try:
-    #         with capture_stdout() as debug_info:
-    #             stat.status(Status.IN_PROGRESS)
-    #             for message in app_fn(f.request):
-    #                 if stat.get_request() == request_number:
-    #                     if message == 'CLEAR_MESSAGES':
-    #                         del stat.get()['messages'][:]
-    #                         continue
-    #                     stat.message(message)
-    #         if stat.get_request() == request_number:
-    #             stat.status(Status.DONE)
-    #     except Exception as e:
-    #         logging.exception("Exception в game_details_builder - проверьте логи")
-    #         stat.status(Status.FAILED)
-    #         stat.message("Fail message: %s" % str(e))
-    #     if stat.get_request() == request_number:
-    #         stat.debug_info(debug_info)
-    #     if current_app[client_id] == app_name:
-    #         return f.jsonify(stat.get())
-    #     else:
-    #         return f.jsonify(stats.get_holder_for_app(current_app[client_id], client_id).get())
-    #
-    # @app.route("/session/<session_id>", methods=['GET', 'POST'])
-    # def admin(session_id):
-    #     session = DBSession.get_session(session_id)
-    #     data = dict()
-    #     # chat = bot.get_chat(int(session_id))
-    #     # data['chat_title'] = chat.title.encode('utf-8')
-    #     data['updater'] = 'Stopped' if session['stopupdater'] else 'Launched'
-    #     data['updater_task'] = 'TRUE' if session['putupdatertask'] else 'FALSE'
-    #     return f.render_template("TemplateForSession.html", title='Session for chat: %s' % session_id, data=data)
 
     @app.route("/instruction", methods=['GET'])
     def send_instruction():
         return f.render_template("TemplateForInstruction.html")
-    #
-    # @app.route("/DBcleanup", methods=['GET', 'POST'])
-    # def db_cleanup():
-    #     threads = threading.enumerate()
-    #     for thread in threads:
-    #         if thread.getName() == 'th_db_cleanup':
-    #             return 'Чистка базы от элементов закончившихся игр уже запущена. Нельзя запустить повторно.'
-    #     threading.Thread(name='th_db_cleanup', target=run_db_cleanup, args=[bot]).start()
-    #     return 'Чистка базы от элементов закончившихся игр запущена'
-    #
-    # @app.route("/<session_id>/<game_id>", methods=['GET', 'POST'])
-    # def all_codes_per_game(session_id, game_id):
-    #     levels_dict = dict()
-    #     sectors_lines = DB.get_sectors_per_game(session_id, game_id)
-    #     bonus_lines = DB.get_bonuses_per_game(session_id, game_id)
-    #     levels_dict = add_level_sectors(levels_dict, sectors_lines)
-    #     levels_dict = add_level_bonuses(levels_dict, bonus_lines)
-    #
-    #     levels_list = [level for level in levels_dict.values()]
-    #     return f.render_template("TemplateForCodes.html", title='All codes per game', levels_list=levels_list)
-    #
-    # @app.route("/<session_id>/<game_id>/<level_number>", methods=['GET', 'POST'])
-    # def all_codes_per_level(session_id, game_id, level_number):
-    #     levels_dict = dict()
-    #     sectors_lines = DB.get_sectors_per_level(session_id, game_id, level_number)
-    #     bonus_lines = DB.get_bonuses_per_level(session_id, game_id, level_number)
-    #     levels_dict = add_level_sectors(levels_dict, sectors_lines)
-    #     levels_dict = add_level_bonuses(levels_dict, bonus_lines)
-    #
-    #     levels_list = [level for level in levels_dict.values()]
-    #     return f.render_template("TemplateForCodes.html", title='All codes per %s level' % level_number, levels_list=levels_list)
+
+    @app.route("/db-cleanup", methods=['GET', 'POST'])
+    def db_cleanup():
+        threads = threading.enumerate()
+        for thread in threads:
+            if thread.getName() == 'th_db_cleanup':
+                return 'Чистка базы от элементов закончившихся игр уже запущена. Нельзя запустить повторно.'
+        threading.Thread(name='th_db_cleanup', target=run_db_cleanup, args=[bot]).start()
+        return 'Чистка базы от элементов закончившихся игр запущена'
 
     @app.route('/favicon.ico', methods=['GET'])
     def favicon():
         return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'favicon.ico', mimetype='image/png')
-
-    # @app.route('/googledocid')
-    # def googledocid():
-    #     return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'googledocid.png', mimetype='image/png')
-    #
-    # @app.route('/gameid')
-    # def gameid():
-    #     return f.send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'gameid.png', mimetype='image/png')
 
     return app
 

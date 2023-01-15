@@ -21,4 +21,10 @@ CREATE TABLE public.session_config (
     sectors_message_id  bigint,
     locations           jsonb,
     ll_message_ids      jsonb
-)
+);
+
+
+CREATE TABLE public.additional_chats(
+    add_chat_id         bigint PRIMARY KEY,
+    session_id          bigint NOT NULL
+);

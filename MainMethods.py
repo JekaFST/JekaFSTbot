@@ -46,18 +46,18 @@ def start(task, bot):
                                            '- активировать сессию (/start_session)\n'
                                            'Краткое описание доступно по команде /help\n'
                                            'Краткая инструкция к боту доступна по ссылке:\n'
-                                           'https://jekafstbot.herokuapp.com/instruction',
+                                           'https://jekafst.net/instruction',
                              disable_web_page_preview=True, parse_mode='HTML')
         else:
             bot.send_message(task.chat_id, 'Сессия не создана. Ошибка SQL\n'
                                            'Краткая инструкция к боту доступна по ссылке:\n'
-                                           'https://jekafstbot.herokuapp.com/instruction',
+                                           'https://jekafst.net/instruction',
                              disable_web_page_preview=True)
     else:
         bot.send_message(task.chat_id, 'Для данного чата уже создана сессия\n'
                                        'Введите /config для проверки ее состояния\n'
                                        'Краткая инструкция к боту доступна по ссылке:\n'
-                                       'https://jekafstbot.herokuapp.com/instruction',
+                                       'https://jekafst.net/instruction',
                          disable_web_page_preview=True)
     chat = bot.get_chat(chat_id=task.chat_id)
     title = chat.title.encode('utf-8') if chat.title else 'None'

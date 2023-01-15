@@ -516,6 +516,13 @@ class DB(object):
             return [row[0] for row in main_rows] if main_rows else list(), [row[0] for row in add_rows] if add_rows else list()
 
     @staticmethod
+    def get_additional_chat_ids():
+        sql = f"SELECT add_chat_id FROM additional_chats"
+        with connection_pool.get_conn() as db_connection:
+            rows = db_connection.execute_select_cur(sql)
+            return [row[0] for row in rows] if rows else list()
+
+    @staticmethod
     def insert_main_chat_id(main_chat_id):
         sql = "INSERT INTO AllowedChats (ChatId, AddChatId, AllowedGameIds) VALUES (%s, %s, '')" % (str(main_chat_id), 'NULL')
         with connection_pool.get_conn() as db_connection:
@@ -523,32 +530,32 @@ class DB(object):
 
     @staticmethod
     def insert_add_chat_id(main_chat_id, add_chat_id):
-        sql = "INSERT INTO AllowedChats (ChatId, AddChatId, AllowedGameIds) VALUES (%s, %s, '')" % (str(main_chat_id), str(add_chat_id))
+        sql = f"INSERT INTO additional_chats (add_chat_id, session_id) VALUES ({add_chat_id}, {main_chat_id})"
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def delete_add_chat_id(add_chat_id):
-        sql = "DELETE FROM AllowedChats WHERE AddChatId = %s" % str(add_chat_id)
+        sql = f"DELETE FROM additional_chats WHERE add_chat_id = {add_chat_id}"
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def delete_add_chat_ids(session_id):
-        sql = "DELETE FROM AllowedChats WHERE chatid = %s AND AddChatId IS NOT NULL" % str(session_id)
+        sql = f"DELETE FROM additional_chats WHERE session_id = {session_id}"
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def get_main_chat_id_via_add(add_chat_id):
-        sql = "SELECT ChatId FROM AllowedChats WHERE AddChatId = %s" % str(add_chat_id)
+        sql = f"SELECT session_id FROM additional_chats WHERE add_chat_id = {add_chat_id}"
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return rows[0][0] if rows else None
 
     @staticmethod
     def get_add_chat_ids_for_main(main_chat_id):
-        sql = "SELECT AddChatId FROM AllowedChats WHERE ChatId = %s AND AddChatId IS NOT NULL" % str(main_chat_id)
+        sql = f"SELECT add_chat_id FROM additional_chats WHERE session_id = {main_chat_id}"
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()

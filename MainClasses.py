@@ -13,7 +13,7 @@ class Validations(object):
                              'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
                              'Для отправки запроса на разрешение введите /ask_for_permission\n'
                              'Краткая инструкция к боту доступна по ссылке:\n'
-                             'https://jekafstbot.herokuapp.com/instruction', disable_web_page_preview=True)
+                             'https://jekafst.net/instruction', disable_web_page_preview=True)
             return False, main_chat_ids, add_chat_ids
 
     @staticmethod
@@ -34,7 +34,8 @@ class Validations(object):
             return True
 
     @staticmethod
-    def check_from_add_chat(chat_id, add_chat_ids):
+    def check_from_add_chat(chat_id):
+        add_chat_ids = DB.get_additional_chat_ids()
         if chat_id in add_chat_ids:
             return True
         else:
