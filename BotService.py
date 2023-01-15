@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import re
 import os
-import uuid
-import string
-import random
+# import uuid
+# import string
+# import random
 import logging
 import telebot
 import threading
 import flask as f
 from Const import helptext, num_worker_threads
-from collections import namedtuple
+# from collections import namedtuple
 from DBMethods import DB, DBSession
 from MainClasses import Task, Validations
 from TextConvertingMethods import find_coords
@@ -20,8 +20,6 @@ from Worker import queue
 logging.basicConfig(level=logging.INFO)
 # StatusHolderCls = namedtuple("StatusHolder", ["message", "debug_info", "status", "get", "clear", "set_request", "get_request"])
 bot = telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
-bot.remove_webhook()
-bot.set_webhook(url='https://jekafst.net/webhook')
 
 
 # class Status:
