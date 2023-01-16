@@ -85,19 +85,22 @@ def launch_session(session, bot, chat_id):
 
 def upd_session_cookie(session, bot, chat_id):
     try:
-        if session['endomain'] not in session['loginurl']:
-            if compile_urls(session['sessionid'], chat_id, bot, session['gameid'], session['endomain']):
-                session = DBSession.get_session(session['sessionid'])
+        if session['en_domain'] not in session['login_url']:
+            if compile_urls(session['session_id'], chat_id, bot, session['game_id'], session['en_domain']):
+                session = DBSession.get_session(session['session_id'])
             else:
                 return False
-        response = requests.post(session['loginurl'], data={'Login': session['login'], 'Password': session['password']},
+        response = requests.post(session['login_url'], data={'Login': session['login'], 'Password': session['password']},
                                  headers={'Cookie': 'lang=ru'})
     except Exception:
-        reply = 'Бот не залогинился - ошибка в конфигурации\r\nПроверьте конфигурацию сессии и попробуйте еще раз'
+        reply = 'Бот не залогинился - ошибка в конфигурации\r\n' \
+                'Проверьте конфигурацию сессии и попробуйте еще раз'
         bot.send_message(chat_id, reply, parse_mode='HTML')
         return False
     if not response.status_code == 200:
-        reply = 'Бот не залогинился - движок вернул ошибку\r\nResponse code is %s\r\nТекст: %s' % (str(response.status_code), response.text)
+        reply = f'Бот не залогинился - движок вернул ошибку\r\n' \
+                f'Response code is {response.status_code}\r\n' \
+                f'Текст: {response.text}'
         bot.send_message(chat_id, reply)
         return False
 
@@ -107,7 +110,8 @@ def upd_session_cookie(session, bot, chat_id):
         for div in soup.find_all('div'):
             if div.attrs['class'][0] == 'error':
                 error = div.text.encode('utf-8')
-                reply = 'Бот не залогинился - ошибка\r\nResponse error: %s' % error
+                reply = f'Бот не залогинился - ошибка\r\n' \
+                        f'Response error: {error}'
                 bot.send_message(chat_id, reply)
                 return
         reply = 'Бот не смог обновить авторизовацию для взаимодействия с джижком\r\n' \
@@ -115,7 +119,7 @@ def upd_session_cookie(session, bot, chat_id):
                 'подождите минуту или несколько минут и снова запустите слежение'
         bot.send_message(chat_id, reply)
         return False
-    if DBSession.update_text_field(session['sessionid'], 'cookie', cookie):
+    if DBSession.update_text_field(session['session_id'], 'cookie', cookie):
         return True
     else:
         return False
@@ -125,19 +129,19 @@ def initiate_session_vars(session, bot, chat_id, from_updater=False):
     game_model, normal = get_current_game_model(session, bot, chat_id, from_updater)
     if game_model:
         if game_model['LevelSequence'] == 3:
-            DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'True')
+            DBSession.update_bool_flag(session['session_id'], 'storm_game', 'True')
             storm = True
         else:
-            DBSession.update_bool_flag(session['sessionid'], 'stormgame', 'False')
+            DBSession.update_bool_flag(session['session_id'], 'storm_game', 'False')
             storm = False
         if normal:
-            existing_levels = DBLevels.get_level_ids_per_game(session['sessionid'], session['gameid'])
+            existing_levels = DBLevels.get_level_ids_per_game(session['session_id'], session['game_id'])
             for level in game_model['Levels']:
                 if level['LevelId'] not in existing_levels:
-                    DBLevels.insert_level(session['sessionid'], session['gameid'], level)
+                    DBLevels.insert_level(session['session_id'], session['game_id'], level)
             if not game_model['LevelSequence'] == 3:
                 current_level_info = game_model['Level']
-                DBSession.update_int_field(session['sessionid'], 'currlevelid', current_level_info['LevelId'])
+                DBSession.update_int_field(session['session_id'], 'curr_level_id', current_level_info['LevelId'])
         game_loaded = True
         return game_loaded, normal, storm
     else:

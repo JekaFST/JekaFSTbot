@@ -62,15 +62,14 @@ def start(task, bot):
     chat = bot.get_chat(chat_id=task.chat_id)
     title = chat.title.encode('utf-8') if chat.title else 'None'
     description = chat.description.encode('utf-8') if chat.description else 'None'
-    bot.send_message(45839899, 'Title: %s\nTask: %s\nID: %s\nDescription:\n%s' %
-                     (title, task.type, str(task.chat_id), description),
+    bot.send_message(45839899, f'Title: {title}\nTask: {task.type}\nID: {task.chat_id}\nDescription:\n{description}',
                      disable_web_page_preview=True)
 
 
 def stop_session(task, bot):
-    DBSession.update_bool_flag(task.session_id, 'stopupdater', 'True')
-    DBSession.update_bool_flag(task.session_id, 'putupdatertask', 'False')
-    DBSession.update_bool_flag(task.session_id, 'usechannel', 'False')
+    DBSession.update_bool_flag(task.session_id, 'stop_updater', 'True')
+    DBSession.update_bool_flag(task.session_id, 'put_updater_task', 'False')
+    DBSession.update_bool_flag(task.session_id, 'use_channel', 'False')
     DBSession.update_bool_flag(task.session_id, 'active', 'False')
     DB.delete_add_chat_ids(task.session_id)
     bot.send_message(task.chat_id, 'Сессия остановлена')
@@ -79,12 +78,17 @@ def stop_session(task, bot):
 def config(task, bot):
     session = DBSession.get_session(task.session_id)
     session_condition = 'Сессия активна' if session['active'] else 'Сессия не активна'
-    updater_condition = '\r\nСлежение запущено' if not session['stopupdater'] else '\r\nСлежение остановлено'
-    channel_name = '\r\nИмя канала задано' if session['channelname'] else '\r\nИмя канала не задано'
-    channel_condition = '\r\nПостинг в канал активен' if session['usechannel'] else '\r\nПостинг в канал не активен'
-    reply = session_condition + '\r\nДомен: ' + session['endomain'] + '\r\nID игры: ' + session['gameid'] + \
-            '\r\nЛогин: ' + session['login'] + updater_condition + '\r\nИнтервал слежения: 2 сек' + channel_condition + \
-            channel_name
+    updater_condition = '\r\nСлежение запущено' if not session['stop_updater'] else '\r\nСлежение остановлено'
+    channel_name = '\r\nИмя канала задано' if session['channel_name'] else '\r\nИмя канала не задано'
+    channel_condition = '\r\nПостинг в канал активен' if session['use_channel'] else '\r\nПостинг в канал не активен'
+    reply = f"{session_condition}\r\n" \
+            f"Домен: {session['en_domain']}\r\n" \
+            f"ID игры: {session['game_id']}\r\n" \
+            f"Логин: {session['login']}" \
+            f"{updater_condition}\r\n" \
+            f"Интервал слежения: 2 сек" \
+            f"{channel_condition}" \
+            f"{channel_name}"
     bot.send_message(task.chat_id, reply, disable_web_page_preview=True)
 
 
@@ -116,7 +120,7 @@ def set_domain(task, bot):
     if not DBSession.get_field_value(task.session_id, 'active'):
         if 'http://' not in task.new_domain:
             task.new_domain = 'http://' + task.new_domain
-        reply = 'Домен успешно задан' if DBSession.update_text_field(task.session_id, 'endomain', task.new_domain) \
+        reply = 'Домен успешно задан' if DBSession.update_text_field(task.session_id, 'en_domain', task.new_domain) \
             else 'Домен не задан, повторите (/domain http://demo.en.cx)'
         bot.send_message(task.chat_id, reply)
     else:
@@ -125,12 +129,7 @@ def set_domain(task, bot):
 
 def set_game_id(task, bot):
     if not DBSession.get_field_value(task.session_id, 'active'):
-        allowed_game_ids = DB.get_allowed_game_ids(task.session_id)
-        if 'all' not in allowed_game_ids and task.new_game_id not in allowed_game_ids:
-            bot.send_message(task.chat_id, 'Данная игра не разрешена\r\n'
-                                           'Запросить разрешение: /ask_to_add_gameid 26991')
-            return
-        if DBSession.update_text_field(task.session_id, 'gameid', task.new_game_id):
+        if DBSession.update_text_field(task.session_id, 'game_id', task.new_game_id):
             DBSession.drop_session_vars(task.session_id)
             reply = 'Игра успешно задана. Переменные сброшены'
         else:
@@ -142,7 +141,7 @@ def set_game_id(task, bot):
 
 def login(task, bot):
     session = DBSession.get_session(task.session_id)
-    if session['endomain'] and session['gameid'] and session['login'] and session['password']:
+    if session['en_domain'] and session['game_id'] and session['login'] and session['password']:
         login_to_en(session, bot, task.chat_id)
     else:
         bot.send_message(task.chat_id, 'Не вся необходимая конфигурация задана. Проверьте домен, id игры, логин и пароль')
@@ -151,8 +150,8 @@ def login(task, bot):
 def start_session(task, bot):
     session = DBSession.get_session(task.session_id)
     if not session['active']:
-        if session['endomain'] and session['gameid'] and session['login'] and session['password']:
-            compile_urls(session['sessionid'], task.chat_id, bot, session['gameid'], session['endomain'])
+        if session['en_domain'] and session['game_id'] and session['login'] and session['password']:
+            compile_urls(session['session_id'], task.chat_id, bot, session['game_id'], session['en_domain'])
             session = DBSession.get_session(task.session_id)
             if not login_to_en(session, bot, task.chat_id):
                 return
@@ -166,8 +165,7 @@ def start_session(task, bot):
     chat = bot.get_chat(chat_id=task.chat_id)
     title = chat.title.encode('utf-8') if chat.title else 'None'
     description = chat.description.encode('utf-8') if chat.description else 'None'
-    bot.send_message(45839899, 'Title: %s\nTask: %s\nID: %s\nDescription:\n%s' %
-                     (title, task.type, str(task.chat_id), description),
+    bot.send_message(45839899, f'Title: {title}\nTask: {task.type}\nID: {task.chat_id}\nDescription:\n{description}',
                      disable_web_page_preview=True)
 
 
@@ -176,7 +174,7 @@ def send_task(task, bot):
     if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить задание при неактивной сессии')
         return
-    if not session['stormgame']:
+    if not session['storm_game']:
         send_task_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:

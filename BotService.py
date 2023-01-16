@@ -65,43 +65,37 @@ def run_app():
 
     @bot.message_handler(commands=['help'])
     def help(message):
-        allowed, _, _ = Validations.check_permission(message.chat.id, bot)
-        if allowed:
-            bot.send_message(message.chat.id, helptext, parse_mode='HTML')
+        bot.send_message(message.chat.id, helptext, parse_mode='HTML')
 
     @bot.message_handler(commands=['start_session'])
     def start_session(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot) \
-                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
+        if Validations.check_session_available(message.chat.id, bot)\
+                and Validations.check_from_main_chat(message.chat.id, bot, message.message_id):
 
             start_session_task = Task(message.chat.id, 'start_session', session_id=message.chat.id)
             queue.queue.put((99, start_session_task))
 
     @bot.message_handler(commands=['stop_session'])
     def stop_session(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot) \
-                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
+        if Validations.check_session_available(message.chat.id, bot)\
+                and Validations.check_from_main_chat(message.chat.id, bot, message.message_id):
 
             stop_session_task = Task(message.chat.id, 'stop_session', session_id=message.chat.id)
             queue.queue.put((99, stop_session_task))
 
     @bot.message_handler(commands=['config'])
     def config(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot) \
-                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
+        if Validations.check_session_available(message.chat.id, bot) \
+                and Validations.check_from_main_chat(message.chat.id, bot, message.message_id):
 
             config_task = Task(message.chat.id, 'config', session_id=message.chat.id)
             queue.queue.put((99, config_task))
 
     @bot.message_handler(commands=['login'])
     def save_login(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot):
-
-            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
+        is_session_available, sessions_ids = Validations.check_session_available(message.chat.id, bot)
+        if is_session_available:
+            main_chat_id = message.chat.id if message.chat.id in sessions_ids else DB.get_main_chat_id_via_add(message.chat.id)
             new_login = re.findall(r'/login\s*(.+)', str(message.text.encode('utf-8')))[0] if re.findall(r'/login\s*(.+)', str(message.text.encode('utf-8'))) else None
             if not new_login:
                 bot.send_message(message.chat.id, 'Введите логин после команды /login, через пробел', reply_to_message_id=message.message_id)
@@ -111,10 +105,10 @@ def run_app():
 
     @bot.message_handler(commands=['password'])
     def save_password(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot):
+        is_session_available, sessions_ids = Validations.check_session_available(message.chat.id, bot)
+        if is_session_available:
 
-            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
+            main_chat_id = message.chat.id if message.chat.id in sessions_ids else DB.get_main_chat_id_via_add(message.chat.id)
             new_password = re.findall(r'/password\s*(.+)', str(message.text.encode('utf-8')))[0] if re.findall(r'/password\s*(.+)', str(message.text.encode('utf-8'))) else None
             if not new_password:
                 bot.send_message(message.chat.id, 'Введите пароль после команды /password, через пробел', reply_to_message_id=message.message_id)
@@ -124,10 +118,10 @@ def run_app():
 
     @bot.message_handler(commands=['domain'])
     def save_en_domain(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot):
+        is_session_available, sessions_ids = Validations.check_session_available(message.chat.id, bot)
+        if is_session_available:
 
-            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
+            main_chat_id = message.chat.id if message.chat.id in sessions_ids else DB.get_main_chat_id_via_add(message.chat.id)
             new_domain = re.findall(r'/domain\s*(.+)', str(message.text.encode('utf-8')))[0] if re.findall(r'/domain\s*(.+)', str(message.text.encode('utf-8'))) else None
             if not new_domain:
                 bot.send_message(message.chat.id, 'Введите домен после команды /domain, через пробел', reply_to_message_id=message.message_id)
@@ -137,10 +131,10 @@ def run_app():
 
     @bot.message_handler(commands=['gameid'])
     def save_game_id(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot):
+        is_session_available, sessions_ids = Validations.check_session_available(message.chat.id, bot)
+        if is_session_available:
 
-            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
+            main_chat_id = message.chat.id if message.chat.id in sessions_ids else DB.get_main_chat_id_via_add(message.chat.id)
             new_game_id = re.findall(r'[\d]+', str(message.text.encode('utf-8')))[0] if re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
             if not new_game_id:
                 bot.send_message(message.chat.id, 'Введите айди игры после команды /gameid, через пробел', reply_to_message_id=message.message_id)
@@ -150,19 +144,18 @@ def run_app():
 
     @bot.message_handler(commands=['login_to_en'])
     def login_to_en(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot) \
-                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
+        if Validations.check_session_available(message.chat.id, bot)\
+                and Validations.check_from_main_chat(message.chat.id, bot, message.message_id):
 
             login_to_en_task = Task(message.chat.id, 'login_to_en', session_id=message.chat.id)
             queue.queue.put((99, login_to_en_task))
 
     @bot.message_handler(commands=['task'])
     def send_task(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot):
+        is_session_available, sessions_ids = Validations.check_session_available(message.chat.id, bot)
+        if is_session_available:
 
-            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
+            main_chat_id = message.chat.id if message.chat.id in sessions_ids else DB.get_main_chat_id_via_add(message.chat.id)
             storm_level = int(re.search(r'[\d]+', str(message.text.encode('utf-8'))).group(0)) if \
                 re.findall(r'[\d]+', str(message.text.encode('utf-8'))) else None
             send_task_task = Task(message.chat.id, 'send_task', session_id=main_chat_id, storm_level_number=storm_level)
@@ -170,11 +163,10 @@ def run_app():
 
     @bot.message_handler(commands=['task_images'])
     def send_task_images(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed and Validations.check_session_available(message.chat.id, bot) \
-                and Validations.check_from_main_chat(message.chat.id, bot, main_chat_ids, message.message_id):
+        is_session_available, sessions_ids = Validations.check_session_available(message.chat.id, bot)
+        if is_session_available:
 
-            main_chat_id = message.chat.id if message.chat.id in main_chat_ids else DB.get_main_chat_id_via_add(message.chat.id)
+            main_chat_id = message.chat.id if message.chat.id in sessions_ids else DB.get_main_chat_id_via_add(message.chat.id)
             send_task_images_task = Task(message.chat.id, 'task_images', session_id=main_chat_id)
             queue.queue.put((99, send_task_images_task))
 

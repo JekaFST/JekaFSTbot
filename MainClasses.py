@@ -20,14 +20,15 @@ class Validations(object):
     def check_session_available(chat_id, bot):
         sessions_ids = DBSession.get_sessions_ids()
         if chat_id in sessions_ids or DB.get_main_chat_id_via_add(chat_id) in sessions_ids:
-            return True
+            return True, sessions_ids
         else:
             bot.send_message(chat_id, 'Для данного чата нет сессии. Для создания введите команду /start')
-            return False
+            return False, sessions_ids
 
     @staticmethod
-    def check_from_main_chat(chat_id, bot, main_chat_ids, message_id):
-        if chat_id not in main_chat_ids:
+    def check_from_main_chat(chat_id, bot, message_id):
+        sessions_ids = DBSession.get_sessions_ids()
+        if chat_id not in sessions_ids:
             bot.send_message(chat_id, 'Эта команда недоступна из личного чата', reply_to_message_id=message_id)
             return False
         else:

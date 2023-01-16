@@ -28,3 +28,11 @@ CREATE TABLE public.additional_chats(
     add_chat_id         bigint PRIMARY KEY,
     session_id          bigint NOT NULL
 );
+
+CREATE TABLE public.bot_tokens (
+    bot_token           varchar PRIMARY KEY,
+    type                varchar NOT NULL,
+    number              integer
+    -- CONTRAINT type main value - unique
+    -- main bot token = 370362982:AAH5ojKT0LSw8jS-vLfDF1bDE8rWWDyTeso
+);

@@ -63,9 +63,9 @@ class DBSession(object):
     def drop_session_vars(session_id):
         sql = f"""
                     UPDATE session_config
-                    SET CurrLevelId = NULL, GameURL = NULL, LoginURL = NULL, StormGame = NULL,
-                    SendCodes = True, GameModelStatus = NULL, PutUpdaterTask = NULL, StopUpdater = True,
-                    Locations = NULL, llmessageids = NULL
+                    SET curr_level_id = NULL, game_url = NULL, login_url = NULL, storm_game = NULL,
+                    send_codes = True, game_model_status = NULL, put_updater_task = NULL, stop_updater = True,
+                    locations = NULL, ll_message_ids = NULL
                     WHERE session_id = {session_id}
               """
         with connection_pool.get_conn() as db_connection:
