@@ -40,3 +40,15 @@ CREATE TABLE public.bot_tokens (
 CREATE TABLE public.tags_to_cut (
     tags_to_cut         varchar PRIMARY KEY
 );
+
+CREATE TABLE public.levels (
+    session_id          bigint,
+    level_id            integer,
+    game_id             varchar,
+    number              integer,
+    is_passed           boolean,
+    dismissed           boolean,
+    time_to_up_sent     boolean,
+    level_name          varchar
+    -- CONSTRAINT session_id & level_id unique
+);
