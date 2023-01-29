@@ -1,5 +1,4 @@
-from BotService import app
-from BotService import bot
+from BotService import app, bot
 
 
 if __name__ == "__main__":
