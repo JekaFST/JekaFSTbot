@@ -36,3 +36,7 @@ CREATE TABLE public.bot_tokens (
     -- CONTRAINT type main value - unique
     -- main bot token = 370362982:AAH5ojKT0LSw8jS-vLfDF1bDE8rWWDyTeso
 );
+
+CREATE TABLE public.tags_to_cut (
+    tags_to_cut         varchar PRIMARY KEY
+);

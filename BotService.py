@@ -35,19 +35,15 @@ def run_app():
 
     @bot.message_handler(commands=['join'])
     def join_session(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed \
-                and Validations.check_session_available(message.chat.id, bot) \
-                and Validations.check_join_possible(message.chat.id, bot, message.from_user.id, message.message_id, add_chat_ids):
+        if Validations.check_session_available(message.chat.id, bot) \
+                and Validations.check_join_possible(message.chat.id, bot, message.from_user.id, message.message_id):
             join_task = Task(message.chat.id, 'join', message_id=message.message_id, user_id=message.from_user.id)
             queue.queue.put((99, join_task))
 
     @bot.message_handler(commands=['reset_join'])
     def reset_join(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed \
-                and Validations.check_session_available(message.chat.id, bot) \
-                and Validations.check_reset_join_possible(message.chat.id, bot, message.from_user.id, message.message_id, add_chat_ids):
+        if Validations.check_session_available(message.chat.id, bot) \
+                and Validations.check_reset_join_possible(message.chat.id, bot, message.from_user.id, message.message_id):
             reset_join_task = Task(message.chat.id, 'reset_join', message_id=message.message_id, user_id=message.from_user.id)
             queue.queue.put((99, reset_join_task))
 
@@ -468,12 +464,10 @@ def run_app():
                                 '\d\d\.\d{4,7}\r\n\d\d\.\d{4,7}|'
                                 '\d\d\.\d{4,7},\r\n\d\d\.\d{4,7}')
     def coords_processor(message):
-        allowed, main_chat_ids, add_chat_ids = Validations.check_permission(message.chat.id, bot)
-        if allowed:
-            coords = find_coords(message.text)
-            if coords:
-                send_coords_task = Task(message.chat.id, 'send_coords', coords=coords, message_id=message.message_id)
-                queue.queue.put((99, send_coords_task))
+        coords = find_coords(message.text)
+        if coords:
+            send_coords_task = Task(message.chat.id, 'send_coords', coords=coords, message_id=message.message_id)
+            queue.queue.put((99, send_coords_task))
 
     @app.route("/")
     def index():

@@ -4,19 +4,6 @@ from DBMethods import DB, DBSession
 
 class Validations(object):
     @staticmethod
-    def check_permission(chat_id, bot):
-        main_chat_ids, add_chat_ids = DB.get_allowed_chat_ids()
-        if chat_id in main_chat_ids or chat_id in add_chat_ids:
-            return True, main_chat_ids, add_chat_ids
-        else:
-            bot.send_message(chat_id,
-                             'Данный чат не является ни основным, ни дополнительным разрешенным для работы с ботом\r\n'
-                             'Для отправки запроса на разрешение введите /ask_for_permission\n'
-                             'Краткая инструкция к боту доступна по ссылке:\n'
-                             'https://jekafst.net/instruction', disable_web_page_preview=True)
-            return False, main_chat_ids, add_chat_ids
-
-    @staticmethod
     def check_session_available(chat_id, bot):
         sessions_ids = DBSession.get_sessions_ids()
         if chat_id in sessions_ids or DB.get_main_chat_id_via_add(chat_id) in sessions_ids:
@@ -43,7 +30,8 @@ class Validations(object):
             return False
 
     @staticmethod
-    def check_join_possible(chat_id, bot, user_id, message_id, add_chat_ids):
+    def check_join_possible(chat_id, bot, user_id, message_id):
+        add_chat_ids = DB.get_additional_chat_ids()
         if user_id == chat_id:
             bot.send_message(chat_id, 'Нельзя выполнить команду /join из личного чата. '
                                       'Для сброса взаимодействия из личного чата введите /reset_join',
@@ -58,7 +46,8 @@ class Validations(object):
             return True
 
     @staticmethod
-    def check_reset_join_possible(chat_id, bot, user_id, message_id, add_chat_ids):
+    def check_reset_join_possible(chat_id, bot, user_id, message_id):
+        add_chat_ids = DB.get_additional_chat_ids()
         if user_id not in add_chat_ids:
             bot.send_message(chat_id, 'Нельзя выполнить команду /reset_join, '
                                       'если взаимодействие с ботом через личный чат не настроено',

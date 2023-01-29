@@ -479,41 +479,33 @@ class DBMessages(object):
 class DB(object):
     @staticmethod
     def get_tags_list():
-        sql = "SELECT DISTINCT * FROM TagsToCut"
+        sql = "SELECT DISTINCT * FROM tags_to_cut"
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows]
 
     @staticmethod
     def insert_tag_in_tags_list(tag_to_add):
-        sql = """
-                INSERT INTO TagsToCut (Tag)
-                VALUES ('%s')""" % tag_to_add
+        sql = f"""
+                    INSERT INTO tags_to_cut (tag)
+                    VALUES ('{tag_to_add}')
+              """
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def get_main_bot_token():
-        sql = "SELECT BotToken FROM BotTokens WHERE type = 'main'"
+        sql = "SELECT bot_token FROM bot_tokens WHERE type = 'main'"
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return rows[0][0]
 
     @staticmethod
     def get_location_bot_token_by_number(number):
-        sql = "SELECT BotToken FROM BotTokens WHERE type = 'location' and number = '%s'" % number
+        sql = f"SELECT bot_token FROM bot_tokens WHERE type = 'location' and number = '{number}'"
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return rows[0][0]
-
-    @staticmethod
-    def get_allowed_chat_ids():
-        sql_main = "SELECT DISTINCT ChatId FROM AllowedChats"
-        sql_add = "SELECT AddChatId FROM AllowedChats WHERE AddChatId IS NOT NULL"
-        with connection_pool.get_conn() as db_connection:
-            main_rows = db_connection.execute_select_cur(sql_main)
-            add_rows = db_connection.execute_select_cur(sql_add)
-            return [row[0] for row in main_rows] if main_rows else list(), [row[0] for row in add_rows] if add_rows else list()
 
     @staticmethod
     def get_additional_chat_ids():
@@ -521,12 +513,6 @@ class DB(object):
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
-
-    @staticmethod
-    def insert_main_chat_id(main_chat_id):
-        sql = "INSERT INTO AllowedChats (ChatId, AddChatId, AllowedGameIds) VALUES (%s, %s, '')" % (str(main_chat_id), 'NULL')
-        with connection_pool.get_conn() as db_connection:
-            return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def insert_add_chat_id(main_chat_id, add_chat_id):
@@ -561,110 +547,95 @@ class DB(object):
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
-    def get_allowed_game_ids(main_chat_id):
-        sql = "SELECT AllowedGameIds FROM AllowedChats WHERE ChatId = %s AND AddChatId IS NULL" % str(main_chat_id)
-        with connection_pool.get_conn() as db_connection:
-            rows = db_connection.execute_select_cur(sql)
-            return rows[0][0] if rows else list()
-
-    @staticmethod
-    def update_allowed_game_ids(main_chat_id, allowed_game_ids):
-        sql = "UPDATE AllowedChats SET AllowedGameIds = '%s' WHERE ChatId = %s AND AddChatId IS NULL" \
-              % (allowed_game_ids, str(main_chat_id))
-        with connection_pool.get_conn() as db_connection:
-            return db_connection.execute_insert_cur(sql)
-
-    @staticmethod
     def cleanup_for_ended_game(session_id, game_id):
-        sql = """
-                DELETE FROM levels WHERE sessionid = %s AND gameid = '%s';
-                DELETE FROM sectors WHERE sessionid = %s AND gameid = '%s';
-                DELETE FROM bonuses WHERE sessionid = %s AND gameid = '%s';
-                DELETE FROM helps WHERE sessionid = %s AND gameid = '%s';
-                DELETE FROM penhelps WHERE sessionid = %s AND gameid = '%s';
-                DELETE FROM messages WHERE sessionid = %s AND gameid = '%s';
-                """ % (session_id, game_id, session_id, game_id, session_id, game_id, session_id, game_id,
-                       session_id, game_id, session_id, game_id)
+        sql = f"""
+                    DELETE FROM levels WHERE session_id = {session_id} AND game_id = '{game_id}';
+                    DELETE FROM sectors WHERE session_id = {session_id} AND game_id = '{game_id}';
+                    DELETE FROM bonuses WHERE session_id = {session_id} AND game_id = '{game_id}';
+                    DELETE FROM helps WHERE session_id = {session_id} AND game_id = '{game_id}';
+                    DELETE FROM penhelps WHERE session_id = {session_id} AND game_id = '{game_id}';
+                    DELETE FROM messages WHERE session_id = {session_id} AND game_id = '{game_id}';
+              """
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
-    @staticmethod
-    def get_sectors_per_game(session_id, game_id):
-        sql = """
-                SELECT l.levelname, l.number, s.code, s.sectorname, s.sectororder, s.player
-                FROM levels l JOIN sectors s ON
-                (
-                l.levelid = s.levelid
-                AND l.sessionid = s.sessionid
-                AND l.gameid = s.gameid
-                )
-                WHERE
-                l.sessionid = %s
-                AND l.gameid = '%s'
-                ORDER BY l.number, s.sectororder;
-                """ % (session_id, game_id)
-        with connection_pool.get_conn() as db_connection:
-            rows = db_connection.execute_dict_select_cur(sql)
-            return rows
-
-    @staticmethod
-    def get_bonuses_per_game(session_id, game_id):
-        sql = """
-                    SELECT l.levelname, l.number, b.code, b.bonusname, b.bonusnumber, b.player
-                    FROM levels l JOIN bonuses b ON
-                    (
-                    l.levelid = b.levelid
-                    AND l.sessionid = b.sessionid
-                    AND l.gameid = b.gameid
-                    )
-                    WHERE
-                    l.sessionid = %s
-                    AND l.gameid = '%s'
-                    ORDER BY l.number, b.bonusnumber;
-                    """ % (session_id, game_id)
-        with connection_pool.get_conn() as db_connection:
-            rows = db_connection.execute_dict_select_cur(sql)
-            return rows
-
-    @staticmethod
-    def get_sectors_per_level(session_id, game_id, level_number):
-        sql = """
-                SELECT l.levelname, l.number, s.code, s.sectorname, s.sectororder, s.player
-                FROM levels l JOIN sectors s ON
-                (
-                l.levelid = s.levelid
-                AND l.sessionid = s.sessionid
-                AND l.gameid = s.gameid
-                )
-                WHERE
-                l.sessionid = %s
-                AND l.gameid = '%s'
-                AND l.number = %s
-                ORDER BY l.number, s.sectororder;
-                """ % (session_id, game_id, level_number)
-        with connection_pool.get_conn() as db_connection:
-            rows = db_connection.execute_dict_select_cur(sql)
-            return rows
-
-    @staticmethod
-    def get_bonuses_per_level(session_id, game_id, level_number):
-        sql = """
-                    SELECT l.levelname, l.number, b.code, b.bonusname, b.bonusnumber, b.player
-                    FROM levels l JOIN bonuses b ON
-                    (
-                    l.levelid = b.levelid
-                    AND l.sessionid = b.sessionid
-                    AND l.gameid = b.gameid
-                    )
-                    WHERE
-                    l.sessionid = %s
-                    AND l.gameid = '%s'
-                    AND l.number = %s
-                    ORDER BY l.number, b.bonusnumber;
-                    """ % (session_id, game_id, level_number)
-        with connection_pool.get_conn() as db_connection:
-            rows = db_connection.execute_dict_select_cur(sql)
-            return rows
+    # @staticmethod
+    # def get_sectors_per_game(session_id, game_id):
+    #     sql = """
+    #             SELECT l.levelname, l.number, s.code, s.sectorname, s.sectororder, s.player
+    #             FROM levels l JOIN sectors s ON
+    #             (
+    #             l.levelid = s.levelid
+    #             AND l.sessionid = s.sessionid
+    #             AND l.gameid = s.gameid
+    #             )
+    #             WHERE
+    #             l.sessionid = %s
+    #             AND l.gameid = '%s'
+    #             ORDER BY l.number, s.sectororder;
+    #             """ % (session_id, game_id)
+    #     with connection_pool.get_conn() as db_connection:
+    #         rows = db_connection.execute_dict_select_cur(sql)
+    #         return rows
+    #
+    # @staticmethod
+    # def get_bonuses_per_game(session_id, game_id):
+    #     sql = """
+    #                 SELECT l.levelname, l.number, b.code, b.bonusname, b.bonusnumber, b.player
+    #                 FROM levels l JOIN bonuses b ON
+    #                 (
+    #                 l.levelid = b.levelid
+    #                 AND l.sessionid = b.sessionid
+    #                 AND l.gameid = b.gameid
+    #                 )
+    #                 WHERE
+    #                 l.sessionid = %s
+    #                 AND l.gameid = '%s'
+    #                 ORDER BY l.number, b.bonusnumber;
+    #                 """ % (session_id, game_id)
+    #     with connection_pool.get_conn() as db_connection:
+    #         rows = db_connection.execute_dict_select_cur(sql)
+    #         return rows
+    #
+    # @staticmethod
+    # def get_sectors_per_level(session_id, game_id, level_number):
+    #     sql = """
+    #             SELECT l.levelname, l.number, s.code, s.sectorname, s.sectororder, s.player
+    #             FROM levels l JOIN sectors s ON
+    #             (
+    #             l.levelid = s.levelid
+    #             AND l.sessionid = s.sessionid
+    #             AND l.gameid = s.gameid
+    #             )
+    #             WHERE
+    #             l.sessionid = %s
+    #             AND l.gameid = '%s'
+    #             AND l.number = %s
+    #             ORDER BY l.number, s.sectororder;
+    #             """ % (session_id, game_id, level_number)
+    #     with connection_pool.get_conn() as db_connection:
+    #         rows = db_connection.execute_dict_select_cur(sql)
+    #         return rows
+    #
+    # @staticmethod
+    # def get_bonuses_per_level(session_id, game_id, level_number):
+    #     sql = """
+    #                 SELECT l.levelname, l.number, b.code, b.bonusname, b.bonusnumber, b.player
+    #                 FROM levels l JOIN bonuses b ON
+    #                 (
+    #                 l.levelid = b.levelid
+    #                 AND l.sessionid = b.sessionid
+    #                 AND l.gameid = b.gameid
+    #                 )
+    #                 WHERE
+    #                 l.sessionid = %s
+    #                 AND l.gameid = '%s'
+    #                 AND l.number = %s
+    #                 ORDER BY l.number, b.bonusnumber;
+    #                 """ % (session_id, game_id, level_number)
+    #     with connection_pool.get_conn() as db_connection:
+    #         rows = db_connection.execute_dict_select_cur(sql)
+    #         return rows
 
     @staticmethod
     def get_gameurls_levels():
