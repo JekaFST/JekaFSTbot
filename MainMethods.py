@@ -196,7 +196,7 @@ def send_all_sectors(task, bot):
     if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить сектора при неактивной сессии')
         return
-    if not session['stormgame']:
+    if not session['storm_game']:
         send_all_sectors_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:
@@ -210,7 +210,7 @@ def send_all_helps(task, bot):
     if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить подсказки при неактивной сессии')
         return
-    if not session['stormgame']:
+    if not session['storm_game']:
         send_all_helps_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:
@@ -224,7 +224,7 @@ def send_last_help(task, bot):
     if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить подсказку при неактивной сессии')
         return
-    if not session['stormgame']:
+    if not session['storm_game']:
             send_last_help_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:
@@ -238,7 +238,7 @@ def send_all_bonuses(task, bot):
     if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить бонусы при неактивной сессии')
         return
-    if not session['stormgame']:
+    if not session['storm_game']:
         send_all_bonuses_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:
@@ -252,7 +252,7 @@ def send_unclosed_bonuses(task, bot):
     if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить не закрытые бонусы при неактивной сессии')
         return
-    if not session['stormgame']:
+    if not session['storm_game']:
         send_unclosed_bonuses_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:
@@ -266,7 +266,7 @@ def send_auth_messages(task, bot):
     if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя запросить сообщения от авторов при неактивной сессии')
         return
-    if not session['stormgame']:
+    if not session['storm_game']:
         send_auth_messages_to_chat(bot, task.chat_id, session)
     else:
         if not task.storm_level_number:
@@ -283,8 +283,8 @@ def start_updater(task, bot):
             if thread.getName() == name:
                 bot.send_message(task.chat_id, 'Нельзя запустить слежение повторно')
                 return
-        DBSession.update_bool_flag(task.session_id, 'stopupdater', 'False')
-        DBSession.update_bool_flag(task.session_id, 'putupdatertask', 'True')
+        DBSession.update_bool_flag(task.session_id, 'stop_updater', 'False')
+        DBSession.update_bool_flag(task.session_id, 'put_updater_task', 'True')
         threading.Thread(name=name, target=updater_scheduler, args=(task.chat_id, bot, task.queue, task.session_id)).start()
         bot.send_message(task.chat_id, 'Слежение запущено')
     else:
@@ -293,14 +293,14 @@ def start_updater(task, bot):
 
 @ExceptionHandler.updater_scheduler_exception
 def updater_scheduler(chat_id, bot, queue, session_id):
-    while not DBSession.get_field_value(session_id, 'stopupdater'):
+    while not DBSession.get_field_value(session_id, 'stop_updater'):
         time.sleep(0.1)
-        if DBSession.get_field_value(session_id, 'putupdatertask'):
+        if DBSession.get_field_value(session_id, 'put_updater_task'):
             # time.sleep(DBSession.get_field_value(session_id, 'delay'))
             time.sleep(2)
             updater_task = Task(chat_id, 'updater', session_id=session_id)
             queue.put((1, updater_task))
-            DBSession.update_bool_flag(session_id, 'putupdatertask', 'False')
+            DBSession.update_bool_flag(session_id, 'put_updater_task', 'False')
     else:
         bot.send_message(chat_id, 'Слежение остановлено')
         return
@@ -314,19 +314,19 @@ def set_updater_delay(task, bot):
 
 def stop_updater(task, bot):
     if DBSession.get_field_value(task.session_id, 'active'):
-        DBSession.update_bool_flag(task.session_id, 'stopupdater', 'True')
-        DBSession.update_bool_flag(task.session_id, 'putupdatertask', 'False')
+        DBSession.update_bool_flag(task.session_id, 'stop_updater', 'True')
+        DBSession.update_bool_flag(task.session_id, 'put_updater_task', 'False')
 
 
 def set_channel_name(task, bot):
     new_channel_name = "@" + task.new_channel_name if "@" not in task.new_channel_name else task.new_channel_name
-    if DBSession.update_text_field(task.session_id, 'channelname', new_channel_name):
+    if DBSession.update_text_field(task.session_id, 'channel_name', new_channel_name):
         bot.send_message(task.chat_id, 'Канал успешно задан')
         if check_channel(bot, task.chat_id, new_channel_name):
-            if DBSession.update_bool_flag(task.session_id, 'usechannel', 'True'):
+            if DBSession.update_bool_flag(task.session_id, 'use_channel', 'True'):
                 bot.send_message(task.chat_id, 'Постинг в канал включен')
         else:
-            if DBSession.update_bool_flag(task.session_id, 'usechannel', 'False'):
+            if DBSession.update_bool_flag(task.session_id, 'use_channel', 'False'):
                 bot.send_message(task.chat_id, 'Постинг в канал отключен')
     else:
         bot.send_message(task.chat_id, 'Канал не задан, повторите')
@@ -334,16 +334,16 @@ def set_channel_name(task, bot):
 
 def start_channel(task, bot):
     session = DBSession.get_session(task.session_id)
-    if check_channel(bot, task.chat_id, session['channelname']):
-        if DBSession.update_bool_flag(task.session_id, 'usechannel', 'True'):
+    if check_channel(bot, task.chat_id, session['channel_name']):
+        if DBSession.update_bool_flag(task.session_id, 'use_channel', 'True'):
             bot.send_message(task.chat_id, 'Постинг в канал включен')
     else:
-        if DBSession.update_bool_flag(task.session_id, 'usechannel', 'False'):
+        if DBSession.update_bool_flag(task.session_id, 'use_channel', 'False'):
             bot.send_message(task.chat_id, 'Постинг в канал отключен')
 
 
 def stop_channel(task, bot):
-    if DBSession.update_bool_flag(task.session_id, 'usechannel', 'False'):
+    if DBSession.update_bool_flag(task.session_id, 'use_channel', 'False'):
         bot.send_message(task.chat_id, 'Постинг в канал запрещен')
 
 
@@ -352,11 +352,11 @@ def send_code_main(task, bot):
     if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя сдавать коды при неактивной сессии', reply_to_message_id=task.message_id)
         return
-    if not session['sendcodes']:
+    if not session['send_codes']:
         bot.send_message(task.chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on',
                          reply_to_message_id=task.message_id)
         return
-    if not session['stormgame']:
+    if not session['storm_game']:
         send_code_to_level(task.code, bot, task.chat_id, task.message_id, session)
     else:
         try:
@@ -374,11 +374,11 @@ def send_code_bonus(task, bot):
     if not session['active']:
         bot.send_message(task.chat_id, 'Нельзя сдавать коды при неактивной сессии', reply_to_message_id=task.message_id)
         return
-    if not session['sendcodes']:
+    if not session['send_codes']:
         bot.send_message(task.chat_id, 'Сдача кодов выключена. Для включения введите команду /codes_on',
                          reply_to_message_id=task.message_id)
         return
-    if not session['stormgame']:
+    if not session['storm_game']:
         send_code_to_level(task.code, bot, task.chat_id, task.message_id, session, bonus_only=True)
     else:
         try:
@@ -416,19 +416,19 @@ def reset_join(task, bot):
 
 
 def enable_codes(task, bot):
-    DBSession.update_bool_flag(task.session_id, 'sendcodes', 'True')
+    DBSession.update_bool_flag(task.session_id, 'send_codes', 'True')
     bot.send_message(task.chat_id, 'Сдача кодов включена')
 
 
 def disable_codes(task, bot):
-    DBSession.update_bool_flag(task.session_id, 'sendcodes', 'False')
+    DBSession.update_bool_flag(task.session_id, 'send_codes', 'False')
     bot.send_message(task.chat_id, 'Сдача кодов выключена')
 
 
 def send_live_locations(task, bot):
     session = DBSession.get_session(task.session_id)
     locations = json.loads(session['locations'])
-    ll_message_ids = json.loads(session['llmessageids'])
+    ll_message_ids = json.loads(session['ll_message_ids'])
     if not locations and not task.coords:
         bot.send_message(task.chat_id, 'Нет координат для отправки')
         return
@@ -447,7 +447,7 @@ def send_live_locations(task, bot):
 
 def stop_live_locations(task, bot):
     session = DBSession.get_session(task.session_id)
-    ll_message_ids = json.loads(session['llmessageids'])
+    ll_message_ids = json.loads(session['ll_message_ids'])
     if not ll_message_ids:
         bot.send_message(task.chat_id, 'Live location не отправлена')
         return
@@ -456,7 +456,7 @@ def stop_live_locations(task, bot):
 
 def edit_live_locations(task, bot):
     session = DBSession.get_session(task.session_id)
-    ll_message_ids = json.loads(session['llmessageids'])
+    ll_message_ids = json.loads(session['ll_message_ids'])
     if not ll_message_ids:
         bot.send_message(task.chat_id, 'Live location не отправлена')
         return
@@ -485,7 +485,7 @@ def edit_live_locations(task, bot):
 
 def add_custom_live_locations(task, bot):
     session = DBSession.get_session(task.session_id)
-    ll_message_ids = json.loads(session['llmessageids'])
+    ll_message_ids = json.loads(session['ll_message_ids'])
     for k in task.points_dict.keys():
         if k in ll_message_ids.keys():
             close_live_locations(task.chat_id, bot, session, ll_message_ids, point=k)
@@ -495,13 +495,13 @@ def add_custom_live_locations(task, bot):
 
 
 def clean_live_locations(task, bot):
-    DBSession.update_json_field(task.session_id, 'llmessageids', None)
+    DBSession.update_json_field(task.session_id, 'll_message_ids', None)
     DBSession.update_json_field(task.session_id, 'locations', None)
 
 
 def get_codes_links(task, bot):
-    game_id = DBSession.get_field_value(task.session_id, 'gameid')
-    link_to_all_codes = 'https://jekafstbot.herokuapp.com/%s/%s' % (task.session_id, game_id)
+    game_id = DBSession.get_field_value(task.session_id, 'game_id')
+    link_to_all_codes = f'https://jekafst.net/{task.session_id}/{game_id}'
     link_to_codes_per_level = link_to_all_codes + '/level_number'
     message = 'Для просмотра кодов по всем уровням игры:\r\n' + link_to_all_codes + '\r\n' \
               'Для просмотра кодов по отдельному уровню игры:\r\n' + link_to_codes_per_level + '\r\n' \

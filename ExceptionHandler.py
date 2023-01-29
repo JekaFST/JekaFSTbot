@@ -90,7 +90,7 @@ class ExceptionHandler(object):
             except Exception:
                 # bot.send_message(chat_id, 'Exception в функции слежения')
                 logging.exception('Exception в updater')
-                DBSession.update_bool_flag(session['sessionid'], 'putupdatertask', 'True')
+                DBSession.update_bool_flag(session['session_id'], 'put_updater_task', 'True')
         return wrapped
 
     @staticmethod

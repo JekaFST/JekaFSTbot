@@ -106,7 +106,7 @@ def close_live_locations(chat_id, bot, session, ll_message_ids, point=None):
                     if "message can't be edited" in response_text:
                         del ll_message_ids[k]
         bot.send_message(chat_id, 'Live locations остановлены')
-        DBSession.update_json_field(session['sessionid'], 'llmessageids', {})
+        DBSession.update_json_field(session['session_id'], 'll_message_ids', {})
     else:
         if point in ll_message_ids.keys():
             try:
@@ -116,7 +116,7 @@ def close_live_locations(chat_id, bot, session, ll_message_ids, point=None):
                 response_text = json.loads(e.result.text)['description'].encode('utf-8')
                 if "message can't be edited" in response_text:
                     del ll_message_ids[point]
-            DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
+            DBSession.update_json_field(session['session_id'], 'll_message_ids', ll_message_ids)
             bot.send_message(chat_id, 'Live location %s остановлена' % point)
         else:
             bot.send_message(chat_id, 'Live location %s не поставлен' % point)

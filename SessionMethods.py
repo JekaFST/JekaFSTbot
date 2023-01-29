@@ -156,9 +156,9 @@ def get_current_game_model(session, bot, chat_id, from_updater, params=None):
     for i in range(2):
         if not i == 0:
             _ = upd_session_cookie(session, bot, chat_id)
-            session = DBSession.get_session(session['sessionid'])
+            session = DBSession.get_session(session['session_id'])
         try:
-            response = requests.get(session['gameurl'], params=params, headers={'Cookie': session['cookie']})
+            response = requests.get(session['game_url'], params=params, headers={'Cookie': session['cookie']})
             game_model = json.loads(response.text)
             if game_model['Event'] == 0:
                 normal = True
@@ -170,12 +170,12 @@ def get_current_game_model(session, bot, chat_id, from_updater, params=None):
             if i == 0:
                 continue
             if "Your requests have been classified as robot's requests." in response.text:
-                DBSession.update_bool_flag(session['sessionid'], 'stopupdater', 'True')
+                DBSession.update_bool_flag(session['session_id'], 'stop_updater', 'True')
                 reply = 'Сработала защита движка от повторяющихся запросов. Необходимо перезапустить слежение.\r\n/start_updater'
                 bot.send_message(chat_id, reply)
             else:
-                logging.exception('Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
-                bot.send_message(45839899, 'Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
+                logging.exception('Exception - game model не является json объектом. Сессия %s' % session['session_id'])
+                bot.send_message(45839899, 'Exception - game model не является json объектом. Сессия %s' % session['session_id'])
                 reply = 'Updater не смог загрузить игру\r\nЕсли это повторяющееся сообщение - попробуйте выключить слежение, ' \
                         'подождать минуту или несколько минут и снова запустить слежение'
                 bot.send_message(chat_id, reply)
@@ -191,13 +191,13 @@ def handle_inactive_game_model(game_model, session, bot, chat_id, from_updater=F
     loaded_game_wrong_status = None
     if game_model['Event'] in game_wrong_statuses.keys():
         if game_model['Event'] == 17:
-            DBSession.update_bool_flag(session['sessionid'], 'stopupdater', 'True')
-            DBSession.update_bool_flag(session['sessionid'], 'usechannel', 'False')
-            DBSession.update_bool_flag(session['sessionid'], 'active', 'False')
-            DBSession.drop_session_vars(session['sessionid'])
-            DB.cleanup_for_ended_game(session['sessionid'], session['gameid'])
+            DBSession.update_bool_flag(session['session_id'], 'stop_updater', 'True')
+            DBSession.update_bool_flag(session['session_id'], 'use_channel', 'False')
+            DBSession.update_bool_flag(session['session_id'], 'active', 'False')
+            DBSession.drop_session_vars(session['session_id'])
+            DB.cleanup_for_ended_game(session['session_id'], session['game_id'])
             loaded_game_wrong_status = game_wrong_statuses[17] + '\r\nСессия остановлена, переменные сброшены'
-            session = DBSession.get_session(session['sessionid'])
+            session = DBSession.get_session(session['session_id'])
         else:
             for k, v in game_wrong_statuses.items():
                 if game_model['Event'] == k:
@@ -205,8 +205,8 @@ def handle_inactive_game_model(game_model, session, bot, chat_id, from_updater=F
     else:
         loaded_game_wrong_status = 'Состояние игры не соответствует ни одному из ожидаемых. Проверьте настройки бота'
 
-    if not from_updater or not session['gamemodelstatus'] == loaded_game_wrong_status:
-        DBSession.update_text_field(session['sessionid'], 'gamemodelstatus', loaded_game_wrong_status)
+    if not from_updater or not session['game_model_status'] == loaded_game_wrong_status:
+        DBSession.update_text_field(session['session_id'], 'game_model_status', loaded_game_wrong_status)
         bot.send_message(chat_id, loaded_game_wrong_status)
 
 
@@ -230,7 +230,6 @@ def get_storm_level(level_number, session, bot, chat_id, from_updater):
         return None
 
 
-
 def send_code_to_level(code, bot, chat_id, message_id, session, bonus_only=False):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
@@ -251,14 +250,14 @@ def send_task_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
-    send_task(session['sessionid'], level, bot, chat_id)
+    send_task(session['session_id'], level, bot, chat_id)
 
 
 def send_task_to_chat_storm(bot, chat_id, session, storm_level_number):
     storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
     if not storm_level:
         return
-    send_task(session['sessionid'], storm_level, bot, chat_id, storm=True)
+    send_task(session['session_id'], storm_level, bot, chat_id, storm=True)
 
 
 def send_task_images_to_chat(bot, chat_id, session):
@@ -286,35 +285,35 @@ def send_all_helps_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
-    send_helps(session['sessionid'], level, bot, chat_id)
+    send_helps(session['session_id'], level, bot, chat_id)
 
 
 def send_all_helps_to_chat_storm(bot, chat_id, session, storm_level_number):
     storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
     if not storm_level:
         return
-    send_helps(session['sessionid'], storm_level, bot, chat_id, storm=True)
+    send_helps(session['session_id'], storm_level, bot, chat_id, storm=True)
 
 
 def send_last_help_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
-    send_last_help(session['sessionid'], level, bot, chat_id)
+    send_last_help(session['session_id'], level, bot, chat_id)
 
 
 def send_last_help_to_chat_storm(bot, chat_id, session, storm_level_number):
     storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
     if not storm_level:
         return
-    send_last_help(session['sessionid'], storm_level, bot, chat_id, storm=True)
+    send_last_help(session['session_id'], storm_level, bot, chat_id, storm=True)
 
 
 def send_all_bonuses_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
-    send_bonuses(session['sessionid'], level, bot, chat_id)
+    send_bonuses(session['session_id'], level, bot, chat_id)
 
 
 def send_all_bonuses_to_chat_storm(bot, chat_id, session, storm_level_number):
@@ -323,7 +322,7 @@ def send_all_bonuses_to_chat_storm(bot, chat_id, session, storm_level_number):
         return
     levelmark = '<b>Уровень %s: %s</b>' % (str(storm_level['Number']), storm_level['Name'].encode('utf-8')) \
         if storm_level['Name'] else '<b>Уровень %s</b>' % str(storm_level['Number'])
-    send_bonuses(session['sessionid'], storm_level, bot, chat_id, storm=True, levelmark=levelmark)
+    send_bonuses(session['session_id'], storm_level, bot, chat_id, storm=True, levelmark=levelmark)
 
 
 def send_unclosed_bonuses_to_chat(bot, chat_id, session):
@@ -344,14 +343,14 @@ def send_auth_messages_to_chat(bot, chat_id, session):
     level, _ = get_current_level(session, bot, chat_id)
     if not level:
         return
-    send_auth_messages(session['sessionid'], level, bot, chat_id)
+    send_auth_messages(session['session_id'], level, bot, chat_id)
 
 
 def send_auth_messages_to_chat_storm(bot, chat_id, session, storm_level_number):
     storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
     if not storm_level:
         return
-    send_auth_messages(session['sessionid'], storm_level, bot, chat_id, storm=True)
+    send_auth_messages(session['session_id'], storm_level, bot, chat_id, storm=True)
 
 
 def check_repeat_code(level, code, is_repeat_code=False):
@@ -403,16 +402,16 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
     for i in range(2):
         if not i == 0:
             _ = upd_session_cookie(session, bot, chat_id)
-            session = DBSession.get_session(session['sessionid'])
+            session = DBSession.get_session(session['session_id'])
         try:
-            response = requests.post(session['gameurl'], data=code_request, headers={'Cookie': session['cookie']}, params={'json': '1'})
+            response = requests.post(session['game_url'], data=code_request, headers={'Cookie': session['cookie']}, params={'json': '1'})
             game_model = json.loads(response.text)
             break
         except Exception:
             if i == 0:
                 continue
-            logging.exception('Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
-            bot.send_message(45839899, 'Exception - game model не является json объектом. Сессия %s' % session['sessionid'])
+            logging.exception('Exception - game model не является json объектом. Сессия %s' % session['session_id'])
+            bot.send_message(45839899, 'Exception - game model не является json объектом. Сессия %s' % session['session_id'])
             bot.send_message(chat_id, '\xE2\x9D\x97\xE2\x9D\x97\xE2\x9D\x97\r\nОтправьте код повторно. Движок вернул некорректный ответ',
                              reply_to_message_id=message_id)
             return
@@ -435,7 +434,7 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
                 not_answered_sector_ids.append(sector['SectorId'])
         if len(not_answered_sector_ids) == 1:
             level_last_sector_id = not_answered_sector_ids[0]
-            DBSectors.update_level_last_code(session['sessionid'], session['gameid'], level_last_sector_id, code,
+            DBSectors.update_level_last_code(session['session_id'], session['game_id'], level_last_sector_id, code,
                                              session['login'])
 
 
@@ -578,7 +577,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
     if not custom_points:
         if not coords:
             level, _ = get_current_level(session, bot, chat_id)
-            if level['LevelId'] != session['currlevelid']:
+            if level['LevelId'] != session['curr_level_id']:
                 bot.send_message(chat_id, 'Уровень изменился. '
                                           'Повторите команду, если хотите поставить live_location для нового уровня')
                 return
@@ -602,7 +601,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
                 bot.send_message(chat_id, 'Live location для следующих точек не отправлен: %s.\r\n'
                                           'В чате нет соответствующего(-их) бота(-ов)\r\n'
                                           'Найти и добавить ботов можно по следующему шаблону: @JekaLocation1Bot' % str(not_in_chat_bots))
-            DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
+            DBSession.update_json_field(session['session_id'], 'll_message_ids', ll_message_ids)
         else:
             latitude = re.findall(r'\d\d\.\d{4,7}', str(coords))[0]
             longitude = re.findall(r'\d\d\.\d{4,7}', str(coords))[1]
@@ -611,7 +610,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
             ll_message_ids['0'] = str(response.message_id)
             coord_Y_G = make_Y_G_links(str(coords))
             bot.send_message(chat_id, coord_Y_G, parse_mode='HTML', disable_web_page_preview=True)
-            DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
+            DBSession.update_json_field(session['session_id'], 'll_message_ids', ll_message_ids)
     else:
         for k, v in custom_points.items():
             if int(k) > 20:
@@ -636,13 +635,13 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
             bot.send_message(chat_id, 'Live location для следующих точек не отправлен: %s.\r\n'
                                       'В чате нет соответствующего(-их) бота(-ов)\r\n'
                                       'Найти и добавить ботов можно по следующему шаблону: @JekaLocation1Bot' % str(not_in_chat_bots))
-        DBSession.update_json_field(session['sessionid'], 'llmessageids', ll_message_ids)
+        DBSession.update_json_field(session['session_id'], 'll_message_ids', ll_message_ids)
 
 
 def __prepare_locations_kml(session, locations):
     kml = simplekml.Kml()
-    level_number = DBLevels.get_level_number(session['sessionid'], session['currlevelid'])
-    filename = 'level' + str(level_number) + '_' + str(session['sessionid'])[-4:] + '.kml'
+    level_number = DBLevels.get_level_number(session['session_id'], session['curr_level_id'])
+    filename = 'level' + str(level_number) + '_' + str(session['session_id'])[-4:] + '.kml'
     for k, v in locations.items():
         latitude = re.findall(r'\d\d\.\d{4,7}', str(v))[0]
         longitude = re.findall(r'\d\d\.\d{4,7}', str(v))[1]
