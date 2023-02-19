@@ -18,15 +18,15 @@ def reload_backup(bot, queue):
     sessions = DBSession.get_all_sessions()
     for session in sessions:
         try:
-            bot.get_chat(chat_id=session['sessionid'])
+            bot.get_chat(chat_id=session['session_id'])
         except Exception as err:
             if err.result.status_code == 400 and 'chat not found' in err.message:
-                DBSession.delete_session(session['sessionid'])
+                DBSession.delete_session(session['session_id'])
                 continue
         if not session['active']:
             continue
-        if not session['stopupdater']:
-            start_updater_task = Task(session['sessionid'], 'start_updater', queue=queue, session_id=session['sessionid'])
+        if not session['stop_updater']:
+            start_updater_task = Task(session['session_id'], 'start_updater', queue=queue, session_id=session['session_id'])
             queue.put((2, start_updater_task))
         else:
             pass
@@ -277,7 +277,7 @@ def send_auth_messages(task, bot):
 
 def start_updater(task, bot):
     if DBSession.get_field_value(task.session_id, 'active'):
-        name = 'updater_%s' % task.chat_id
+        name = f'updater_{task.chat_id}'
         threads = threading.enumerate()
         for thread in threads:
             if thread.getName() == name:
@@ -319,7 +319,7 @@ def stop_updater(task, bot):
 
 
 def set_channel_name(task, bot):
-    new_channel_name = "@" + task.new_channel_name if "@" not in task.new_channel_name else task.new_channel_name
+    new_channel_name = f"@{task.new_channel_name}" if "@" not in task.new_channel_name else task.new_channel_name
     if DBSession.update_text_field(task.session_id, 'channel_name', new_channel_name):
         bot.send_message(task.chat_id, 'Канал успешно задан')
         if check_channel(bot, task.chat_id, new_channel_name):
@@ -478,7 +478,7 @@ def edit_live_locations(task, bot):
                 longitude = re.findall(r'\d\d\.\d{4,7}', coord)[1]
                 telebot.TeleBot(DB.get_location_bot_token_by_number(task.point)).edit_message_live_location(
                     latitude, longitude, task.chat_id, int(ll_message_ids[task.point]))
-                bot.send_message(task.chat_id, 'Live location %s изменен' % task.point)
+                bot.send_message(task.chat_id, f'Live location {task.point} изменен')
         else:
             bot.send_message(task.chat_id, 'Проверьте номер точки - соответствующая live location не найдена)')
 
@@ -503,9 +503,9 @@ def get_codes_links(task, bot):
     game_id = DBSession.get_field_value(task.session_id, 'game_id')
     link_to_all_codes = f'https://jekafst.net/{task.session_id}/{game_id}'
     link_to_codes_per_level = link_to_all_codes + '/level_number'
-    message = 'Для просмотра кодов по всем уровням игры:\r\n' + link_to_all_codes + '\r\n' \
-              'Для просмотра кодов по отдельному уровню игры:\r\n' + link_to_codes_per_level + '\r\n' \
-              'где level_number - номер уровня'
+    message = f'Для просмотра кодов по всем уровням игры:\r\n{link_to_all_codes}\r\n' \
+              f'Для просмотра кодов по отдельному уровню игры:\r\n{link_to_codes_per_level}\r\n' \
+              f'где level_number - номер уровня'
     bot.send_message(task.chat_id, message, reply_to_message_id=task.message_id, disable_web_page_preview=True)
 
 
