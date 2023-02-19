@@ -13,7 +13,8 @@ from TextConvertingMethods import find_coords
 from Const import helptext, num_worker_threads
 
 logging.basicConfig(level=logging.INFO)
-bot = telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")
+bot = telebot.TeleBot("583637976:AAEFrQFiAaGuKwmoRV0N1MwU-ujRzmCxCAo")  # debug
+# bot = telebot.TeleBot("370362982:AAH5ojKT0LSw8jS-vLfDF1bDE8rWWDyTeso")  # prod
 
 
 def run_app():

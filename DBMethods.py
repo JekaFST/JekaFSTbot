@@ -130,43 +130,47 @@ class DBLevels(object):
     @staticmethod
     def insert_level(session_id, game_id, level):
         name = level['LevelName'].encode('utf-8') if level['LevelName'] else ''
-        sql = """INSERT INTO levels
-                    (SessionId, LevelId, GameId, Number, IsPassed, Dismissed, TimeToUpSent, levelname)
-                    VALUES (%s, %s, '%s', %s, %s, %s, False, $$%s$$)
-                """ % (session_id, level['LevelId'], game_id, level['LevelNumber'], level['IsPassed'], level['Dismissed'], name)
+        sql = f"""
+                    INSERT INTO levels
+                    (session_id, level_id, game_id, number, is_passed, dismissed, time_to_up_sent, level_name)
+                    VALUES ({session_id}, {level['LevelId']}, '{game_id}', {level['LevelNumber']}, {level['IsPassed']}, {level['Dismissed']}, False, $${name}$$)
+              """
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def get_dismissed_level_ids(session_id, game_id):
-        sql = """SELECT LevelId FROM levels
-                    WHERE sessionid = %s AND gameid = '%s' AND dismissed = True
-                    """ % (session_id, game_id)
+        sql = f"""
+                    SELECT level_id FROM levels
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND dismissed = True
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_passed_level_ids(session_id, game_id):
-        sql = """SELECT LevelId FROM levels
-                        WHERE sessionid = %s AND gameid = '%s' AND ispassed = True
-                        """ % (session_id, game_id)
+        sql = f"""
+                    SELECT level_id FROM levels
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND is_passed = True
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def update_bool_field(session_id, game_id, level_id, header, active):
-        sql = """UPDATE Levels
-                SET %s = %s
-                WHERE sessionid = %s AND gameid = '%s' AND levelid = %s
-                """ % (header, active, session_id, game_id, level_id)
+        sql = f"""
+                    UPDATE levels
+                    SET {header} = {active}
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND level_id = {level_id}
+              """
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def get_level_ids_per_game(session_id, game_id):
-        sql = """SELECT LevelId FROM Levels
+        sql = """SELECT LevelId FROM levels
                     WHERE sessionid = %s AND gameid = '%s'
                     """ % (session_id, game_id)
         with connection_pool.get_conn() as db_connection:
@@ -175,24 +179,25 @@ class DBLevels(object):
 
     @staticmethod
     def get_time_to_up_sent(session_id, level_id):
-        sql = "SELECT timetoupsent FROM Levels WHERE sessionid = %s AND levelid = %s" % (session_id, level_id)
+        sql = f"SELECT time_to_up_sent FROM levels WHERE session_id = {session_id} AND level_id = {level_id}"
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return rows[0][0]
 
     @staticmethod
     def get_level_number(session_id, level_id):
-        sql = "SELECT number FROM Levels WHERE sessionid = %s AND levelid = %s" % (session_id, level_id)
+        sql = f"SELECT number FROM levels WHERE session_id = {session_id} AND level_id = {level_id}"
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return rows[0][0]
 
     @staticmethod
     def update_time_to_up_sent(session_id, level_id, active):
-        sql = """UPDATE Levels
-                SET timetoupsent = %s
-                WHERE sessionid = %s AND levelid = %s
-                """ % (active, session_id, level_id)
+        sql = f"""
+                    UPDATE levels
+                    SET time_to_up_sent = {active}
+                    WHERE session_id = {session_id} AND level_id = {level_id}
+              """
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
@@ -200,46 +205,51 @@ class DBLevels(object):
 class DBHelps(object):
     @staticmethod
     def insert_help(session_id, game_id, help_id):
-        sql = """INSERT INTO helps
-                        (SessionId, HintId, GameId, NotSent, TimeNotSent)
-                        VALUES (%s, %s, '%s', True, True)
-                    """ % (session_id, help_id, game_id)
+        sql = f"""
+                    INSERT INTO helps
+                    (session_id, hint_id, game_id, not_sent, time_not_sent)
+                    VALUES ({session_id}, {help_id}, '{game_id}', True, True)
+              """
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def get_help_ids_per_game(session_id, game_id):
-        sql = """SELECT HintId FROM helps
-                        WHERE sessionid = %s AND gameid = '%s'
-                        """ % (session_id, game_id)
+        sql = f"""
+                    SELECT hint_id FROM helps
+                    WHERE session_id = {session_id} AND game_id = '{game_id}'
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_not_sent_help_ids_per_game(session_id, game_id):
-        sql = """SELECT HintId FROM helps
-                            WHERE sessionid = %s AND gameid = '%s' AND notsent = True
-                            """ % (session_id, game_id)
+        sql = f"""
+                    SELECT hint_id FROM helps
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND not_sent = True
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_time_not_sent_help_ids_per_game(session_id, game_id):
-        sql = """SELECT HintId FROM helps
-                            WHERE sessionid = %s AND gameid = '%s' AND timenotsent = True
-                            """ % (session_id, game_id)
+        sql = f"""
+                    SELECT hint_id FROM helps
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND time_not_sent = True
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def update_bool_flag(session_id, game_id, help_id, header, value):
-        sql = """UPDATE Helps
-                    SET %s = %s
-                    WHERE sessionid = %s AND gameid = '%s' AND hintid = %s
-                    """ % (header, value, session_id, game_id, help_id)
+        sql = f"""
+                    UPDATE helps
+                    SET {header} = {value}
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND hint_id = {help_id}
+              """
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
@@ -247,37 +257,41 @@ class DBHelps(object):
 class DBPenHelps(object):
     @staticmethod
     def insert_pen_help(session_id, game_id, pen_help_id):
-        sql = """INSERT INTO penhelps
-                        (SessionId, penhintid, GameId, NotSent)
-                        VALUES (%s, %s, '%s', True)
-                    """ % (session_id, pen_help_id, game_id)
+        sql = f"""
+                    INSERT INTO pen_helps
+                    (session_id, pen_hint_id, game_id, not_sent)
+                    VALUES ({session_id}, {pen_help_id}, '{game_id}', True)
+              """
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def get_pen_help_ids_per_game(session_id, game_id):
-        sql = """SELECT penhintid FROM penhelps
-                        WHERE sessionid = %s AND gameid = '%s'
-                        """ % (session_id, game_id)
+        sql = f"""
+                    SELECT pen_hint_id FROM pen_helps
+                    WHERE session_id = {session_id} AND game_id = '{game_id}'
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_not_sent_pen_help_ids_per_game(session_id, game_id):
-        sql = """SELECT penhintid FROM penhelps
-                            WHERE sessionid = %s AND gameid = '%s' AND notsent = True
-                            """ % (session_id, game_id)
+        sql = f"""
+                    SELECT pen_hint_id FROM pen_helps
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND not_sent = True
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def update_bool_flag(session_id, game_id, pen_help_id, header, value):
-        sql = """UPDATE penhelps
-                    SET %s = %s
-                    WHERE sessionid = %s AND gameid = '%s' AND penhintid = %s
-                    """ % (header, value, session_id, game_id, pen_help_id)
+        sql = f"""
+                    UPDATE pen_helps
+                    SET {header} = {value}
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND pen_hint_id = {pen_help_id}
+              """
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
@@ -290,72 +304,78 @@ class DBBonuses(object):
         bonus_id = bonus['BonusId']
         player = bonus['Answer']['Login'].encode('utf-8') if bonus['IsAnswered'] else ''
         code = bonus['Answer']['Answer'].encode('utf-8') if bonus['IsAnswered'] else 'NULL'
-        sql = """INSERT INTO bonuses
-                        (SessionId, BonusId, GameId, InfoNotSent, AwardNotSent, levelid, code, bonusname, bonusnumber, player)
-                        VALUES (%s, %s, '%s', %s, %s, %s, $$%s$$, $$%s$$, %s, $$%s$$)
-                    """ % (session_id, bonus_id, game_id, info_not_sent, award_not_sent, level_id, code, bonus_name, bonus_number, player)
+        sql = f"""
+                    INSERT INTO bonuses
+                    (session_id, bonus_id, game_id, info_not_sent, award_not_sent, level_id, code, bonus_name, bonus_number, player)
+                    VALUES ({session_id}, {bonus_id}, '{game_id}', {info_not_sent}, {award_not_sent}, {level_id}, $${code}$$, $${bonus_name}$$, {bonus_number}, $${player}$$)
+              """
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def get_bonus_ids_per_level(session_id, game_id, level_id):
-        sql = """SELECT BonusId FROM bonuses
-                            WHERE sessionid = %s AND gameid = '%s' AND levelid = %s
-                            """ % (session_id, game_id, level_id)
+        sql = f"""
+                    SELECT bonus_id FROM bonuses
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND level_id = {level_id}
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_award_not_sent_bonus_ids_per_game(session_id, game_id):
-        sql = """SELECT DISTINCT BonusId FROM bonuses
-                        WHERE sessionid = %s AND gameid = '%s' AND awardnotsent = True
-                        """ % (session_id, game_id)
+        sql = f"""
+                    SELECT DISTINCT bonus_id FROM bonuses
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND award_not_sent = True
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_award_sent_bonus_ids_per_game(session_id, game_id):
-        sql = """SELECT DISTINCT BonusId FROM bonuses
-                            WHERE sessionid = %s AND gameid = '%s' AND awardnotsent = False
-                            """ % (session_id, game_id)
+        sql = f"""
+                    SELECT DISTINCT bonus_id FROM bonuses
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND award_not_sent = False
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_info_not_sent_bonus_ids_per_game(session_id, game_id):
-        sql = """SELECT DISTINCT BonusId FROM bonuses
-                        WHERE sessionid = %s AND gameid = '%s' AND infonotsent = True
-                        """ % (session_id, game_id)
+        sql = f"""
+                    SELECT DISTINCT bonus_id FROM bonuses
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND info_not_sent = True
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_info_sent_bonus_ids_per_game(session_id, game_id):
-        sql = """SELECT DISTINCT BonusId FROM bonuses
-                            WHERE sessionid = %s AND gameid = '%s' AND infonotsent = False
-                            """ % (session_id, game_id)
+        sql = f"""
+                    SELECT DISTINCT bonus_id FROM bonuses
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND info_not_sent = False
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_field_value(session_id, game_id, bonus_id, header):
-        sql = "SELECT %s FROM Bonuses WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s" % \
-              (header, session_id, game_id, bonus_id)
+        sql = f"SELECT {header} FROM bonuses WHERE session_id = {session_id} AND gameid = '{game_id}' AND bonus_id = {bonus_id}"
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return rows[0][0]
 
     @staticmethod
     def update_bool_flag(session_id, game_id, bonus_id, header, value):
-        sql = """UPDATE Bonuses
-                SET %s = %s
-                WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
-                """ % (header, value, session_id, game_id, bonus_id)
+        sql = f"""
+                    UPDATE bonuses
+                    SET {header} = {value}
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND bonus_id = {bonus_id}
+              """
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
@@ -364,10 +384,11 @@ class DBBonuses(object):
         player = bonus['Answer']['Login'].encode('utf-8')
         code = bonus['Answer']['Answer'].encode('utf-8')
         bonus_id = bonus['BonusId']
-        sql = """UPDATE Bonuses
-                        SET %s = %s, code = $$%s$$, player = $$%s$$
-                        WHERE sessionid = %s AND gameid = '%s' AND bonusid = %s
-                        """ % (header, value, code, player, session_id, game_id, bonus_id)
+        sql = f"""
+                    UPDATE bonuses
+                    SET {header} = {value}, code = $${code}$$, player = $${player}$$
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND bonus_id = {bonus_id}
+              """
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
@@ -378,54 +399,58 @@ class DBSectors(object):
         sector_id = sector['SectorId']
         sector_name = sector['Name'].encode('utf-8')
         sector_order = sector['Order']
-        sql = """INSERT INTO sectors
-                    (SessionId, SectorId, GameId, AnswerInfoNotSent, code, levelid, sectorname, sectororder, player)
-                    VALUES (%s, %s, '%s', True, %s, %s, $$%s$$, %s, '%s')
-                """ % (session_id, sector_id, game_id, code, level_id, sector_name, sector_order, player)
+        sql = f"""
+                    INSERT INTO sectors
+                    (session_id, sector_id, game_id, answer_info_not_sent, code, level_id, sector_name, sector_order, player)
+                    VALUES ({session_id}, {sector_id}, '{game_id}', True, {code}, {level_id}, $${sector_name}$$, {sector_order}, $${player}$$)
+              """
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def get_sector_ids_per_game(session_id, game_id):
-        sql = """SELECT SectorId FROM sectors
-                    WHERE sessionid = %s AND gameid = '%s'
-                    """ % (session_id, game_id)
+        sql = f"""
+                    SELECT sector_id FROM sectors
+                    WHERE session_id = {session_id} AND game_id = '{game_id}'
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_answer_info_not_sent_sector_ids_per_game(session_id, game_id):
-        sql = """SELECT SectorId FROM sectors
-                    WHERE sessionid = %s AND gameid = '%s' AND answerinfonotsent = True
-                    """ % (session_id, game_id)
+        sql = f"""
+                    SELECT sector_id FROM sectors
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND answer_info_not_sent = True
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_answer_info_not_sent(session_id, game_id, sector_id):
-        sql = "SELECT answerinfonotsent FROM Sectors WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s" % \
-              (session_id, game_id, sector_id)
+        sql = f"SELECT answer_info_not_sent FROM sectors WHERE session_id = {session_id} AND game_id = '{game_id}' AND sector_id = {sector_id}"
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return rows[0][0]
 
     @staticmethod
     def update_answer_info_not_sent(session_id, game_id, sector_id, active, code, player):
-        sql = """UPDATE Sectors
-                    SET answerinfonotsent = %s, code = $$%s$$, player = $$%s$$
-                    WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
-                    """ % (active, code, player, session_id, game_id, sector_id)
+        sql = f"""
+                    UPDATE sectors
+                    SET answer_info_not_sent = {active}, code = $${code}$$, player = $${player}$$
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND sector_id = {sector_id}
+              """
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def update_level_last_code(session_id, game_id, sector_id, code, player):
-        sql = """UPDATE Sectors
-                        SET code = $$%s$$, player = $$%s$$
-                        WHERE sessionid = %s AND gameid = '%s' AND sectorid = %s
-                        """ % (code, player, session_id, game_id, sector_id)
+        sql = f"""
+                    UPDATE sectors
+                    SET code = $${code}$$, player = $${player}$$
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND sector_id = {sector_id}
+              """
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
@@ -433,45 +458,48 @@ class DBSectors(object):
 class DBMessages(object):
     @staticmethod
     def insert_message(session_id, game_id, message_id):
-        sql = """INSERT INTO messages
-                    (SessionId, MessageId, GameId, MessageNotSent)
-                    VALUES (%s, %s, '%s', True)
-                """ % (session_id, message_id, game_id)
+        sql = f"""
+                    INSERT INTO messages
+                    (session_id, message_id, game_id, message_not_sent)
+                    VALUES ({session_id}, {message_id}, '{game_id}', True)
+              """
         with connection_pool.get_conn() as db_connection:
             return db_connection.execute_insert_cur(sql)
 
     @staticmethod
     def get_message_ids_per_game(session_id, game_id):
-        sql = """SELECT MessageId FROM messages
-                    WHERE sessionid = %s AND gameid = '%s'
-                    """ % (session_id, game_id)
+        sql = f"""
+                    SELECT message_id FROM messages
+                    WHERE session_id = {session_id} AND game_id = '{game_id}'
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_not_sent_message_ids_per_game(session_id, game_id):
-        sql = """SELECT MessageId FROM messages
-                        WHERE sessionid = %s AND gameid = '%s' AND messagenotsent = True
-                        """ % (session_id, game_id)
+        sql = f"""
+                    SELECT message_id FROM messages
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND message_not_sent = True
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return [row[0] for row in rows] if rows else list()
 
     @staticmethod
     def get_message_not_sent(session_id, game_id, message_id):
-        sql = "SELECT messagenotsent FROM Messages WHERE sessionid = %s AND gameid = '%s' AND messageid = %s" % \
-              (session_id, game_id, message_id)
+        sql = f"SELECT message_not_sent FROM messages WHERE session_id = {session_id} AND game_id = '{game_id}' AND message_id = {message_id}"
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_select_cur(sql)
             return rows[0][0]
 
     @staticmethod
     def update_message_not_sent(session_id, game_id, message_id, active):
-        sql = """UPDATE Messages
-                SET messagenotsent = %s
-                WHERE sessionid = %s AND gameid = '%s' AND messageid = %s
-                """ % (active, session_id, game_id, message_id)
+        sql = f"""
+                    UPDATE messages
+                    SET message_not_sent = {active}
+                    WHERE session_id = {session_id} AND game_id = '{game_id}' AND message_id = {message_id}
+              """
         with connection_pool.get_conn() as db_connection:
             db_connection.execute_insert_cur(sql)
 
@@ -640,13 +668,13 @@ class DB(object):
     @staticmethod
     def get_gameurls_levels():
         sql = """
-                        SELECT DISTINCT sc.gameurl, sc.loginurl, sc.sessionid, sc.gameid
-                        FROM sessionconfig sc JOIN levels l ON
-                        (
-                        l.sessionid = sc.sessionid
-                        AND l.gameid = sc.gameid
-                        )
-                        """
+                    SELECT DISTINCT sc.game_url, sc.login_url, sc.session_id, sc.game_id
+                    FROM session_config sc JOIN levels l ON
+                    (
+                        l.session_id = sc.session_id
+                        AND l.game_id = sc.game_id
+                    )
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_dict_select_cur(sql)
             return rows
@@ -654,13 +682,13 @@ class DB(object):
     @staticmethod
     def get_gameurls_bonuses():
         sql = """
-                        SELECT DISTINCT sc.gameurl, sc.loginurl, sc.sessionid, sc.gameid
-                        FROM sessionconfig sc JOIN bonuses b ON
-                        (
-                        b.sessionid = sc.sessionid
-                        AND b.gameid = sc.gameid
-                        )
-                        """
+                    SELECT DISTINCT sc.game_url, sc.login_url, sc.session_id, sc.game_id
+                    FROM session_config sc JOIN bonuses b ON
+                    (
+                        b.session_id = sc.session_id
+                        AND b.game_id = sc.game_id
+                    )
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_dict_select_cur(sql)
             return rows
@@ -668,13 +696,13 @@ class DB(object):
     @staticmethod
     def get_gameurls_sectors():
         sql = """
-                        SELECT DISTINCT sc.gameurl, sc.loginurl, sc.sessionid, sc.gameid
-                        FROM sessionconfig sc JOIN sectors s ON
-                        (
-                        s.sessionid = sc.sessionid
-                        AND s.gameid = sc.gameid
-                        )
-                        """
+                    SELECT DISTINCT sc.game_url, sc.login_url, sc.session_id, sc.game_id
+                    FROM session_config sc JOIN sectors s ON
+                    (
+                        s.session_id = sc.session_id
+                        AND s.game_id = sc.game_id
+                    )
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_dict_select_cur(sql)
             return rows
@@ -682,11 +710,11 @@ class DB(object):
     @staticmethod
     def get_gameurls_helps():
         sql = """
-                        SELECT DISTINCT sc.gameurl, sc.loginurl, sc.sessionid, sc.gameid
-                        FROM sessionconfig sc JOIN helps h ON
+                        SELECT DISTINCT sc.game_url, sc.login_url, sc.session_id, sc.game_id
+                        FROM session_config sc JOIN helps h ON
                         (
-                        h.sessionid = sc.sessionid
-                        AND h.gameid = sc.gameid
+                        h.session_id = sc.session_id
+                        AND h.game_id = sc.game_id
                         )
                         """
         with connection_pool.get_conn() as db_connection:
@@ -696,48 +724,48 @@ class DB(object):
     @staticmethod
     def get_gameurls_messages():
         sql = """
-                        SELECT DISTINCT sc.gameurl, sc.loginurl, sc.sessionid, sc.gameid
-                        FROM sessionconfig sc JOIN messages m ON
-                        (
-                        m.sessionid = sc.sessionid
-                        AND m.gameid = sc.gameid
-                        )
-                        """
+                    SELECT DISTINCT sc.game_url, sc.login_url, sc.session_id, sc.game_id
+                    FROM session_config sc JOIN messages m ON
+                    (
+                        m.session_id = sc.session_id
+                        AND m.game_id = sc.game_id
+                    )
+              """
         with connection_pool.get_conn() as db_connection:
             rows = db_connection.execute_dict_select_cur(sql)
             return rows
 
-    @staticmethod
-    def get_gameids_for_builder_list():
-        sql = "SELECT DISTINCT * FROM gamesforbuilder"
-        with connection_pool.get_conn() as db_connection:
-            rows = db_connection.execute_select_cur(sql)
-            return [row[0] for row in rows]
-
-    @staticmethod
-    def insert_gameids_for_builder(gameid):
-        sql = """
-                INSERT INTO gamesforbuilder (gameid)
-                VALUES ('%s')""" % gameid
-        with connection_pool.get_conn() as db_connection:
-            return db_connection.execute_insert_cur(sql)
-
-    @staticmethod
-    def insert_game_transfer_row(gameid, header, data):
-        sql = """INSERT INTO gametransferids (gameid, %s)
-                VALUES (%s, '%s')""" % (header, gameid, data)
-        with connection_pool.get_conn() as db_connection:
-            db_connection.execute_insert_cur(sql)
-
-    @staticmethod
-    def get_game_transfer_ids(gameid, header):
-        sql = "SELECT %s FROM gametransferids WHERE gameid = %s" % (header, gameid)
-        with connection_pool.get_conn() as db_connection:
-            rows = db_connection.execute_select_cur(sql)
-            return [row[0] for row in rows] if rows else list()
-
-    @staticmethod
-    def clean_game_transfer_ids(gameid):
-        sql = "DELETE FROM gametransferids WHERE gameid = %s" % gameid
-        with connection_pool.get_conn() as db_connection:
-            return db_connection.execute_insert_cur(sql)
+    # @staticmethod
+    # def get_gameids_for_builder_list():
+    #     sql = "SELECT DISTINCT * FROM gamesforbuilder"
+    #     with connection_pool.get_conn() as db_connection:
+    #         rows = db_connection.execute_select_cur(sql)
+    #         return [row[0] for row in rows]
+    #
+    # @staticmethod
+    # def insert_gameids_for_builder(gameid):
+    #     sql = """
+    #             INSERT INTO gamesforbuilder (gameid)
+    #             VALUES ('%s')""" % gameid
+    #     with connection_pool.get_conn() as db_connection:
+    #         return db_connection.execute_insert_cur(sql)
+    #
+    # @staticmethod
+    # def insert_game_transfer_row(gameid, header, data):
+    #     sql = """INSERT INTO gametransferids (gameid, %s)
+    #             VALUES (%s, '%s')""" % (header, gameid, data)
+    #     with connection_pool.get_conn() as db_connection:
+    #         db_connection.execute_insert_cur(sql)
+    #
+    # @staticmethod
+    # def get_game_transfer_ids(gameid, header):
+    #     sql = "SELECT %s FROM gametransferids WHERE gameid = %s" % (header, gameid)
+    #     with connection_pool.get_conn() as db_connection:
+    #         rows = db_connection.execute_select_cur(sql)
+    #         return [row[0] for row in rows] if rows else list()
+    #
+    # @staticmethod
+    # def clean_game_transfer_ids(gameid):
+    #     sql = "DELETE FROM gametransferids WHERE gameid = %s" % gameid
+    #     with connection_pool.get_conn() as db_connection:
+    #         return db_connection.execute_insert_cur(sql)
