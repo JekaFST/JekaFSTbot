@@ -16,8 +16,8 @@ from TextConvertingMethods import make_Y_G_links
 
 def compile_urls(session_id, chat_id, bot, game_id, en_domain):
     session_urls = dict()
-    session_urls['game_url'] = str(en_domain + urls['game_url_ending'] + game_id)
-    session_urls['login_url'] = str(en_domain + urls['login_url_ending'])
+    session_urls['game_url'] = f"{en_domain}{urls['game_url_ending']}{game_id}"
+    session_urls['login_url'] = f"{en_domain}{urls['login_url_ending']}"
     if DBSession.update_session_urls(session_id, session_urls):
         return True
     else:
@@ -77,7 +77,7 @@ def launch_session(session, bot, chat_id):
                 'для использования репостинга в канал задайте имя канала /set_channel_name\r\n' \
                 'и запустите репостинг в канал /start_channel\r\n' \
                 'для остановки репостинга в канал введите /stop_channel'
-    if DBSession.update_bool_flag(session['sessionid'], 'active', 'True'):
+    if DBSession.update_bool_flag(session['session_id'], 'active', 'True'):
         bot.send_message(chat_id, reply)
     else:
         bot.send_message(chat_id, 'Не удалось запустить сессию')
@@ -174,8 +174,8 @@ def get_current_game_model(session, bot, chat_id, from_updater, params=None):
                 reply = 'Сработала защита движка от повторяющихся запросов. Необходимо перезапустить слежение.\r\n/start_updater'
                 bot.send_message(chat_id, reply)
             else:
-                logging.exception('Exception - game model не является json объектом. Сессия %s' % session['session_id'])
-                bot.send_message(45839899, 'Exception - game model не является json объектом. Сессия %s' % session['session_id'])
+                logging.exception(f"Exception - game model не является json объектом. Сессия {session['session_id']}")
+                bot.send_message(45839899, f"Exception - game model не является json объектом. Сессия {session['session_id']}")
                 reply = 'Updater не смог загрузить игру\r\nЕсли это повторяющееся сообщение - попробуйте выключить слежение, ' \
                         'подождать минуту или несколько минут и снова запустить слежение'
                 bot.send_message(chat_id, reply)
@@ -196,7 +196,7 @@ def handle_inactive_game_model(game_model, session, bot, chat_id, from_updater=F
             DBSession.update_bool_flag(session['session_id'], 'active', 'False')
             DBSession.drop_session_vars(session['session_id'])
             DB.cleanup_for_ended_game(session['session_id'], session['game_id'])
-            loaded_game_wrong_status = game_wrong_statuses[17] + '\r\nСессия остановлена, переменные сброшены'
+            loaded_game_wrong_status = f'{game_wrong_statuses[17]}\r\nСессия остановлена, переменные сброшены'
             session = DBSession.get_session(session['session_id'])
         else:
             for k, v in game_wrong_statuses.items():
@@ -320,8 +320,8 @@ def send_all_bonuses_to_chat_storm(bot, chat_id, session, storm_level_number):
     storm_level = get_storm_level(storm_level_number, session, bot, chat_id, from_updater=False)
     if not storm_level:
         return
-    levelmark = '<b>Уровень %s: %s</b>' % (str(storm_level['Number']), storm_level['Name'].encode('utf-8')) \
-        if storm_level['Name'] else '<b>Уровень %s</b>' % str(storm_level['Number'])
+    levelmark = f"<b>Уровень {storm_level['Number']}: {storm_level['Name'].encode('utf-8')}</b>" \
+        if storm_level['Name'] else f"<b>Уровень {storm_level['Number']}</b>"
     send_bonuses(session['session_id'], storm_level, bot, chat_id, storm=True, levelmark=levelmark)
 
 
@@ -410,8 +410,8 @@ def send_code(session, level, code, bot, chat_id, message_id, is_repeat_code, bo
         except Exception:
             if i == 0:
                 continue
-            logging.exception('Exception - game model не является json объектом. Сессия %s' % session['session_id'])
-            bot.send_message(45839899, 'Exception - game model не является json объектом. Сессия %s' % session['session_id'])
+            logging.exception(f"Exception - game model не является json объектом. Сессия {session['session_id']}")
+            bot.send_message(45839899, f"Exception - game model не является json объектом. Сессия {session['session_id']}")
             bot.send_message(chat_id, '\xE2\x9D\x97\xE2\x9D\x97\xE2\x9D\x97\r\nОтправьте код повторно. Движок вернул некорректный ответ',
                              reply_to_message_id=message_id)
             return
@@ -452,12 +452,12 @@ def generate_code_request(level, code, bonus_only):
 
 def get_send_code_reply(code, send_code_result, level, game_model):
     if send_code_result == 'True' and level['LevelId'] == game_model['Level']['LevelId']:
-        reply = '\xE2\x9C\x85\r\nКод "%s" <b>принят</b>' % code
+        reply = f'\xE2\x9C\x85\r\nКод "{code}" <b>принят</b>'
     elif send_code_result == 'True' and level['LevelId'] != game_model['Level']['LevelId']:
-        reply = '\xE2\x9C\x85\r\nКод "%s" принят. Выдан следующий уровень' % code
+        reply = f'\xE2\x9C\x85\r\nКод "{code}" принят. Выдан следующий уровень'
 
     else:
-        reply = '\xE2\x9D\x8C\r\nКод "%s" <b>НЕ принят</b>' % code
+        reply = f'\xE2\x9D\x8C\r\nКод "{code}" <b>НЕ принят</b>'
 
     return reply
 
@@ -473,9 +473,9 @@ def send_sectors(level, bot, chat_id):
         if sector['IsAnswered']:
             code = sector['Answer']['Answer'].encode('utf-8')
             player = sector['Answer']['Login'].encode('utf-8')
-            message = '<b>C-р: ' + name + ' - </b>' + '\xE2\x9C\x85' + '<b> (' + player + ': ' + code + ')</b>'
+            message = f'<b>C-р: {name} - </b>\xE2\x9C\x85<b> ({player}: {code})</b>'
         else:
-            message = 'C-р: ' + name + ' - ' + '\xE2\x9D\x8C'
+            message = f'C-р: {name} - \xE2\x9D\x8C'
         bot.send_message(chat_id, message, parse_mode='HTML')
 
 
@@ -504,7 +504,7 @@ def send_last_help(session_id, level, bot, chat_id, storm=False):
                 helps.remove(help)
 
         send_help(helps[-1], bot, chat_id, session_id, storm=storm) if len(helps) > 0 else bot.send_message(chat_id,
-                                                                                   'Еще нет пришедших подсказок')
+                                                                                                            'Еще нет пришедших подсказок')
 
 
 def send_bonuses(session_id, level, bot, chat_id, storm=False, levelmark=None):
@@ -535,7 +535,7 @@ def send_unclosed_bonuses(level, bot, chat_id):
                 unclosed_bonuses.append(bonus)
                 bonus_nums += str(bonus['Number']) if not bonus_nums else ', ' + str(bonus['Number'])
         if unclosed_bonuses:
-            num = 'Не закрыто <b>%s бонусов</b>:\r\n' % str(len(unclosed_bonuses))
+            num = f'Не закрыто <b>{len(unclosed_bonuses)} бонусов</b>:\r\n'
             bot.send_message(chat_id, num + bonus_nums, parse_mode='HTML')
     else:
         bot.send_message(chat_id, 'Не закрытых бонусов нет')
@@ -596,11 +596,11 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
                     if "chat not found" in response_text:
                         not_in_chat_bots.append(str(k))
                     else:
-                        bot.send_message(chat_id, 'Live location точки %s не отправлена.\r\n%s' % (str(k), response_text))
+                        bot.send_message(chat_id, f'Live location точки {k} не отправлена.\r\n{response_text}')
             if not_in_chat_bots:
-                bot.send_message(chat_id, 'Live location для следующих точек не отправлен: %s.\r\n'
-                                          'В чате нет соответствующего(-их) бота(-ов)\r\n'
-                                          'Найти и добавить ботов можно по следующему шаблону: @JekaLocation1Bot' % str(not_in_chat_bots))
+                bot.send_message(chat_id, f'Live location для следующих точек не отправлен: {not_in_chat_bots}.\r\n'
+                                          f'В чате нет соответствующего(-их) бота(-ов)\r\n'
+                                          f'Найти и добавить ботов можно по следующему шаблону: @JekaLocation1Bot')
             DBSession.update_json_field(session['session_id'], 'll_message_ids', ll_message_ids)
         else:
             latitude = re.findall(r'\d\d\.\d{4,7}', str(coords))[0]
@@ -614,7 +614,7 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
     else:
         for k, v in custom_points.items():
             if int(k) > 20:
-                bot.send_message(chat_id, 'Нельзя поставить точку с номером %s. Доступные номера: 1-15' % k)
+                bot.send_message(chat_id, f'Нельзя поставить точку с номером {k}. Доступные номера: 1-15')
                 continue
             latitude = re.findall(r'\d\d\.\d{4,7}', v)[0]
             longitude = re.findall(r'\d\d\.\d{4,7}', v)[1]
@@ -630,18 +630,18 @@ def send_live_locations_to_chat(bot, chat_id, session, locations, ll_message_ids
                 if "chat not found" in response_text:
                     not_in_chat_bots.append(str(k))
                 else:
-                    bot.send_message(chat_id, 'Live location точки %s не отправлена.\r\n%s' % (k, response_text))
+                    bot.send_message(chat_id, f'Live location точки {k} не отправлена.\r\n{response_text}')
         if not_in_chat_bots:
-            bot.send_message(chat_id, 'Live location для следующих точек не отправлен: %s.\r\n'
-                                      'В чате нет соответствующего(-их) бота(-ов)\r\n'
-                                      'Найти и добавить ботов можно по следующему шаблону: @JekaLocation1Bot' % str(not_in_chat_bots))
+            bot.send_message(chat_id, f'Live location для следующих точек не отправлен: {not_in_chat_bots}.\r\n'
+                                      f'В чате нет соответствующего(-их) бота(-ов)\r\n'
+                                      f'Найти и добавить ботов можно по следующему шаблону: @JekaLocation1Bot')
         DBSession.update_json_field(session['session_id'], 'll_message_ids', ll_message_ids)
 
 
 def __prepare_locations_kml(session, locations):
     kml = simplekml.Kml()
     level_number = DBLevels.get_level_number(session['session_id'], session['curr_level_id'])
-    filename = 'level' + str(level_number) + '_' + str(session['session_id'])[-4:] + '.kml'
+    filename = f"level{level_number}_{str(session['session_id'])[-4:]}.kml"
     for k, v in locations.items():
         latitude = re.findall(r'\d\d\.\d{4,7}', str(v))[0]
         longitude = re.findall(r'\d\d\.\d{4,7}', str(v))[1]
