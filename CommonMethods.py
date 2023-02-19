@@ -8,7 +8,7 @@ from TextConvertingMethods import send_object_text
 
 def time_converter(seconds):
     time = str(datetime.timedelta(seconds=seconds))
-    h_m_s = time[2:4] + ':' + time[5:] if seconds < 3600 else time[:1] + ':' + time[2:4] + ':' + time[5:]
+    h_m_s = f'{time[2:4]}:{time[5:]}' if seconds < 3600 else f'{time[:1]}:{time[2:4]}:{time[5:]}'
     return h_m_s
 
 
@@ -25,7 +25,9 @@ def send_task(session_id, loaded_level, bot, chat_id, from_updater=False, storm=
 def send_help(help, bot, chat_id, session_id, from_updater=False, storm=False, levelmark=None):
     help_number = str(help['Number'])
     help_text = help['HelpText'].encode('utf-8')
-    help_header = '<b>Подсказка ' + help_number + '</b>' if not storm else levelmark + '\r\n<b>Подсказка ' + help_number + '</b>'
+    help_header = f'<b>Подсказка {help_number}</b>'
+    if storm:
+        help_header = f'{levelmark}\r\n{help_header}'
     send_object_text(help_text, help_header, bot, chat_id, session_id, from_updater, storm)
 
 
@@ -34,53 +36,56 @@ def send_pen_help(pen_help, bot, chat_id, session_id, from_updater=False, storm=
     pen_help_comment = pen_help['PenaltyComment'].encode('utf-8')
     pen_help_text = pen_help['HelpText'].encode('utf-8')
     penalty = time_converter(pen_help['Penalty']) if pen_help['Penalty'] else 'нет'
+    pen_help_header = f'<b>Штрафная подсказка {pen_help_number}. Штраф - {penalty}</b>'
     if not pen_help['PenaltyComment']:
-        pen_help_header = '<b>Штрафная подсказка %s. Штраф - %s</b>' % (pen_help_number, penalty) if not storm else \
-            levelmark + '\r\n<b>Штрафная подсказка %s. Штраф - %s</b>' % (pen_help_number, penalty)
+        if storm:
+            f'{levelmark}\r\n{pen_help_header}'
     else:
-        pen_help_header = '<b>Штрафная подсказка %s. Штраф - %s</b>\r\nОписание: %s\r\n' % (pen_help_number, penalty, pen_help_comment) if not storm else \
-            '%s\r\n<b>Штрафная подсказка %s. Штраф - %s</b>\r\nОписание: %s\r\n' % (levelmark, pen_help_number, penalty, pen_help_comment)
+        pen_help_header = f'{pen_help_header}\r\nОписание: {pen_help_comment}\r\n'
+        if storm:
+            pen_help_header = f'{levelmark}\r\n{pen_help_header}'
     send_object_text(pen_help_text, pen_help_header, bot, chat_id, session_id, from_updater, storm)
 
 
 def send_time_to_help(help, bot, chat_id, levelmark=None, storm=False):
     help_number = str(help['Number'])
     time_to_help = time_converter(help['RemainSeconds'])
-    message_text = '<b>Подсказка ' + help_number + '</b>\r\nпридет через %s' % time_to_help if not storm else \
-        levelmark + '\r\n<b>Подсказка ' + help_number + '</b>\r\nпридет через %s' % time_to_help
+    message_text = f'<b>Подсказка {help_number}</b>\r\nпридет через {time_to_help}'
+    if storm:
+        message_text = f'{levelmark}\r\n{message_text}'
     bot.send_message(chat_id, message_text, parse_mode='HTML')
 
 
 def send_bonus_info(bonus, bot, chat_id, session_id, from_updater=False, storm=False, levelmark=None):
-    bonus_name = "<b>б-с " + str(bonus['Number']) + ': ' + bonus['Name'].encode('utf-8') + '</b>' if bonus['Name'] \
-        else "<b>Бонус " + str(bonus['Number']) + '</b>'
+    bonus_name = f"<b>б-с {bonus['Number']}: {bonus['Name'].encode('utf-8')}</b>" if bonus['Name'] \
+        else f"<b>Бонус {bonus['Number']}</b>"
     if storm:
-        bonus_name = levelmark + '\r\n' + bonus_name
+        bonus_name = f'{levelmark}\r\n{bonus_name}'
     if bonus['Expired']:
-        send_object_text('Время истекло', bonus_name, bot, chat_id)
+        send_object_text('Время истекло', bonus_name, bot, chat_id, session_id, from_updater, storm)
         return
-    bonus_task = 'Задание:\r\n' + bonus['Task'].encode('utf-8') if bonus['Task'] else 'Бонус без задания'
-    bonus_left_time = '\r\nОсталось %s' % time_converter(bonus['SecondsLeft']) if bonus['SecondsLeft'] else ''
+    bonus_task = f"Задание:\r\n{bonus['Task'].encode('utf-8')}" if bonus['Task'] else 'Бонус без задания'
+    bonus_left_time = f"\r\nОсталось {time_converter(bonus['SecondsLeft'])}" if bonus['SecondsLeft'] else ''
     send_object_text(bonus_task + bonus_left_time, bonus_name, bot, chat_id, session_id, from_updater, storm)
 
 
 def send_bonus_award_answer(bonus, bot, chat_id, session_id, from_updater=False, storm=False, levelmark=None):
-    bonus_name = "<b>б-с " + str(bonus['Number']) + ': ' + bonus['Name'].encode('utf-8') if bonus['Name'] \
-        else "<b>Бонус " + str(bonus['Number'])
+    bonus_name = f"<b>б-с {bonus['Number']}: {bonus['Name'].encode('utf-8')}" if bonus['Name'] \
+        else f"<b>Бонус {bonus['Number']}"
     code = bonus['Answer']['Answer'].encode('utf-8')
     player = bonus['Answer']['Login'].encode('utf-8')
-    bonus_award_header = bonus_name + ' - </b>' + '\xE2\x9C\x85' + '<b> (' + player + ': ' + code + ')</b>'
+    bonus_award_header = f'{bonus_name} - </b>\xE2\x9C\x85<b> ({player}: {code})</b>'
     if storm:
-        bonus_award_header = levelmark + '\r\n' + bonus_award_header
-    bonus_help = 'Подсказка:\r\n' + bonus['Help'].encode('utf-8') if bonus['Help'] else 'Без подсказки'
-    bonus_award = '\r\n<b>Награда: ' + time_converter(bonus['AwardTime']) + '</b>' if bonus['AwardTime'] != 0 \
+        bonus_award_header = f'{levelmark}\r\n{bonus_award_header}'
+    bonus_help = f"Подсказка:\r\n{bonus['Help'].encode('utf-8')}" if bonus['Help'] else 'Без подсказки'
+    bonus_award = f"\r\n<b>Награда: {time_converter(bonus['AwardTime'])}</b>" if bonus['AwardTime'] != 0 \
         else '\n<b>Без награды</b>'
-    bonus_award_text = bonus_help + bonus_award
+    bonus_award_text = f'{bonus_help}{bonus_award}'
     send_object_text(bonus_award_text, bonus_award_header, bot, chat_id, session_id, from_updater, storm)
 
 
 def send_adm_message(message, bot, chat_id, session_id, from_updater=False, storm=False, levelmark=None):
-    message_header = '<b>Сообщение от авторов</b>' if not storm else levelmark + '\r\n<b>Сообщение от авторов</b>'
+    message_header = '<b>Сообщение от авторов</b>' if not storm else f'{levelmark}\r\n<b>Сообщение от авторов</b>'
     message_text = message['MessageText'].encode('utf-8')
     send_object_text(message_text, message_header, bot, chat_id, session_id, from_updater, storm)
 
@@ -117,15 +122,15 @@ def close_live_locations(chat_id, bot, session, ll_message_ids, point=None):
                 if "message can't be edited" in response_text:
                     del ll_message_ids[point]
             DBSession.update_json_field(session['session_id'], 'll_message_ids', ll_message_ids)
-            bot.send_message(chat_id, 'Live location %s остановлена' % point)
+            bot.send_message(chat_id, f'Live location {point} остановлена')
         else:
-            bot.send_message(chat_id, 'Live location %s не поставлен' % point)
+            bot.send_message(chat_id, f'Live location {point} не поставлен')
 
 
 def channel_error_handling(bot, chat_id, error, message_type):
     if error.result.status_code == 400 and 'chat not found' in error.message:
-        bot.send_message(chat_id, message_type + 'Канал не найден - проверьте публичность канала и заданное имя')
+        bot.send_message(chat_id, f'{message_type}Канал не найден - проверьте публичность канала и заданное имя')
     elif error.result.status_code == 403 and 'Forbidden' in error.message:
-        bot.send_message(chat_id, message_type + 'Forbidden - бот не является админом канала')
+        bot.send_message(chat_id, f'{message_type}Forbidden - бот не является админом канала')
     else:
-        bot.send_message(chat_id, message_type + 'Непредвиденная ошибка при постинге в канал')
+        bot.send_message(chat_id, f'{message_type}Непредвиденная ошибка при постинге в канал')
