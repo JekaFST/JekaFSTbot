@@ -13,11 +13,11 @@ from CommonMethods import send_help, send_pen_help, send_time_to_help, send_task
 def updater(task, bot):
     session = DBSession.get_session(task.session_id)
     if not session['storm_game']:
-        name = 'upd_thread_%s' % task.chat_id
+        name = f'upd_thread_{task.chat_id}'
         threading.Thread(name=name, target=linear_updater, args=(bot, task.chat_id, session)).start()
         return
     else:
-        name = 'upd_thread_%s' % task.chat_id
+        name = f'upd_thread_{task.chat_id}'
         threading.Thread(name=name, target=storm_updater, args=(bot, task.chat_id, session)).start()
         return
 
@@ -98,8 +98,8 @@ def storm_updater(bot, chat_id, session):
         if not loaded_level:
             continue
 
-        levelmark = '<b>Уровень %s: %s</b>' % (str(loaded_level['Number']), loaded_level['Name'].encode('utf-8')) \
-            if loaded_level['Name'] else '<b>Уровень %s</b>' % str(loaded_level['Number'])
+        levelmark = f'<b>Уровень {loaded_level["Number"]}: {loaded_level["Name"].encode("utf-8")}</b>' \
+            if loaded_level['Name'] else f'<b>Уровень {loaded_level["Number"]}</b>'
 
         if loaded_level['Messages']:
             message_parcer(bot, chat_id, session, loaded_messages=loaded_level['Messages'], levelmark=levelmark, storm=True,
@@ -142,26 +142,22 @@ def send_up_message(bot, chat_id, **kwargs):
     loaded_level = kwargs['loaded_level']
     up = '\xE2\x9D\x97#АП'
     name = loaded_level['Name'].encode('utf-8') if loaded_level['Name'] else 'без названия'
-    level = '\r\n<b>Уровень %s из %s: %s</b>' % (str(loaded_level['Number']), str(kwargs['number_of_levels']),
-                                                 name)
-    time_to_up = '\r\nБез автоперехода' if loaded_level['Timeout'] == 0 else '\r\nАвтопереход: %s' % \
-                                                                             time_converter(loaded_level['Timeout'])
+    level = f'\r\n<b>Уровень {loaded_level["Number"]} из {kwargs["number_of_levels"]}: {name}</b>'
+    time_to_up = '\r\nБез автоперехода' if loaded_level['Timeout'] == 0 else f'\r\nАвтопереход: {time_converter(loaded_level["Timeout"])}'
     codes_all = 1 if not loaded_level['Sectors'] else len(loaded_level['Sectors'])
     codes_to_find = 1 if not loaded_level['Sectors'] else loaded_level['RequiredSectorsCount']
-    codes = '\r\nЗакрыть секторов: %s из %s' % (str(codes_to_find), str(codes_all))
+    codes = f'\r\nЗакрыть секторов: {codes_to_find} из {codes_all}'
 
     if loaded_level['HasAnswerBlockRule']:
         att_number = loaded_level['AttemtsNumber']
         att_period = time_converter(loaded_level['AttemtsPeriod'])
         att_object = 'команда' if loaded_level['BlockTargetId'] == 2 else 'игрок'
-        block = '\r\n<b>БЛОКИРОВКА: %s / %s|%s</b>' % (str(att_number), att_period, att_object)
+        block = f'\r\n<b>БЛОКИРОВКА: {att_number} / {att_period}|{att_object}</b>'
 
-    helps = '\r\nПодсказок: %s, первая через %s' % (str(len(loaded_level['Helps'])),
-                                                    time_converter(loaded_level['Helps'][0]['RemainSeconds'])) if loaded_level['Helps'] \
-        else '\r\nБез подсказок'
-    bonuses = '\r\nБонусов: %s' % len(loaded_level['Bonuses']) if loaded_level['Bonuses'] else '\r\nБез бонусов'
+    helps = f'\r\nПодсказок: {len(loaded_level["Helps"])}, первая через {time_converter(loaded_level["Helps"][0]["RemainSeconds"])}' if loaded_level['Helps'] else '\r\nБез подсказок'
+    bonuses = f'\r\nБонусов: {len(loaded_level["Bonuses"])}' if loaded_level['Bonuses'] else '\r\nБез бонусов'
 
-    up_message = up + level + time_to_up + codes + block + helps + bonuses
+    up_message = f'{up}{level}{time_to_up}{codes}{block}{helps}{bonuses}'
 
     bot.send_message(chat_id, up_message, parse_mode='HTML')
     if kwargs['channel_name'] and kwargs['use_channel']:
@@ -195,7 +191,7 @@ def send_unclosed_sectors_to_channel(bot, chat_id, session, **kwargs):
         DBSession.update_text_field(session['session_id'], 'sectors_to_close', sectors_to_close)
         codes_all = 1 if not loaded_level['Sectors'] else len(loaded_level['Sectors'])
         codes_to_find = 1 if not loaded_level['Sectors'] else loaded_level['SectorsLeftToClose']
-        message = '<b>Осталось закрыть: %s из %s:</b>\r\n%s' % (str(codes_to_find), str(codes_all), sectors_to_close)
+        message = f'<b>Осталось закрыть: {codes_to_find} из {codes_all}:</b>\r\n{sectors_to_close}'
         try:
             response = bot.send_message(session['channel_name'], message, parse_mode='HTML')
         except Exception as error:
@@ -230,10 +226,10 @@ def sectors_parcer(bot, chat_id, session, **kwargs):
             name = sector['Name'].encode('utf-8')
             codes_all = len(kwargs['loaded_sectors'])
             sectors_to_close = get_sectors_to_close(kwargs['loaded_sectors'])
-            message = '<b>с-р: ' + name + ' - </b>' + '\xE2\x9C\x85' + '<b> (' + player + ': ' + code + ')</b>' \
-                      '\r\nОсталось закрыть: %s из %s:\r\n%s' % (str(kwargs['codes_to_find']), str(codes_all), sectors_to_close)
+            message = f'<b>с-р: {name} - </b>\xE2\x9C\x85<b> ({player}: {code})</b>' \
+                      f'\r\nОсталось закрыть: {kwargs["codes_to_find"]} из {codes_all}:\r\n{sectors_to_close}'
             if kwargs['storm']:
-                message = kwargs['levelmark'] + '\r\n' + message
+                message = f'{kwargs["levelmark"]}\r\n{message}'
             bot.send_message(chat_id, message, parse_mode='HTML')
             DBSectors.update_answer_info_not_sent(session['session_id'], session['game_id'], sector['SectorId'], 'False', code, player)
 
@@ -248,14 +244,14 @@ def help_parcer(bot, chat_id, session, **kwargs):
     helps_time_not_sent = DBHelps.get_time_not_sent_help_ids_per_game(session['session_id'], session['game_id'])
     for help in kwargs['loaded_helps']:
         if help['HelpText'] is not None and help['HelpId'] in helps_not_sent:
-            DBHelps.update_bool_flag(session['session_id'], session['game_id'], help['HelpId'], 'notsent', 'False')
-            DBHelps.update_bool_flag(session['session_id'], session['game_id'], help['HelpId'], 'timenotsent', 'False')
+            DBHelps.update_bool_flag(session['session_id'], session['game_id'], help['HelpId'], 'not_sent', 'False')
+            DBHelps.update_bool_flag(session['session_id'], session['game_id'], help['HelpId'], 'time_not_sent', 'False')
             send_help(help, bot, chat_id, session['session_id'], from_updater=True, storm=kwargs['storm'], levelmark=kwargs['levelmark'])
             if session['channel_name'] and session['use_channel']:
                 send_help(help, bot, session['channel_name'], session['session_id'], storm=kwargs['storm'], levelmark=kwargs['levelmark'])
             continue
         if help['RemainSeconds'] <= 180 and help['HelpId'] in helps_time_not_sent:
-            DBHelps.update_bool_flag(session['session_id'], session['game_id'], help['HelpId'], 'timenotsent', 'False')
+            DBHelps.update_bool_flag(session['session_id'], session['game_id'], help['HelpId'], 'time_not_sent', 'False')
             send_time_to_help(help, bot, chat_id, kwargs['levelmark'], kwargs['storm'])
 
 
@@ -277,14 +273,14 @@ def bonus_parcer(bot, chat_id, session, **kwargs):
     for bonus in kwargs['loaded_bonuses']:
 
         if bonus['IsAnswered'] and bonus['BonusId'] in bonuses_award_not_sent:
-            DBBonuses.update_answer_info_not_sent(session['session_id'], session['game_id'], bonus, 'awardnotsent', 'False')
-            DBBonuses.update_bool_flag(session['session_id'], session['game_id'], bonus['BonusId'], 'infonotsent', 'False')
+            DBBonuses.update_answer_info_not_sent(session['session_id'], session['game_id'], bonus, 'award_not_sent', 'False')
+            DBBonuses.update_bool_flag(session['session_id'], session['game_id'], bonus['BonusId'], 'info_not_sent', 'False')
             send_bonus_award_answer(bonus, bot, chat_id, session['session_id'], from_updater=True, storm=kwargs['storm'],
                                     levelmark=kwargs['levelmark'])
             continue
         if not kwargs['storm']:
             if bonus['Task'] and not bonus['Expired'] and bonus['BonusId'] in bonuses_info_not_sent:
-                DBBonuses.update_bool_flag(session['session_id'], session['game_id'], bonus['BonusId'], 'infonotsent', 'False')
+                DBBonuses.update_bool_flag(session['session_id'], session['game_id'], bonus['BonusId'], 'info_not_sent', 'False')
                 send_bonus_info(bonus, bot, chat_id, session['session_id'], from_updater=True, storm=kwargs['storm'],
                                 levelmark=kwargs['levelmark'])
 
@@ -314,20 +310,18 @@ def levels_parcer(bot, chat_id, session, **kwargs):
             DBLevels.insert_level(session['session_id'], session['game_id'], level)
     for level in kwargs['levels']:
         if level['Dismissed'] and level['LevelId'] not in kwargs['dismissed_level_ids']:
-            text = '\xE2\x9D\x97 <b>Уровень %s, "%s" - снят</b> \xE2\x9D\x97' % \
-                   (str(level['LevelNumber']), level['LevelName'].encode('utf-8')) if level['LevelName'] \
-                else '\xE2\x9D\x97 <b>Уровень %s - снят</b> \xE2\x9D\x97' % str(level['LevelNumber'])
+            text = f'\xE2\x9D\x97 <b>Уровень {level["LevelNumber"]}, "{level["LevelName"].encode("utf-8")}" - снят</b> \xE2\x9D\x97' if level['LevelName'] \
+                else f'\xE2\x9D\x97 <b>Уровень {level["LevelNumber"]} - снят</b> \xE2\x9D\x97'
             bot.send_message(chat_id, text, parse_mode='HTML')
             DBLevels.update_bool_field(session['session_id'], session['game_id'], level['LevelId'], 'dismissed', 'True')
         if not level['Dismissed'] and level['LevelId'] in kwargs['dismissed_level_ids']:
-            text = '\xE2\x9D\x97 <b>Уровень %s, "%s" - возвращен</b> \xE2\x9D\x97' % \
-                   (str(level['LevelNumber']), level['LevelName'].encode('utf-8')) if level['LevelName'] \
-                else '\xE2\x9D\x97 <b>Уровень %s - возвращен</b> \xE2\x9D\x97' % str(level['LevelNumber'])
+            text = f'\xE2\x9D\x97 <b>Уровень {level["LevelNumber"]}, "{level["LevelName"].encode("utf-8")}" - возвращен</b> \xE2\x9D\x97' if level['LevelName'] \
+                else f'\xE2\x9D\x97 <b>Уровень {level["LevelNumber"]} - возвращен</b> \xE2\x9D\x97'
             bot.send_message(chat_id, text, parse_mode='HTML')
             DBLevels.update_bool_field(session['session_id'], session['game_id'], level['LevelId'], 'dismissed', 'False')
 
         if kwargs['storm'] and level['IsPassed'] and level['LevelId'] not in kwargs['passed_level_ids']:
-            DBLevels.update_bool_field(session['session_id'], session['game_id'], level['LevelId'], 'ispassed', 'True')
+            DBLevels.update_bool_field(session['session_id'], session['game_id'], level['LevelId'], 'is_passed', 'True')
 
 
 @ExceptionHandler.common_updater_exception
@@ -339,12 +333,12 @@ def pen_helps_parcer(bot, chat_id, session, **kwargs):
     pen_helps_not_sent = DBPenHelps.get_not_sent_pen_help_ids_per_game(session['session_id'], session['game_id'])
     for pen_help in kwargs['pen_helps']:
         if pen_help['PenaltyHelpState'] == 1 and pen_help['HelpId'] in pen_helps_not_sent and pen_help['HelpText'] is not None:
-            DBPenHelps.update_bool_flag(session['session_id'], session['game_id'], pen_help['HelpId'], 'notsent', 'False')
+            DBPenHelps.update_bool_flag(session['session_id'], session['game_id'], pen_help['HelpId'], 'not_sent', 'False')
             send_pen_help(pen_help, bot, chat_id, session['session_id'], from_updater=True, storm=kwargs['storm'],
-                      levelmark=kwargs['levelmark'])
+                          levelmark=kwargs['levelmark'])
             if session['channel_name'] and session['use_channel']:
                 send_pen_help(pen_help, bot, session['channel_name'], session['session_id'], storm=kwargs['storm'],
-                          levelmark=kwargs['levelmark'])
+                              levelmark=kwargs['levelmark'])
             continue
 
 
@@ -357,8 +351,7 @@ def channel_sectors_editor(bot, chat_id, session, **kwargs):
         if new_sectors_to_close != session['sectors_to_close']:
             codes_all = 1 if not loaded_level['Sectors'] else len(loaded_level['Sectors'])
             codes_to_find = 1 if not loaded_level['Sectors'] else loaded_level['SectorsLeftToClose']
-            message = '<b>Осталось закрыть: %s из %s:</b>\r\n%s' % \
-                      (str(codes_to_find), str(codes_all), new_sectors_to_close)
+            message = f'<b>Осталось закрыть: {codes_to_find} из {codes_all}:</b>\r\n{new_sectors_to_close}'
             bot.edit_message_text(message, session['channel_name'], session['sectors_message_id'], parse_mode='HTML')
             DBSession.update_text_field(session['session_id'], 'sectors_to_close', new_sectors_to_close)
 
@@ -370,10 +363,10 @@ def get_sectors_to_close(sectors, get_sector_names=False):
         sectors_to_close = '1'
     elif get_sector_names:
         for i, sector in enumerate(get_unclosed_sectors(sectors)):
-            sectors_to_close += sector['Name'].encode('utf-8') if i == 0 else '\r\n' + sector['Name'].encode('utf-8')
+            sectors_to_close += sector['Name'].encode('utf-8') if i == 0 else f'\r\n{sector["Name"].encode("utf-8")}'
     else:
         for i, sector in enumerate(get_unclosed_sectors(sectors)):
-            sectors_to_close += str(sector['Order']) if i == 0 else ', ' + str(sector['Order'])
+            sectors_to_close += str(sector['Order']) if i == 0 else f', {sector["Order"]}'
     return sectors_to_close
 
 
